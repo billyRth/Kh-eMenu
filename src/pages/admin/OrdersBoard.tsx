@@ -258,7 +258,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
               </h3>
               {list.length === 0 && <p className="px-1 pb-2 text-sm text-muted-foreground">Nothing here.</p>}
               {list.map((o) => (
-                <article key={o.id} className={cn('overflow-hidden rounded-2xl border-l-4 bg-card shadow-sm ring-1 ring-foreground/5', status === 'new' ? 'border-l-blue-500' : 'border-l-amber-500')}>
+                <article key={o.id} className="overflow-hidden rounded-2xl bg-card shadow-sm ring-1 ring-foreground/5">
                   <div className="space-y-3 p-3.5">
                     <div className="flex items-center gap-2">
                       <span className="text-lg font-extrabold">#{o.order_number}</span>
