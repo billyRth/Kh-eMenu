@@ -2,6 +2,14 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from './supabase';
 import type { CartLine, Category, MenuItem, Restaurant } from './types';
 
+/** Price of one portion with the picked option choices. */
+export function unitPrice(item: MenuItem, optionIds: string[] = []) {
+  const extra = item.options.flatMap((g) => g.choices).filter((c) => optionIds.includes(c.id)).reduce((sum, c) => sum + Number(c.price), 0);
+  return Number(item.price_usd) + extra;
+}
+
+const sameOptions = (a: string[], b: string[]) => a.length === b.length && [...a].sort().join('|') === [...b].sort().join('|');
+
 export type MenuData = {
   restaurant: Restaurant;
   categories: Category[];
@@ -38,7 +46,8 @@ export function useCart(token: string | undefined) {
   const [lines, setLines] = useState<CartLine[]>(() => {
     if (!storageKey) return [];
     try {
-      return JSON.parse(localStorage.getItem(storageKey) ?? '[]') as CartLine[];
+      const saved = JSON.parse(localStorage.getItem(storageKey) ?? '[]') as CartLine[];
+      return saved.map((l) => ({ ...l, options: l.options ?? [] }));
     } catch {
       return [];
     }
@@ -53,14 +62,14 @@ export function useCart(token: string | undefined) {
     }
   }, [lines, storageKey]);
 
-  const add = useCallback((item_id: string, qty: number, note: string) => {
+  const add = useCallback((item_id: string, qty: number, note: string, options: string[] = []) => {
     setLines((prev) => {
       const trimmed = note.trim();
-      const existing = prev.find((l) => l.item_id === item_id && l.note === trimmed);
+      const existing = prev.find((l) => l.item_id === item_id && l.note === trimmed && sameOptions(l.options, options));
       if (existing) {
         return prev.map((l) => (l === existing ? { ...l, qty: Math.min(50, l.qty + qty) } : l));
       }
-      return [...prev, { item_id, qty, note: trimmed }];
+      return [...prev, { item_id, qty, note: trimmed, options }];
     });
   }, []);
 

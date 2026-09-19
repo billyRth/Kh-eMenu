@@ -12,7 +12,8 @@ import { cn } from '@/lib/utils';
 import { uploadImage } from '@/lib/images';
 import { supabase } from '@/lib/supabase';
 import { usd } from '@/lib/format';
-import type { Category, MenuItem, Restaurant } from '@/lib/types';
+import type { Category, I18nText, MenuItem, Restaurant } from '@/lib/types';
+import { OptionsEditor, cleanOptions } from './OptionsEditor';
 
 type Draft = Omit<MenuItem, 'id' | 'restaurant_id' | 'sort_order'> & { id?: string };
 
@@ -28,6 +29,8 @@ const blankDraft = (categoryId: string): Draft => ({
   is_featured: false,
   spicy_level: 0,
   tags: [],
+  options: [],
+  i18n: {},
 });
 
 export const nativeSelect =
@@ -67,9 +70,11 @@ export function MenuEditor({ restaurant }: { restaurant: Restaurant }) {
     if (await run(supabase.from('categories').insert({ restaurant_id: restaurant.id, name, sort_order: sort }))) setNewCategory('');
   }
 
-  async function renameCategory(cat: Category) {
-    const name = window.prompt('Category name', cat.name)?.trim();
-    if (name && name !== cat.name) await run(supabase.from('categories').update({ name }).eq('id', cat.id));
+  const [editingCat, setEditingCat] = useState<Category | null>(null);
+  const extraLangs = (restaurant.languages ?? []).filter((l): l is 'km' | 'zh' => l !== 'en');
+
+  function renameCategory(cat: Category) {
+    setEditingCat(cat);
   }
 
   async function deleteCategory(cat: Category) {
@@ -171,6 +176,15 @@ export function MenuEditor({ restaurant }: { restaurant: Restaurant }) {
         </Button>
       </form>
 
+      <CategoryDialog
+        category={editingCat}
+        languages={extraLangs}
+        onClose={() => setEditingCat(null)}
+        onSave={async (name, i18n) => {
+          if (editingCat && (await run(supabase.from('categories').update({ name, i18n }).eq('id', editingCat.id)))) setEditingCat(null);
+        }}
+      />
+
       <ItemDialog
         draft={draft}
         categories={categories}
@@ -252,6 +266,8 @@ function ItemDialog({
       is_available: d.is_available,
       is_featured: d.is_featured,
       spicy_level: d.spicy_level,
+      options: cleanOptions(d.options),
+      i18n: d.i18n,
       tags: tags
         .split(',')
         .map((t) => t.trim())
@@ -276,7 +292,7 @@ function ItemDialog({
 
   return (
     <Dialog open={!!draft} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-lg">
+      <DialogContent className="max-h-[92dvh] overflow-y-auto sm:max-w-2xl">
         {d && (
           <form onSubmit={save} className="space-y-4">
             <DialogHeader>
@@ -333,6 +349,19 @@ function ItemDialog({
                 </select>
               </Field>
             </div>
+            {(restaurant.languages ?? []).filter((l) => l !== 'en').map((l) => {
+              const code = l as 'km' | 'zh';
+              const tr = d.i18n?.[code] ?? {};
+              const setTr = (patch: { name?: string; description?: string }) => set('i18n', { ...d.i18n, [code]: { ...tr, ...patch } } as I18nText);
+              return (
+                <div key={code} className="space-y-2 rounded-xl bg-secondary/60 p-3">
+                  <p className="text-xs font-semibold text-muted-foreground">{code === 'km' ? 'ខ្មែរ · Khmer' : '中文 · Chinese'}</p>
+                  <Input value={tr.name ?? ''} onChange={(e) => setTr({ name: e.target.value })} placeholder={code === 'km' ? 'ឈ្មោះម្ហូប' : '菜名'} />
+                  <Input value={tr.description ?? ''} onChange={(e) => setTr({ description: e.target.value })} placeholder={code === 'km' ? 'ការពិពណ៌នា (មិនចាំបាច់)' : '描述（可选）'} />
+                </div>
+              );
+            })}
+            <OptionsEditor value={d.options} onChange={(v) => set('options', v)} languages={(restaurant.languages ?? []).filter((l): l is 'km' | 'zh' => l !== 'en')} />
             <Field label="Tags (comma separated)">
               <Input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Vegetarian, New, Signature" />
             </Field>
@@ -375,5 +404,56 @@ export function Field({ label, children }: { label: string; children: ReactNode 
       <Label>{label}</Label>
       {children}
     </div>
+  );
+}
+
+function CategoryDialog({
+  category,
+  languages,
+  onClose,
+  onSave,
+}: {
+  category: Category | null;
+  languages: ('km' | 'zh')[];
+  onClose: () => void;
+  onSave: (name: string, i18n: I18nText) => void;
+}) {
+  const [name, setName] = useState('');
+  const [i18n, setI18n] = useState<I18nText>({});
+  useEffect(() => {
+    if (!category) return;
+    setName(category.name);
+    setI18n(category.i18n ?? {});
+  }, [category]);
+
+  return (
+    <Dialog open={!!category} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (name.trim()) onSave(name.trim(), i18n);
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold">Category</DialogTitle>
+          </DialogHeader>
+          <Field label="Name">
+            <Input required value={name} onChange={(e) => setName(e.target.value)} />
+          </Field>
+          {languages.map((l) => (
+            <Field key={l} label={l === 'km' ? 'ខ្មែរ · Khmer' : '中文 · Chinese'}>
+              <Input value={i18n[l]?.name ?? ''} onChange={(e) => setI18n({ ...i18n, [l]: { ...i18n[l], name: e.target.value } })} />
+            </Field>
+          ))}
+          <DialogFooter>
+            <Button type="submit" className="font-bold">
+              Save
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

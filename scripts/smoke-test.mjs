@@ -51,6 +51,22 @@ check('place_order rejects qty 0', !!badQty);
 const { data: tab } = await anon.rpc('get_table_tab', { p_token: token });
 check('table tab shows the order', tab?.some((o) => o.id === order.order_id));
 
+// Options: price comes from the DB, required groups are enforced, unknown choices rejected.
+const coffee = items.find((i) => i.name === 'Iced Khmer Coffee');
+if (coffee?.options?.length) {
+  const { data: opt, error: optErr } = await anon.rpc('place_order', {
+    p_token: token,
+    p_items: [{ item_id: coffee.id, qty: 1, options: ['size-l', 'sug-50', 'ice-n', 'x-shot'] }],
+  });
+  check('options add their prices', !optErr && Number(opt.total_usd) === Number(coffee.price_usd) + 1, optErr?.message ?? JSON.stringify(opt));
+  const { error: missing } = await anon.rpc('place_order', { p_token: token, p_items: [{ item_id: coffee.id, qty: 1, options: ['size-l'] }] });
+  check('required option groups enforced', !!missing && missing.message.includes('OPTION_REQUIRED'), missing?.message ?? '');
+  const { error: bogus } = await anon.rpc('place_order', { p_token: token, p_items: [{ item_id: coffee.id, qty: 1, options: ['size-l', 'sug-50', 'ice-n', 'free-steak'] }] });
+  check('unknown option rejected', !!bogus && bogus.message.includes('OPTION_INVALID'), bogus?.message ?? '');
+  const { error: twoSizes } = await anon.rpc('place_order', { p_token: token, p_items: [{ item_id: coffee.id, qty: 1, options: ['size-l', 'size-r', 'sug-50', 'ice-n'] }] });
+  check('single-choice group allows one pick', !!twoSizes && twoSizes.message.includes('OPTION_INVALID'), twoSizes?.message ?? '');
+}
+
 await anon.rpc('call_staff', { p_token: token, p_kind: 'bill' });
 await anon.rpc('call_staff', { p_token: token, p_kind: 'bill' });
 const { data: reqs } = await staff.from('service_requests').select('*').eq('table_id', tables[0].id).is('resolved_at', null).eq('kind', 'bill');
@@ -61,8 +77,10 @@ check('staff reads order with items', staffOrders?.[0]?.order_items?.length === 
 const { error: upErr } = await staff.from('orders').update({ status: 'preparing' }).eq('id', order.order_id);
 check('staff updates status', !upErr, upErr?.message ?? '');
 
-// Clean up: close the tab and resolve the request so the demo stays tidy.
-await staff.from('orders').update({ status: 'served', paid_at: new Date().toISOString() }).eq('id', order.order_id);
+// Clean up: clear the table the way staff do, so the demo stays tidy.
+const now = new Date().toISOString();
+await staff.from('orders').update({ status: 'served', paid_at: now }).eq('table_id', tables[0].id).is('paid_at', null);
+await staff.from('dining_tables').update({ cleared_at: now }).eq('id', tables[0].id);
 await staff.from('service_requests').update({ resolved_at: new Date().toISOString() }).eq('table_id', tables[0].id).is('resolved_at', null);
 const { data: tabAfter } = await anon.rpc('get_table_tab', { p_token: token });
 check('paid orders leave the tab', !tabAfter?.some((o) => o.id === order.order_id));

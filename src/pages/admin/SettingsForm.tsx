@@ -44,6 +44,7 @@ export function SettingsForm({ restaurant, onSaved }: { restaurant: Restaurant; 
         ordering_enabled: r.ordering_enabled,
         accent_color: r.accent_color,
         theme: r.theme,
+        languages: r.languages,
         logo_url: r.logo_url,
         cover_url: r.cover_url,
       })
@@ -131,6 +132,30 @@ export function SettingsForm({ restaurant, onSaved }: { restaurant: Restaurant; 
         <Field label="Cover photo (top of the menu)">
           <ImagePicker url={r.cover_url} onPick={(f) => upload('cover_url', f)} onRemove={() => set('cover_url', null)} previewClass="h-12 w-28 rounded-lg" />
         </Field>
+      </Section>
+
+      <Section title="Menu languages">
+        <p className="-mt-2 text-sm text-muted-foreground">Diners switch language at the top of the menu. Add the Khmer / Chinese names when you edit each dish. The kitchen always sees English.</p>
+        <div className="flex flex-wrap gap-2">
+          {([
+            ['en', 'English'],
+            ['km', 'ខ្មែរ Khmer'],
+            ['zh', '中文 Chinese'],
+          ] as const).map(([code, label]) => {
+            const on = (r.languages ?? ['en']).includes(code);
+            return (
+              <button
+                key={code}
+                type="button"
+                disabled={code === 'en'}
+                onClick={() => set('languages', on ? r.languages.filter((l) => l !== code) : [...(r.languages ?? ['en']), code])}
+                className={cn('flex items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-semibold transition', on ? 'border-primary bg-primary/10' : 'border-border text-muted-foreground')}
+              >
+                {on && <Check className="size-4 text-primary" />} {label}
+              </button>
+            );
+          })}
+        </div>
       </Section>
 
       <Section title="Prices & ordering">

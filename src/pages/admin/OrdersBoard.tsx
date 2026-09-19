@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { BellRing, Check, ChefHat, Clock, HandPlatter, MonitorSmartphone, Receipt, StickyNote, Volume2, X } from 'lucide-react';
+import { BellRing, Check, LayoutGrid, ChefHat, Clock, HandPlatter, MonitorSmartphone, Receipt, StickyNote, Volume2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { khr, timeAgo, usd } from '@/lib/format';
-import type { Order, OrderStatus, Restaurant, ServiceRequest } from '@/lib/types';
+import type { DiningTable, Order, OrderStatus, Restaurant, ServiceRequest } from '@/lib/types';
 import { DeviceSetup } from './DeviceSetup';
 
-const ORDER_SELECT = '*, order_items(id, name, unit_price_usd, qty, note), dining_tables(label)';
+const ORDER_SELECT = '*, order_items(id, name, unit_price_usd, qty, note, options), dining_tables(label)';
 
 /** Short two-tone chime generated in the browser, so there is no audio file to host. */
 function chime(ctx: AudioContext) {
@@ -50,6 +50,7 @@ function useWakeLock(enabled: boolean) {
 export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
+  const [tables, setTables] = useState<DiningTable[]>([]);
   const [alertsOn, setAlertsOn] = useState(false);
   const [live, setLive] = useState(false);
   const [, setTick] = useState(0);
@@ -59,10 +60,12 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
 
   const refresh = useCallback(async () => {
     const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-    const [o, r] = await Promise.all([
+    const [o, r, tb] = await Promise.all([
       supabase.from('orders').select(ORDER_SELECT).eq('restaurant_id', restaurant.id).gte('created_at', since).order('created_at', { ascending: true }),
       supabase.from('service_requests').select('*, dining_tables(label)').eq('restaurant_id', restaurant.id).is('resolved_at', null).order('created_at'),
+      supabase.from('dining_tables').select('*').eq('restaurant_id', restaurant.id).eq('is_active', true).order('sort_order').order('created_at'),
     ]);
+    if (tb.data) setTables(tb.data);
     if (o.data && r.data) {
       const nextOrders = o.data as unknown as Order[];
       const nextRequests = r.data as unknown as ServiceRequest[];
@@ -129,13 +132,19 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
   }
 
   async function closeTable(tableId: string | null, label: string, total: number) {
-    if (!window.confirm(`Mark ${label} as paid (${usd(total)}) and clear its bill?`)) return;
+    if (!window.confirm(`Mark ${label} as paid (${usd(total)}) and clear it for the next guests?`)) return;
     const now = new Date().toISOString();
     let q = supabase.from('orders').update({ paid_at: now }).eq('restaurant_id', restaurant.id).is('paid_at', null);
     q = tableId ? q.eq('table_id', tableId) : q.is('table_id', null);
     const { error } = await q;
     if (error) return toast.error(error.message);
-    if (tableId) await supabase.from('service_requests').update({ resolved_at: now }).eq('table_id', tableId).is('resolved_at', null);
+    if (tableId) {
+      // Clearing the table starts a fresh bill: the next guests who scan see nothing from before.
+      await Promise.all([
+        supabase.from('service_requests').update({ resolved_at: now }).eq('table_id', tableId).is('resolved_at', null),
+        supabase.from('dining_tables').update({ cleared_at: now }).eq('id', tableId),
+      ]);
+    }
     toast.success(`${label} closed · ${usd(total)}`);
     refresh();
   }
@@ -176,6 +185,39 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
           </Button>
         )}
       </div>
+
+      {tables.length > 0 && (
+        <section className="rounded-3xl bg-card/60 p-3 ring-1 ring-foreground/5">
+          <h3 className="flex items-center gap-2 px-1 pb-2 font-bold">
+            <LayoutGrid className="size-4 text-muted-foreground" /> Tables
+            <span className="ml-auto text-xs font-medium text-muted-foreground">Tap a busy table when the guests leave</span>
+          </h3>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-8">
+            {tables.map((tb) => {
+              const bill = bills.get(tb.id);
+              const wants = requests.find((r) => r.table_id === tb.id && r.kind === 'bill');
+              const calling = requests.find((r) => r.table_id === tb.id && r.kind === 'waiter');
+              const busy = !!bill;
+              return (
+                <button
+                  key={tb.id}
+                  disabled={!busy && !wants && !calling}
+                  onClick={() => (bill ? closeTable(tb.id, tb.label, bill.total) : wants ? resolveRequest(wants) : calling && resolveRequest(calling))}
+                  className={cn(
+                    'rounded-2xl border-2 p-2.5 text-left transition active:scale-95 disabled:cursor-default',
+                    wants ? 'border-emerald-500 bg-emerald-50' : calling ? 'border-amber-400 bg-amber-50' : busy ? 'border-primary/40 bg-card' : 'border-dashed border-border bg-transparent',
+                  )}
+                >
+                  <p className="truncate text-sm font-bold">{tb.label}</p>
+                  <p className={cn('text-xs font-semibold', wants ? 'text-emerald-700' : calling ? 'text-amber-700' : busy ? 'text-foreground' : 'text-muted-foreground')}>
+                    {wants ? 'Wants bill' : calling ? 'Calling' : busy ? usd(bill.total) : 'Free'}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {requests.length > 0 && (
         <div className="grid gap-2 sm:grid-cols-2">
@@ -231,6 +273,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
                         <li key={it.id} className="text-[15px]">
                           <span className="mr-2 inline-grid min-w-6 place-items-center rounded-md bg-secondary px-1 text-sm font-extrabold">{it.qty}</span>
                           {it.name}
+                          {it.options?.length > 0 && <p className="ml-8 text-sm font-semibold text-blue-700">{it.options.map((op) => op.choice).join(' · ')}</p>}
                           {it.note && <p className="ml-8 text-sm font-semibold text-amber-700">↳ {it.note}</p>}
                         </li>
                       ))}
