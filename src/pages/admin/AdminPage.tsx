@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { BookOpen, ExternalLink, LogOut, QrCode, Settings, UtensilsCrossed, BellRing } from 'lucide-react';
+import { BookOpen, ChartColumn, ExternalLink, LogOut, QrCode, Settings, UtensilsCrossed, BellRing } from 'lucide-react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,10 +12,12 @@ import { OrdersBoard } from './OrdersBoard';
 import { MenuEditor } from './MenuEditor';
 import { TablesManager } from './TablesManager';
 import { SettingsForm } from './SettingsForm';
+import { DailyReport } from './DailyReport';
 
-type Tab = 'orders' | 'menu' | 'tables' | 'settings';
+type Tab = 'orders' | 'report' | 'menu' | 'tables' | 'settings';
 const TABS = [
   { id: 'orders', label: 'Orders', icon: BellRing },
+  { id: 'report', label: 'Today', icon: ChartColumn },
   { id: 'menu', label: 'Menu', icon: BookOpen },
   { id: 'tables', label: 'Tables & QR', icon: QrCode },
   { id: 'settings', label: 'Settings', icon: Settings },
@@ -161,6 +163,7 @@ function Dashboard({ session }: { session: Session }) {
         <div hidden={tab !== 'orders'}>
           <OrdersBoard restaurant={restaurant} />
         </div>
+        {tab === 'report' && <DailyReport restaurant={restaurant} />}
         {tab === 'menu' && <MenuEditor restaurant={restaurant} />}
         {tab === 'tables' && <TablesManager restaurant={restaurant} />}
         {tab === 'settings' && <SettingsForm restaurant={restaurant} onSaved={setRestaurant} />}

@@ -21,6 +21,7 @@ const blankDraft = (categoryId: string): Draft => ({
   name: '',
   description: '',
   price_usd: 0,
+  cost_usd: null,
   image_url: null,
   emoji: '',
   is_available: true,
@@ -111,6 +112,18 @@ export function MenuEditor({ restaurant }: { restaurant: Restaurant }) {
               <h3 className="mr-auto text-base font-bold">
                 {cat.name} <span className="ml-1 text-sm font-normal text-muted-foreground">{catItems.length}</span>
               </h3>
+              <select
+                className="h-7 rounded-md border border-input bg-transparent px-2 text-xs"
+                value={cat.report_group}
+                title="Counts toward this group in the daily report"
+                onChange={(e) => run(supabase.from('categories').update({ report_group: e.target.value }).eq('id', cat.id))}
+              >
+                <option value="starter">Appetizers</option>
+                <option value="main">Mains</option>
+                <option value="drink">Drinks</option>
+                <option value="dessert">Desserts</option>
+                <option value="other">Other</option>
+              </select>
               <Button variant="ghost" size="icon-sm" title="Move up" onClick={() => moveCategory(index, -1)} disabled={index === 0}>
                 <ArrowUp />
               </Button>
@@ -190,6 +203,7 @@ function ItemDialog({
 }) {
   const [d, setD] = useState<Draft | null>(draft);
   const [price, setPrice] = useState('');
+  const [cost, setCost] = useState('');
   const [tags, setTags] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -198,6 +212,7 @@ function ItemDialog({
     if (!draft) return;
     setD(draft);
     setPrice(draft.id ? String(draft.price_usd) : '');
+    setCost(draft.cost_usd != null ? String(draft.cost_usd) : '');
     setTags(draft.tags.join(', '));
     setError(null);
   }, [draft]);
@@ -222,6 +237,8 @@ function ItemDialog({
     const priceNum = Number(price);
     if (!d.name.trim()) return setError('Give the dish a name.');
     if (!price.trim() || !Number.isFinite(priceNum) || priceNum < 0) return setError('Enter a valid price in USD, e.g. 4.50');
+    const costNum = cost.trim() ? Number(cost) : null;
+    if (costNum !== null && (!Number.isFinite(costNum) || costNum < 0)) return setError('Cost must be a number in USD, or left empty.');
 
     setBusy(true);
     const row = {
@@ -229,6 +246,7 @@ function ItemDialog({
       name: d.name.trim(),
       description: d.description?.trim() || null,
       price_usd: Math.round(priceNum * 100) / 100,
+      cost_usd: costNum === null ? null : Math.round(costNum * 100) / 100,
       image_url: d.image_url,
       emoji: d.emoji?.trim() || null,
       is_available: d.is_available,
@@ -290,6 +308,9 @@ function ItemDialog({
             <div className="grid grid-cols-2 gap-3">
               <Field label="Price (USD)">
                 <Input inputMode="decimal" required value={price} onChange={(e) => setPrice(e.target.value)} placeholder="4.50" />
+              </Field>
+              <Field label="Cost to make (USD, private)">
+                <Input inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="optional, for profit report" />
               </Field>
               <Field label="Emoji">
                 <Input value={d.emoji ?? ''} maxLength={4} onChange={(e) => set('emoji', e.target.value)} placeholder="🍜" />

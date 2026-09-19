@@ -11,6 +11,7 @@ export type Restaurant = {
   ordering_enabled: boolean;
   accent_color: string;
   theme: string;
+  reports_enabled: boolean;
   logo_url: string | null;
   cover_url: string | null;
 };
@@ -20,6 +21,7 @@ export type Category = {
   restaurant_id: string;
   name: string;
   sort_order: number;
+  report_group: 'starter' | 'main' | 'drink' | 'dessert' | 'other';
 };
 
 export type MenuItem = {
@@ -29,6 +31,7 @@ export type MenuItem = {
   name: string;
   description: string | null;
   price_usd: number;
+  cost_usd: number | null;
   image_url: string | null;
   emoji: string | null;
   is_available: boolean;
