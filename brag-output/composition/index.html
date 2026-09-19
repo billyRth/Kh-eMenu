@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>KhMenu brag</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2'); font-weight: 800; }
+      @font-face { font-family: 'Kantumruy Pro'; src: url('assets/fonts/kantumruy-pro-khmer-700-normal.woff2') format('woff2'); font-weight: 700; }
+
+      :root { --orange: #c2410c; --deep: #7c2d12; --cream: #faf8f5; --ink: #292524; --muted: #78716c; --line: #e7e2da; --soft: #f3eee6; }
+      * { box-sizing: border-box; margin: 0; }
+      body { background: var(--cream); color: var(--ink); font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', sans-serif; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--cream); }
+      .scene { position: absolute; inset: 0; overflow: hidden; }
+      .stack { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 56px; padding: 220px 80px 300px; }
+      .km { font-family: 'Kantumruy Pro', sans-serif; }
+      .caption { font-size: 76px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; text-align: center; max-width: 900px; }
+      .caption em { font-style: normal; color: var(--orange); }
+
+      /* ---------- scene 1: table tent ---------- */
+      #s1 { background: radial-gradient(ellipse at 50% 35%, #fff 0%, var(--cream) 60%); }
+      .tent { width: 640px; background: #fff; border-radius: 48px; padding: 52px 56px 56px; box-shadow: 0 40px 90px rgb(41 37 36 / 0.16), 0 0 0 2px var(--line); display: flex; flex-direction: column; align-items: center; gap: 26px; }
+      .tent .rname { font-size: 34px; font-weight: 700; color: var(--muted); letter-spacing: 0.02em; }
+      .qr-wrap { position: relative; width: 400px; height: 400px; padding: 28px; }
+      .qr-wrap img { display: block; width: 100%; height: 100%; }
+      .bracket { position: absolute; width: 86px; height: 86px; border: 12px solid var(--orange); }
+      .bracket.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 28px; }
+      .bracket.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 28px; }
+      .bracket.bl { bottom: 0; left: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 28px; }
+      .bracket.br { bottom: 0; right: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 28px; }
+      .scanline { position: absolute; left: 22px; right: 22px; top: 30px; height: 8px; border-radius: 8px; background: var(--orange); }
+      .tent .tnum { font-size: 76px; font-weight: 800; letter-spacing: -0.02em; }
+      .tent .tsub { font-size: 32px; font-weight: 600; color: var(--muted); margin-top: -18px; }
+      .words { display: flex; gap: 30px; font-size: 104px; font-weight: 800; letter-spacing: -0.04em; }
+      .words span { display: inline-block; }
+      .words span:last-child { color: var(--orange); }
+
+      /* ---------- scene 2: reveal ---------- */
+      #s2 { background: linear-gradient(160deg, #ea580c 0%, var(--orange) 45%, var(--deep) 100%); color: #fff; }
+      #s2 .wipe { position: absolute; inset: 0; background: inherit; }
+      .logo-row { display: flex; align-items: center; gap: 36px; }
+      .app-icon { width: 180px; height: 180px; border-radius: 48px; background: #fff; display: grid; place-items: center; box-shadow: 0 30px 60px rgb(0 0 0 / 0.25); }
+      .wordmark { font-size: 170px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; }
+      .pill { padding: 18px 40px; border-radius: 999px; border: 3px solid rgb(255 255 255 / 0.45); background: rgb(255 255 255 / 0.14); font-size: 52px; font-weight: 700; }
+      .reveal-sub { font-size: 50px; font-weight: 600; opacity: 0.92; }
+
+      /* ---------- phones ---------- */
+      .phone { position: relative; width: 660px; height: 1180px; border-radius: 88px; background: #1c1917; padding: 20px; box-shadow: 0 50px 100px rgb(41 37 36 / 0.28); }
+      .screen { position: relative; width: 100%; height: 100%; border-radius: 70px; overflow: hidden; background: var(--cream); }
+      .island { position: absolute; top: 18px; left: 50%; margin-left: -80px; width: 160px; height: 44px; border-radius: 24px; background: #1c1917; z-index: 5; }
+      .cover { height: 200px; background: radial-gradient(circle at 20% 20%, rgb(255 255 255 / 0.25), transparent 50%), var(--orange); }
+      .rcard { margin: -84px 28px 0; background: #fff; border-radius: 34px; padding: 26px; box-shadow: 0 10px 30px rgb(0 0 0 / 0.08); position: relative; }
+      .rrow { display: flex; gap: 18px; align-items: center; }
+      .rlogo { width: 76px; height: 76px; border-radius: 22px; background: var(--orange); color: #fff; font-weight: 800; font-size: 38px; display: grid; place-items: center; }
+      .rname2 { font-size: 34px; font-weight: 800; }
+      .rtag { font-size: 22px; color: var(--muted); }
+      .rtable { margin-top: 18px; background: #fff1e8; border-radius: 20px; padding: 14px 18px; font-size: 24px; font-weight: 700; }
+      .rtable span { font-weight: 500; color: var(--muted); }
+      .items { margin: 26px 28px 0; background: #fff; border: 2px solid #eee8df; border-radius: 30px; }
+      .item { display: flex; gap: 18px; padding: 22px; align-items: center; border-bottom: 2px solid #eee8df; }
+      .item:last-child { border-bottom: 0; }
+      .item .t { flex: 1; }
+      .item b { display: block; font-size: 28px; }
+      .item small { display: block; font-size: 21px; color: var(--muted); margin-top: 2px; }
+      .item .p { font-weight: 800; font-size: 27px; margin-top: 8px; }
+      .item .p i { font-style: normal; font-weight: 600; font-size: 20px; color: var(--muted); margin-left: 8px; }
+      .thumb { position: relative; width: 118px; height: 118px; border-radius: 26px; background: linear-gradient(135deg, var(--soft), #f8d9c6); display: grid; place-items: center; font-size: 62px; }
+      .plus { position: absolute; right: -10px; bottom: -10px; width: 54px; height: 54px; border-radius: 50%; border: 4px solid #fff; background: #fff; color: var(--orange); box-shadow: 0 4px 12px rgb(0 0 0 / 0.15); }
+      .plus span { position: absolute; inset: 0; display: grid; place-items: center; font-size: 28px; font-weight: 800; border-radius: 50%; }
+      .plus .n { background: var(--orange); color: #fff; opacity: 0; }
+      .bar { position: absolute; left: 28px; right: 28px; bottom: 40px; height: 108px; border-radius: 30px; background: var(--orange); color: #fff; font-size: 32px; font-weight: 800; box-shadow: 0 16px 30px rgb(0 0 0 / 0.18); }
+      .bar .lbl { position: absolute; inset: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 36px; }
+      .bar .sent { justify-content: center; background: #15803d; border-radius: 30px; opacity: 0; }
+      .tap { position: absolute; width: 96px; height: 96px; margin: -48px 0 0 -48px; border-radius: 50%; background: rgb(41 37 36 / 0.28); border: 5px solid rgb(255 255 255 / 0.9); z-index: 10; left: 0; top: 0; }
+
+      /* staff phone */
+      .lock { background: linear-gradient(170deg, #292524, #0c0a09); color: #fff; }
+      .clock { text-align: center; padding-top: 120px; }
+      .clock .time { font-size: 150px; font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
+      .clock .date { font-size: 30px; opacity: 0.75; margin-top: 10px; }
+      .notif { position: absolute; left: 24px; right: 24px; top: 400px; background: rgb(255 255 255 / 0.96); color: var(--ink); border-radius: 40px; padding: 28px; display: flex; gap: 22px; align-items: center; box-shadow: 0 24px 50px rgb(0 0 0 / 0.35); }
+      .notif .ic { width: 88px; height: 88px; flex-shrink: 0; border-radius: 24px; background: var(--orange); display: grid; place-items: center; }
+      .notif .app { font-size: 20px; font-weight: 700; letter-spacing: 0.06em; color: var(--muted); text-transform: uppercase; }
+      .notif .title { font-size: 31px; font-weight: 800; margin-top: 2px; }
+      .notif .body { font-size: 24px; color: #44403c; margin-top: 4px; line-height: 1.3; }
+      .ticket { position: absolute; left: 24px; right: 24px; top: 640px; background: #fff; color: var(--ink); border-radius: 36px; overflow: hidden; border-left: 12px solid #3b82f6; }
+      .ticket .hd { display: flex; align-items: center; gap: 14px; padding: 26px 28px 8px; font-size: 40px; font-weight: 800; }
+      .ticket .tag { font-size: 24px; background: var(--ink); color: #fff; border-radius: 12px; padding: 4px 14px; }
+      .ticket ul { list-style: none; padding: 8px 28px 20px; font-size: 30px; }
+      .ticket li { padding: 6px 0; }
+      .ticket li b { display: inline-block; min-width: 50px; background: var(--soft); border-radius: 10px; text-align: center; margin-right: 12px; }
+      .ticket .ft { display: flex; justify-content: space-between; align-items: center; padding: 20px 28px; background: var(--soft); font-size: 30px; font-weight: 800; }
+      .ticket .btn { background: var(--orange); color: #fff; border-radius: 20px; padding: 14px 26px; font-size: 26px; }
+
+      /* ---------- scene 5: features ---------- */
+      .features { display: flex; flex-direction: column; gap: 30px; width: 900px; }
+      .feat { display: flex; align-items: center; gap: 30px; background: #fff; border-radius: 40px; padding: 34px 38px; box-shadow: 0 16px 40px rgb(41 37 36 / 0.08), 0 0 0 2px var(--line); }
+      .feat .fi { width: 120px; height: 120px; flex-shrink: 0; border-radius: 34px; background: #fff1e8; display: grid; place-items: center; font-size: 62px; }
+      .feat h3 { font-size: 44px; font-weight: 800; letter-spacing: -0.02em; }
+      .feat p { font-size: 30px; color: var(--muted); margin-top: 6px; }
+      .swatches { display: flex; gap: 12px; margin-top: 14px; }
+      .swatches span { width: 44px; height: 44px; border-radius: 50%; border: 6px solid; }
+
+      /* ---------- scene 6: outro ---------- */
+      #s6 .wordmark { color: var(--ink); }
+      #s6 .wordmark b { color: var(--orange); font-weight: 800; }
+      .outro-sub { font-size: 52px; font-weight: 700; color: var(--muted); }
+      .cta { padding: 38px 70px; border-radius: 999px; background: var(--orange); color: #fff; font-size: 58px; font-weight: 800; box-shadow: 0 20px 40px rgb(41 37 36 / 0.18); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="24.5">
+      <!-- Scene 1 — Scan the table -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="3.7" data-track-index="0">
+        <div class="stack" id="s1-inner">
+          <div class="tent" id="tent">
+            <p class="rname">SABAY KITCHEN</p>
+            <div class="qr-wrap">
+              <img src="assets/qr.svg" alt="Table QR code" />
+              <div class="bracket tl"></div><div class="bracket tr"></div><div class="bracket bl"></div><div class="bracket br"></div>
+              <div class="scanline" id="scanline"></div>
+            </div>
+            <p class="tnum">Table 4</p>
+            <p class="tsub">Scan to see the menu &amp; order</p>
+          </div>
+          <div class="words"><span id="w1">Scan.</span><span id="w2">Order.</span><span id="w3">Done.</span></div>
+        </div>
+      </section>
+
+      <!-- Scene 2 — Reveal -->
+      <section id="s2" class="scene clip" data-start="3.7" data-duration="2.6" data-track-index="0">
+        <div class="stack" id="s2-inner">
+          <div class="logo-row" id="logo">
+            <div class="app-icon">
+              <svg width="112" height="112" viewBox="0 0 512 512" fill="none" stroke="#c2410c" stroke-width="40" stroke-linecap="round"><path d="M150 400h212" /><path d="M170 360a86 86 0 0 1 172 0z" fill="#c2410c" /><path d="M256 190v-24" /><circle cx="256" cy="150" r="18" fill="#c2410c" stroke="none" /></svg>
+            </div>
+            <span class="wordmark">KhMenu</span>
+          </div>
+          <span class="pill" id="s2-pill">App <span class="km">កូនខ្មែរ</span></span>
+          <p class="reveal-sub" id="s2-sub">QR menus &amp; table ordering</p>
+        </div>
+      </section>
+
+      <!-- Scene 3 — Order from your seat -->
+      <section id="s3" class="scene clip" data-start="6.3" data-duration="5.3" data-track-index="0">
+        <div class="stack" id="s3-inner" style="gap: 48px; padding-top: 170px">
+          <p class="caption" id="s3-cap">Order from <em>your seat.</em></p>
+          <div class="phone" id="phone1">
+            <div class="screen">
+              <div class="island"></div>
+              <div class="cover"></div>
+              <div class="rcard">
+                <div class="rrow"><div class="rlogo">S</div><div><p class="rname2">Sabay Kitchen</p><p class="rtag">Home-style Khmer cooking</p></div></div>
+                <p class="rtable">🍽️ Table 4 <span>· order from your phone</span></p>
+              </div>
+              <div class="items">
+                <div class="item"><div class="t"><b>Fish Amok</b><small>Steamed in banana leaf</small><p class="p">$6.50<i>26,700៛</i></p></div>
+                  <div class="thumb">🐟<div class="plus" id="plus-amok"><span class="n0" id="amok-0">+</span><span class="n" id="amok-1">1</span><span class="n" id="amok-2">2</span></div></div></div>
+                <div class="item"><div class="t"><b>Beef Lok Lak</b><small>Lime-pepper sauce</small><p class="p">$6.00<i>24,600៛</i></p></div>
+                  <div class="thumb">🥩<div class="plus"><span class="n0">+</span></div></div></div>
+                <div class="item"><div class="t"><b>Iced Khmer Coffee</b><small>With condensed milk</small><p class="p">$1.75<i>7,200៛</i></p></div>
+                  <div class="thumb">☕<div class="plus" id="plus-coffee"><span class="n0" id="coffee-0">+</span><span class="n" id="coffee-1">1</span></div></div></div>
+              </div>
+              <div class="bar" id="bar">
+                <div class="lbl" id="bar-main"><span>🛍️ Send order · 3</span><span>$14.75</span></div>
+                <div class="lbl sent" id="sent">Sent to kitchen ✓</div>
+              </div>
+            </div>
+            <div class="tap" id="tap"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 4 — Rings the kitchen -->
+      <section id="s4" class="scene clip" data-start="11.6" data-duration="3.7" data-track-index="0">
+        <div class="stack" id="s4-inner" style="gap: 48px; padding-top: 170px">
+          <p class="caption" id="s4-cap" style="max-width: 640px">Rings straight to <em>the kitchen.</em></p>
+          <div class="phone" id="phone2">
+            <div class="screen lock">
+              <div class="island"></div>
+              <div class="clock"><p class="time">7:42</p><p class="date">Friday · Sabay Kitchen</p></div>
+              <div class="notif" id="notif">
+                <div class="ic">
+                  <svg width="56" height="56" viewBox="0 0 512 512" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round"><path d="M150 400h212" /><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff" /><path d="M256 190v-24" /><circle cx="256" cy="150" r="18" fill="#fff" stroke="none" /></svg>
+                </div>
+                <div>
+                  <p class="app">KhMenu Staff · now</p>
+                  <p class="title">New order #12 · Table 4</p>
+                  <p class="body">2× Fish Amok, 1× Iced Khmer Coffee · $14.75</p>
+                </div>
+              </div>
+              <div class="ticket" id="ticket">
+                <p class="hd">#12 <span class="tag">Table 4</span></p>
+                <ul><li><b>2</b>Fish Amok</li><li><b>1</b>Iced Khmer Coffee</li></ul>
+                <div class="ft"><span>$14.75</span><span class="btn">Start cooking</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 5 — Features -->
+      <section id="s5" class="scene clip" data-start="15.3" data-duration="5.2" data-track-index="0">
+        <div class="stack" id="s5-inner" style="gap: 56px">
+          <p class="caption" id="s5-cap">Everything your <em>restaurant</em> needs</p>
+          <div class="features">
+            <div class="feat" id="f1"><div class="fi">🧾</div><div><h3>Split the bill</h3><p>By person or equally, to the cent</p></div></div>
+            <div class="feat" id="f2"><div class="fi">💵</div><div><h3>Dollars + riel</h3><p>$6.50 · 26,700៛ at your own rate</p></div></div>
+            <div class="feat" id="f3"><div class="fi">🙋</div><div><h3>Call waiter &amp; ask for bill</h3><p>One tap from the table</p></div></div>
+            <div class="feat" id="f4"><div class="fi">🎨</div><div><h3>6 menu styles</h3>
+              <div class="swatches">
+                <span style="background:#faf8f5;border-color:#c2410c"></span><span style="background:#fbfaf8;border-color:#6f4e37"></span><span style="background:#0f0e0d;border-color:#f59e0b"></span><span style="background:#fff8d6;border-color:#dc2626"></span><span style="background:#f4f6f0;border-color:#3f7d4e"></span><span style="background:#121212;border-color:#c9a24a"></span>
+              </div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 6 — Outro -->
+      <section id="s6" class="scene clip" data-start="20.5" data-duration="4" data-track-index="0">
+        <div class="stack" id="s6-inner" style="gap: 52px">
+          <div class="app-icon" id="s6-icon" style="background: var(--orange)">
+            <svg width="112" height="112" viewBox="0 0 512 512" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round"><path d="M150 400h212" /><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff" /><path d="M256 190v-24" /><circle cx="256" cy="150" r="18" fill="#fff" stroke="none" /></svg>
+          </div>
+          <span class="wordmark" id="s6-word"><b>Kh</b>Menu</span>
+          <p class="outro-sub" id="s6-sub">App <span class="km">កូនខ្មែរ</span> · Made in Phnom Penh</p>
+          <span class="cta" id="cta">DM us for a free demo</span>
+        </div>
+      </section>
+
+      <!-- Audio -->
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-11-by-ende-dot-app.mp3" data-start="0" data-duration="24.5" data-track-index="10" data-volume="0.8"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":1},{"t":23.3,"v":1},{"t":24.5,"v":0}]}]}'></audio>
+      <audio id="sfx-lock" src="assets/sfx/click_003.ogg" data-start="0.62" data-duration="0.01" data-track-index="11" data-volume="0.6"></audio>
+      <audio id="sfx-logo" src="assets/sfx/impactSoft_medium_001.ogg" data-start="3.7" data-duration="0.19" data-track-index="12" data-volume="0.9"></audio>
+      <audio id="sfx-tap1" src="assets/sfx/click_003.ogg" data-start="7.38" data-duration="0.01" data-track-index="13" data-volume="0.7"></audio>
+      <audio id="sfx-tap2" src="assets/sfx/click_003.ogg" data-start="7.91" data-duration="0.01" data-track-index="14" data-volume="0.7"></audio>
+      <audio id="sfx-tap3" src="assets/sfx/click_003.ogg" data-start="8.44" data-duration="0.01" data-track-index="15" data-volume="0.7"></audio>
+      <audio id="sfx-send" src="assets/sfx/impactSoft_medium_001.ogg" data-start="9.5" data-duration="0.19" data-track-index="16" data-volume="0.8"></audio>
+      <audio id="sfx-notif" src="assets/sfx/bong_001.ogg" data-start="12.65" data-duration="0.13" data-track-index="17" data-volume="0.9"></audio>
+      <audio id="sfx-f1" src="assets/sfx/card-slide-1.ogg" data-start="15.81" data-duration="0.5" data-track-index="18" data-volume="0.45"></audio>
+      <audio id="sfx-f2" src="assets/sfx/card-slide-1.ogg" data-start="16.86" data-duration="0.5" data-track-index="19" data-volume="0.45"></audio>
+      <audio id="sfx-f3" src="assets/sfx/card-slide-1.ogg" data-start="17.91" data-duration="0.5" data-track-index="20" data-volume="0.45"></audio>
+      <audio id="sfx-f4" src="assets/sfx/card-slide-1.ogg" data-start="18.96" data-duration="0.5" data-track-index="21" data-volume="0.45"></audio>
+      <audio id="sfx-cta" src="assets/sfx/impactBell_heavy_000.ogg" data-start="22.65" data-duration="1.2" data-track-index="22" data-volume="0.55"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const E = 'power3.out';
+
+      // ---- Scene 1: table tent, brackets lock, words land (0–3.7)
+      tl.fromTo('#tent', { y: 90, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, ease: E }, 0.05);
+      tl.fromTo('.bracket', { scale: 1.35, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2)', stagger: 0.04 }, 0.5);
+      tl.fromTo('#scanline', { y: 0, opacity: 0 }, { y: 330, opacity: 1, duration: 0.8, ease: 'power1.inOut' }, 0.75);
+      tl.to('#scanline', { opacity: 0, duration: 0.2 }, 1.55);
+      tl.fromTo('#w1', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: E }, 1.1);
+      tl.fromTo('#w2', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: E }, 1.6);
+      tl.fromTo('#w3', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: E }, 2.1);
+
+      // ---- Scene 2: reveal (3.7–6.3) — beat-locked: 3.70s
+      tl.fromTo('#s2 .stack', { clipPath: 'inset(100% 0 0 0)' }, { clipPath: 'inset(0% 0 0 0)', duration: 0.01 }, 3.7);
+      tl.fromTo('#logo', { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.8)' }, 3.7);
+      tl.fromTo('#s2-pill', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: E }, 4.2);
+      tl.fromTo('#s2-sub', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: E }, 4.55);
+
+      // ---- Scene 3: ordering flow (6.3–11.6)
+      tl.fromTo('#s3-cap', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: E }, 6.35);
+      tl.fromTo('#phone1', { y: 260, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: E }, 6.4);
+      // Tap dot: positions are phone-local (screen offset 20px). Plus buttons sit at the right of each row.
+      tl.set('#tap', { x: 560, y: 690, opacity: 0, scale: 1 }, 6.3);
+      // beat-grid: taps at 7.38, 7.91 (Fish Amok) and 8.44 (Iced Coffee)
+      [7.38, 7.91].forEach((t) => {
+        tl.to('#tap', { opacity: 1, scale: 1, duration: 0.12 }, t - 0.2);
+        tl.to('#tap', { scale: 0.7, duration: 0.1, yoyo: true, repeat: 1 }, t - 0.05);
+      });
+      tl.set('#amok-0', { opacity: 0 }, 7.38);
+      tl.set('#amok-1', { opacity: 1 }, 7.38);
+      tl.set('#amok-1', { opacity: 0 }, 7.91);
+      tl.set('#amok-2', { opacity: 1 }, 7.91);
+      tl.to('#tap', { y: 1010, duration: 0.3, ease: 'power2.inOut' }, 8.07);
+      tl.to('#tap', { scale: 0.7, duration: 0.1, yoyo: true, repeat: 1 }, 8.39);
+      tl.set('#coffee-0', { opacity: 0 }, 8.44);
+      tl.set('#coffee-1', { opacity: 1 }, 8.44);
+      tl.fromTo('#bar', { y: 180, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: E }, 8.6);
+      // beat-locked send tap: 9.50s
+      tl.to('#tap', { x: 330, y: 1085, duration: 0.35, ease: 'power2.inOut' }, 9.05);
+      tl.to('#tap', { scale: 0.7, duration: 0.1, yoyo: true, repeat: 1 }, 9.45);
+      tl.to('#bar-main', { opacity: 0, duration: 0.15 }, 9.5);
+      tl.to('#sent', { opacity: 1, duration: 0.2 }, 9.5);
+      tl.to('#tap', { opacity: 0, duration: 0.25 }, 9.75);
+
+      // ---- Scene 4: kitchen notification (11.6–15.3) — beat-locked: 12.65s
+      tl.fromTo('#s4-cap', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: E }, 11.65);
+      tl.fromTo('#phone2', { y: 260, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: E }, 11.7);
+      tl.fromTo('#notif', { y: -260, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'back.out(1.4)' }, 12.62);
+      tl.to('#phone2', { rotation: 1.5, duration: 0.06, yoyo: true, repeat: 5, ease: 'none' }, 12.65);
+      tl.fromTo('#ticket', { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: E }, 13.4);
+
+      // ---- Scene 5: features (15.3–20.5) — beat-grid: 15.81, 16.86, 17.91 (strong), 18.96; every other beat for readability
+      tl.fromTo('#s5-cap', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: E }, 15.35);
+      [['#f1', 15.81], ['#f2', 16.86], ['#f3', 17.91], ['#f4', 18.96]].forEach(([id, t]) => {
+        tl.fromTo(id, { x: 140, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: E }, t - 0.05);
+      });
+
+      // ---- Scene 6: outro (20.5–24.5) — beat-locked CTA: 22.65s
+      tl.fromTo('#s6-icon', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(1.8)' }, 20.55);
+      tl.fromTo('#s6-word', { y: 50, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: E }, 20.8);
+      tl.fromTo('#s6-sub', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: E }, 21.4);
+      tl.fromTo('#cta', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, 22.6);
+
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

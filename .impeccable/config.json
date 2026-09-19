@@ -65,6 +65,51 @@
         ],
         "createdAt": "2026-09-19T19:14:48.764Z",
         "reason": "User picked the 'Warm food / retro' direction, described as cream paper, in the banner brief"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "brag-output/composition/index.html"
+        ],
+        "createdAt": "2026-09-19T19:28:23.106Z",
+        "reason": "Claude: order ticket replicates the real OrdersBoard card's coloured left border"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "brag-output/composition/index.html"
+        ],
+        "createdAt": "2026-09-19T19:28:23.415Z",
+        "reason": "Claude: white text sits on the orange scene-2 gradient; scanner resolves the root cream background"
+      },
+      {
+        "rule": "clipped-overflow-container",
+        "value": "*",
+        "files": [
+          "brag-output/composition/index.html"
+        ],
+        "createdAt": "2026-09-19T19:28:23.733Z",
+        "reason": "Claude: fixed video frame and phone screens must clip; no popovers"
+      },
+      {
+        "rule": "overused-font",
+        "value": "*",
+        "files": [
+          "brag-output/composition/index.html"
+        ],
+        "createdAt": "2026-09-19T19:28:24.038Z",
+        "reason": "Claude: Plus Jakarta Sans is the shipped KhMenu brand font"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          "brag-output/composition/index.html"
+        ],
+        "createdAt": "2026-09-19T19:28:24.350Z",
+        "reason": "Claude: phone mock-ups replicate the real app screens"
       }
     ]
   }
