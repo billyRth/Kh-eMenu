@@ -1,0 +1,71 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          "assets/banners/launch/phone-mockup.html"
+        ],
+        "createdAt": "2026-09-19T19:12:29.681Z",
+        "reason": "Claude: white headline sits on the orange gradient canvas; static scan resolves the background as white"
+      },
+      {
+        "rule": "clipped-overflow-container",
+        "value": "*",
+        "files": [
+          "assets/banners/launch/phone-mockup.html"
+        ],
+        "createdAt": "2026-09-19T19:12:30.020Z",
+        "reason": "Claude: fixed-size banner canvas and phone screen must clip; no popovers"
+      },
+      {
+        "rule": "overused-font",
+        "value": "*",
+        "files": [
+          "assets/banners/launch/phone-mockup.html"
+        ],
+        "createdAt": "2026-09-19T19:12:30.354Z",
+        "reason": "Claude: Plus Jakarta Sans is the shipped eMenu brand font; banner skill says apply supplied brand type"
+      },
+      {
+        "rule": "nested-cards",
+        "value": "*",
+        "files": [
+          "assets/banners/launch/phone-mockup.html"
+        ],
+        "createdAt": "2026-09-19T19:12:30.667Z",
+        "reason": "Claude: phone mock-up reproduces the real app screen, which has a restaurant card inside the screen"
+      },
+      {
+        "rule": "clipped-overflow-container",
+        "value": "*",
+        "files": [
+          "assets/banners/launch/warm-retro.html"
+        ],
+        "createdAt": "2026-09-19T19:14:06.326Z",
+        "reason": "Claude: fixed-size banner canvas must clip decorative halftone circles; no popovers"
+      },
+      {
+        "rule": "overused-font",
+        "value": "*",
+        "files": [
+          "assets/banners/launch/warm-retro.html"
+        ],
+        "createdAt": "2026-09-19T19:14:48.455Z",
+        "reason": "Claude: Plus Jakarta Sans is the shipped eMenu brand font; headline uses Gloock for the retro voice"
+      },
+      {
+        "rule": "cream-palette",
+        "value": "*",
+        "files": [
+          "assets/banners/launch/warm-retro.html"
+        ],
+        "createdAt": "2026-09-19T19:14:48.764Z",
+        "reason": "User picked the 'Warm food / retro' direction, described as cream paper, in the banner brief"
+      }
+    ]
+  }
+}

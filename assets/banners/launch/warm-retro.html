@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>eMenu launch · warm retro</title>
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root { --cream: #f6ead4; --paper: #fffaf0; --orange: #c2410c; --brown: #3b1f12; --mustard: #d99a2b; --muted: #6b4f3f; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1080px; height: 1080px; overflow: hidden; }
+  body.story { height: 1920px; }
+  body { font-family: 'Plus Jakarta Sans', sans-serif; color: var(--brown); background: var(--cream); }
+
+  .canvas { position: relative; width: 1080px; height: 1080px; overflow: hidden; background: var(--cream); }
+  .story .canvas { height: 1920px; }
+  /* paper grain + halftone corners */
+  .canvas::before {
+    content: ''; position: absolute; inset: 0; opacity: .35; mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .22 0 0 0 0 .12 0 0 0 .35 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .dots { position: absolute; width: 520px; height: 520px; background-image: radial-gradient(var(--orange) 3.2px, transparent 3.4px); background-size: 22px 22px; opacity: .22; border-radius: 50%; }
+  .dots.a { right: -180px; top: -200px; mask-image: radial-gradient(circle, #000 20%, transparent 70%); }
+  .dots.b { left: -200px; bottom: -220px; mask-image: radial-gradient(circle, #000 20%, transparent 70%); }
+
+  .stamp { display: inline-flex; align-items: center; gap: 14px; padding: 12px 24px; border: 3px solid var(--brown); border-radius: 999px; font-weight: 800; font-size: 22px; letter-spacing: .16em; text-transform: uppercase; }
+  .stamp i { width: 10px; height: 10px; border-radius: 50%; background: var(--orange); }
+  h1 { font-family: 'Gloock', serif; font-weight: 400; line-height: .92; letter-spacing: -.01em; }
+  h1 em { font-style: normal; color: #a8380b; }
+  .lead { font-weight: 600; color: var(--muted); line-height: 1.35; }
+
+  /* retro menu card */
+  .card { position: absolute; background: var(--paper); border: 3px solid var(--brown); border-radius: 28px; box-shadow: 12px 12px 0 var(--brown); padding: 34px 40px 30px; }
+  .card::before { content: ''; position: absolute; inset: 10px; border: 1.5px dashed rgb(59 31 18 / .35); border-radius: 20px; pointer-events: none; }
+  .card h2 { font-family: 'Gloock', serif; font-weight: 400; font-size: 40px; text-align: center; }
+  .card .sub { text-align: center; font-size: 17px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--orange); margin-top: 4px; }
+  .line { display: flex; align-items: baseline; gap: 12px; font-size: 26px; font-weight: 700; margin-top: 18px; }
+  .line .emoji { font-size: 30px; }
+  .line .fill { flex: 1; border-bottom: 3px dotted rgb(59 31 18 / .45); transform: translateY(-6px); }
+  .line .price { font-family: 'Gloock', serif; font-size: 30px; }
+  .added { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--orange); color: #fff; font-size: 18px; font-weight: 800; transform: translateY(-2px); }
+
+  /* order ticket sticking out of the card */
+  .ticket { position: absolute; background: #fff; border: 3px solid var(--brown); border-radius: 18px; padding: 18px 22px; transform: rotate(5deg); box-shadow: 8px 8px 0 var(--mustard); }
+  .ticket .k { font-size: 15px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--orange); }
+  .ticket .t { font-family: 'Gloock', serif; font-size: 32px; white-space: nowrap; line-height: 1.1; margin-top: 4px; }
+  .ticket .s { font-size: 18px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+
+  .scan { display: inline-flex; align-items: center; gap: 12px; font-weight: 800; font-size: 22px; }
+  .cta { display: inline-flex; align-items: center; height: 84px; padding: 0 38px; border-radius: 999px; background: var(--orange); color: #fff; font-weight: 800; font-size: 32px; border: 3px solid var(--brown); box-shadow: 6px 6px 0 var(--brown); }
+  .brand { display: flex; align-items: center; gap: 14px; font-weight: 800; font-size: 34px; }
+  .brand .mark { width: 56px; height: 56px; border-radius: 16px; background: var(--orange); display: grid; place-items: center; border: 3px solid var(--brown); }
+
+  /* ---------- post (1080×1080) ---------- */
+  .post .top { position: absolute; left: 90px; top: 92px; display: flex; flex-direction: column; align-items: flex-start; gap: 26px; width: 560px; }
+  .post h1 { font-size: 112px; }
+  .post .lead { font-size: 29px; max-width: 470px; }
+  .post .card { right: 84px; top: 170px; width: 400px; }
+  .post .ticket { right: 64px; top: 670px; width: 380px; }
+  .post .bottom { position: absolute; left: 90px; right: 90px; bottom: 92px; display: flex; align-items: center; justify-content: space-between; }
+
+  /* ---------- story (1080×1920), keep 270px clear top and bottom ---------- */
+  .story .top { position: absolute; left: 90px; right: 90px; top: 280px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 30px; }
+  .story h1 { font-size: 132px; }
+  .story .lead { font-size: 36px; max-width: 820px; }
+  .story .card { left: 50%; top: 830px; width: 620px; transform: translateX(-50%) rotate(-1.5deg); padding: 40px 52px 36px; }
+  .story .card h2 { font-size: 48px; }
+  .story .line { font-size: 31px; margin-top: 22px; }
+  .story .ticket { right: 80px; top: 1250px; width: 390px; }
+  .story .bottom { position: absolute; left: 90px; right: 90px; bottom: 290px; display: flex; flex-direction: column; align-items: center; gap: 30px; }
+</style>
+</head>
+<body>
+<script>document.body.className = location.search.includes('story') ? 'story' : 'post';</script>
+<div class="canvas">
+  <div class="dots a"></div><div class="dots b"></div>
+
+  <div class="top">
+    <span class="stamp"><i></i>Est. 2026 · Phnom Penh<i></i></span>
+    <h1>Menus that<br /><em>take orders.</em></h1>
+    <p class="lead">Introducing eMenu: a QR code on every table, orders straight to your kitchen.</p>
+  </div>
+
+  <div class="card">
+    <h2>Today’s Menu</h2>
+    <p class="sub">Scan · Tap · Enjoy</p>
+    <div class="line"><span class="emoji">🐟</span>Fish Amok<span class="fill"></span><span class="price">$6.50</span></div>
+    <div class="line"><span class="emoji">🥩</span>Lok Lak<span class="fill"></span><span class="price">$6.00</span></div>
+    <div class="line"><span class="emoji">🍜</span>Kuy Teav<span class="fill"></span><span class="price">$3.50</span></div>
+    <div class="line"><span class="emoji">☕</span>Iced Coffee<span class="fill"></span><span class="price">$1.75</span></div>
+  </div>
+
+  <div class="ticket">
+    <p class="k">Kitchen · just now</p>
+    <p class="t">Order #12 · Table 4</p>
+    <p class="s">2× Amok, 1× Iced Coffee</p>
+  </div>
+
+  <div class="bottom">
+    <div class="brand">
+      <span class="mark">
+        <svg width="34" height="34" viewBox="0 0 512 512" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round"><path d="M150 400h212"/><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff"/><path d="M256 190v-24"/><circle cx="256" cy="150" r="18" fill="#fff" stroke="none"/></svg>
+      </span>
+      eMenu
+    </div>
+    <span class="cta">DM us for a free demo</span>
+  </div>
+</div>
+</body>
+</html>
