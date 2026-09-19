@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { khr, timeAgo, usd } from '@/lib/format';
 import type { Order, OrderStatus, Restaurant, ServiceRequest } from '@/lib/types';
+import { DeviceSetup } from './DeviceSetup';
 
 const ORDER_SELECT = '*, order_items(id, name, unit_price_usd, qty, note), dining_tables(label)';
 
@@ -159,6 +160,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
 
   return (
     <div className="space-y-5">
+      <DeviceSetup restaurant={restaurant} />
       <div className="flex flex-wrap items-center gap-3">
         <span className={cn('inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-bold', live ? 'text-emerald-700' : 'text-muted-foreground')}>
           <span className={cn('size-2 rounded-full', live ? 'bg-emerald-500 shadow-[0_0_0_3px] shadow-emerald-500/20' : 'bg-muted-foreground/40')} />
