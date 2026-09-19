@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { HashRouter, Route, Routes, useParams } from 'react-router-dom';
-import { Spinner } from './components/Sheet';
+import { buttonVariants } from '@/components/ui/button';
+import { LoadingScreen, MessageScreen } from '@/components/common';
 import { LandingPage } from './pages/LandingPage';
 import { MenuPage } from './pages/MenuPage';
 import { TablePage } from './pages/TablePage';
@@ -25,7 +26,7 @@ export default function App() {
         <Route
           path="/admin"
           element={
-            <Suspense fallback={<Spinner />}>
+            <Suspense fallback={<LoadingScreen />}>
               <AdminPage />
             </Suspense>
           }
@@ -33,12 +34,11 @@ export default function App() {
         <Route
           path="*"
           element={
-            <div className="center-screen">
-              <h2>Page not found</h2>
-              <a className="btn" href="#/">
+            <MessageScreen title="Page not found">
+              <a className={buttonVariants()} href="#/">
                 Go home
               </a>
-            </div>
+            </MessageScreen>
           }
         />
       </Routes>

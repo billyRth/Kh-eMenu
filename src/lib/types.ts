@@ -65,6 +65,7 @@ export type Order = {
   note: string | null;
   total_usd: number;
   paid_at: string | null;
+  guest_name: string | null;
   created_at: string;
   order_items: OrderItem[];
   dining_tables: { label: string } | null;
@@ -85,6 +86,7 @@ export type TabOrder = {
   order_number: number;
   status: OrderStatus;
   total_usd: number;
+  guest_name: string | null;
   created_at: string;
   items: { name: string; qty: number; unit_price_usd: number; note: string | null }[];
 };

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Spinner } from '../components/Sheet';
-import { friendlyError, supabase } from '../lib/supabase';
+import { QrCode, WifiOff } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { LoadingScreen, MessageScreen } from '@/components/common';
+import { friendlyError, supabase } from '@/lib/supabase';
 import { MenuPage } from './MenuPage';
 
 /** Entry point for a table's QR code: resolve the token, then show the menu with ordering on. */
@@ -29,23 +31,20 @@ export function TablePage() {
     };
   }, [token]);
 
-  if (state === null) return <Spinner label="Finding your table…" />;
+  if (state === null) return <LoadingScreen label="Finding your table…" />;
   if (state === 'missing') {
     return (
-      <div className="center-screen">
-        <h2>This QR code isn’t active</h2>
-        <p className="muted">Please ask a staff member for help with your order.</p>
-      </div>
+      <MessageScreen icon={<QrCode />} title="This QR code isn’t active">
+        <p className="text-muted-foreground">Please ask a staff member for help with your order.</p>
+      </MessageScreen>
     );
   }
   if (state === 'error') {
     return (
-      <div className="center-screen">
-        <p>{message}</p>
-        <button className="btn" onClick={() => window.location.reload()}>
-          Try again
-        </button>
-      </div>
+      <MessageScreen icon={<WifiOff />} title="Couldn’t find your table">
+        <p className="text-muted-foreground">{message}</p>
+        <Button onClick={() => window.location.reload()}>Try again</Button>
+      </MessageScreen>
     );
   }
   return <MenuPage slug={state.slug} table={{ token, label: state.label }} />;
