@@ -25,7 +25,7 @@ export function AdminPage() {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
 
   useEffect(() => {
-    document.title = 'eMenu Staff';
+    document.title = 'KhMenu Staff';
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
     const { data } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
     return () => data.subscription.unsubscribe();
@@ -74,7 +74,7 @@ function Login() {
           {busy ? 'Signing in…' : 'Sign in'}
         </Button>
         <a href="#/" className="block text-center text-sm text-muted-foreground hover:text-foreground">
-          ← Back to eMenu
+          ← Back to KhMenu
         </a>
       </form>
     </div>
@@ -115,7 +115,7 @@ function Dashboard({ session }: { session: Session }) {
   if (restaurant === null) {
     return (
       <MessageScreen icon={<UtensilsCrossed />} title="No restaurant linked">
-        <p className="text-muted-foreground">This account isn’t linked to a restaurant yet. Contact eMenu support.</p>
+        <p className="text-muted-foreground">This account isn’t linked to a restaurant yet. Contact KhMenu support.</p>
         <Button variant="outline" onClick={() => supabase.auth.signOut()}>
           Sign out
         </Button>

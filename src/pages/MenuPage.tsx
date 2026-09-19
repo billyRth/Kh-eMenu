@@ -266,7 +266,7 @@ export function MenuPage({ slug, table }: { slug: string; table?: TableInfo }) {
           <p className="mt-1">
             Powered by{' '}
             <a href="#/" className="font-semibold text-foreground">
-              eMenu
+              KhMenu
             </a>
           </p>
         </footer>

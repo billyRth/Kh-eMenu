@@ -1,6 +1,6 @@
 {
-  "name": "eMenu Staff",
-  "short_name": "eMenu Staff",
+  "name": "KhMenu Staff",
+  "short_name": "KhMenu Staff",
   "description": "Live orders, table calls and menu control for your restaurant.",
   "start_url": "/#/admin",
   "scope": "/",

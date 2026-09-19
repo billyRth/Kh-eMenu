@@ -9,10 +9,10 @@ self.addEventListener('push', (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch {
-    data = { title: 'eMenu', body: event.data ? event.data.text() : '' };
+    data = { title: 'KhMenu', body: event.data ? event.data.text() : '' };
   }
   event.waitUntil(
-    self.registration.showNotification(data.title || 'eMenu', {
+    self.registration.showNotification(data.title || 'KhMenu', {
       body: data.body || '',
       tag: data.tag,
       icon: '/icons/icon-192.png',

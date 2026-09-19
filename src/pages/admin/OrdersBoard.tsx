@@ -105,7 +105,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
   const newCount = orders.filter((o) => o.status === 'new' && !o.paid_at).length;
   useEffect(() => {
     const pending = newCount + requests.length;
-    document.title = pending > 0 ? `(${pending}) eMenu Staff` : 'eMenu Staff';
+    document.title = pending > 0 ? `(${pending}) KhMenu Staff` : 'KhMenu Staff';
   }, [newCount, requests.length]);
 
   function enableAlerts() {

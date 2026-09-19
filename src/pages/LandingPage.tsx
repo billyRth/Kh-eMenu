@@ -21,7 +21,7 @@ const FEATURES = [
 
 export function LandingPage() {
   useEffect(() => {
-    document.title = 'eMenu · QR menus & table ordering for Cambodian restaurants';
+    document.title = 'KhMenu · QR menus & table ordering for Cambodian restaurants';
   }, []);
 
   return (
@@ -32,7 +32,9 @@ export function LandingPage() {
             <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
               <UtensilsCrossed className="size-5" />
             </span>
-            eMenu
+            <span>
+              <span className="text-primary">Kh</span>Menu
+            </span>
           </span>
           <a href="#/admin" className={buttonVariants({ variant: 'outline' })}>
             Staff sign in
@@ -42,11 +44,11 @@ export function LandingPage() {
         <header className="mx-auto grid max-w-6xl items-center gap-12 px-5 pt-10 pb-20 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
             <p className="mb-4 inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-sm font-semibold text-primary">
-              <QrCode className="size-4" /> For restaurants & cafés in Cambodia
+              <QrCode className="size-4" /> App kon Khmer · កម្មវិធីកូនខ្មែរ
             </p>
             <h1 className="text-4xl font-extrabold tracking-tight text-balance sm:text-6xl">Your menu on every phone. Orders straight to your kitchen.</h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
-              A QR code on each table. Diners browse your menu with photos, order from their seat, split the bill and ask for the check. Your staff see everything on one live screen.
+              Made in Phnom Penh for Cambodian restaurants and cafés. A QR code on each table. Diners browse your menu with photos, order from their seat, split the bill and ask for the check. Your staff see everything on one live screen.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <a href={`#/t/${DEMO_TABLE_TOKEN}`} className={cn(buttonVariants({ size: 'lg' }), 'h-12 px-5 text-base font-bold')}>
@@ -163,7 +165,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t py-8 text-center text-sm text-muted-foreground">© {new Date().getFullYear()} eMenu · Made in Cambodia</footer>
+      <footer className="border-t py-8 text-center text-sm text-muted-foreground">© {new Date().getFullYear()} KhMenu · App kon Khmer · ធ្វើដោយខ្មែរ សម្រាប់ខ្មែរ</footer>
     </div>
   );
 }

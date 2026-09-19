@@ -51,7 +51,7 @@ export function DeviceSetup({ restaurant }: { restaurant: Restaurant }) {
     return (
       <Card icon={<Smartphone className="size-5" />} title="Install the staff app on this iPhone">
         <p>
-          Tap <Share className="inline size-4 align-text-bottom" /> <b>Share</b> in Safari, then <b>Add to Home Screen</b>. Open <b>eMenu Staff</b> from your home screen, sign in, and turn on
+          Tap <Share className="inline size-4 align-text-bottom" /> <b>Share</b> in Safari, then <b>Add to Home Screen</b>. Open <b>KhMenu Staff</b> from your home screen, sign in, and turn on
           notifications.
         </p>
       </Card>
