@@ -156,3 +156,9 @@
     display: none !important;
   }
 }
+
+/* Menu themes (src/lib/themes.ts) swap the heading face. */
+[data-menu-theme] h1,
+[data-menu-theme] h2 {
+  font-family: var(--menu-heading-font);
+}

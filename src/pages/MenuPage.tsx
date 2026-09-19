@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FoodImage, LoadingScreen, MessageScreen, Panel, Price, QtyStepper, useBrandColor } from '@/components/common';
+import { FoodImage, LoadingScreen, MessageScreen, Panel, Price, QtyStepper } from '@/components/common';
+import { themeById, useMenuTheme } from '@/lib/themes';
 import { cn } from '@/lib/utils';
 import { fetchMenu, useCart, type MenuData } from '@/lib/menu';
 import { clockTime, khr, STATUS_LABEL, usd } from '@/lib/format';
@@ -41,7 +42,12 @@ export function MenuPage({ slug, table }: { slug: string; table?: TableInfo }) {
     return () => window.clearInterval(id);
   }, [load]);
 
-  useBrandColor(data?.restaurant.accent_color);
+  // ?theme=<id> previews another look (sales demos); otherwise use the restaurant's own theme and colour.
+  const previewTheme = new URLSearchParams(window.location.hash.split('?')[1] ?? '').get('theme');
+  useMenuTheme(
+    previewTheme ? themeById(previewTheme).id : data?.restaurant.theme,
+    previewTheme ? themeById(previewTheme).accent : data?.restaurant.accent_color,
+  );
   useEffect(() => {
     if (data?.restaurant) document.title = `${data.restaurant.name} — Menu`;
   }, [data?.restaurant]);

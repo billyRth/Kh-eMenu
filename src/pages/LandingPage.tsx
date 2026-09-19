@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import { ArrowRight, BellRing, Ban, Check, Coins, Flame, Link2, QrCode, ReceiptText, Smartphone, Tablet, Users, UtensilsCrossed } from 'lucide-react';
+import { ArrowRight, Palette, BellRing, Ban, Check, Coins, Flame, Link2, QrCode, ReceiptText, Smartphone, Tablet, Users, UtensilsCrossed } from 'lucide-react';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { THEMES } from '@/lib/themes';
 
 // Sales settings: edit these when pricing or contact details change.
 const PRICING = { setupUsd: 200, monthlyUsd: 10.99 };
@@ -17,6 +18,8 @@ const FEATURES = [
   { icon: Ban, title: 'Sold out in one tap', text: 'Ran out of amok? Switch it off and every phone updates. No reprinting menus.' },
   { icon: Flame, title: 'Popular dishes, automatically', text: 'Your best sellers get a “Popular” badge based on real orders.' },
   { icon: Link2, title: 'One link for Google & Facebook', text: 'Share your menu on Google Maps, Facebook, Instagram and Telegram.' },
+  { icon: Palette, title: 'Six menu styles', text: 'From street stall to fine dining. Pick a look, add your colours and logo.' },
+  { icon: BellRing, title: 'Alerts on every phone', text: 'The staff app rings for each new order, even when it’s closed. No app store needed.' },
 ];
 
 export function LandingPage() {
@@ -44,7 +47,7 @@ export function LandingPage() {
         <header className="mx-auto grid max-w-6xl items-center gap-12 px-5 pt-10 pb-20 lg:grid-cols-[1.1fr_0.9fr]">
           <div>
             <p className="mb-4 inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-sm font-semibold text-primary">
-              <QrCode className="size-4" /> App kon Khmer · កម្មវិធីកូនខ្មែរ
+              <QrCode className="size-4" /> App កូនខ្មែរ · Made in Cambodia
             </p>
             <h1 className="text-4xl font-extrabold tracking-tight text-balance sm:text-6xl">Your menu on every phone. Orders straight to your kitchen.</h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted-foreground">
@@ -109,6 +112,42 @@ export function LandingPage() {
         </div>
       </section>
 
+      <section className="mx-auto max-w-6xl px-5 py-16">
+        <h2 className="text-3xl font-extrabold tracking-tight">A menu that matches your vibe</h2>
+        <p className="mt-2 max-w-2xl text-muted-foreground">Street stall, café or rooftop bar: pick a style and add your own colours, logo and photos. Tap one to see the demo menu in that style.</p>
+        <div className="mt-8 grid grid-cols-2 gap-4 sm:grid-cols-3">
+          {THEMES.map((t) => (
+            <a key={t.id} href={`#/r/demo?theme=${t.id}`} className="group overflow-hidden rounded-3xl ring-1 ring-foreground/10 transition hover:-translate-y-1 hover:shadow-xl">
+              {t.fontUrl && <link rel="stylesheet" href={t.fontUrl} />}
+              <div className="space-y-3 p-5" style={{ background: t.vars['--background'], color: t.vars['--foreground'] }}>
+                <p className="text-2xl" style={{ fontFamily: t.headingFont }}>
+                  Sabay Kitchen
+                </p>
+                {[
+                  ['🐟', 'Fish Amok', '$6.50'],
+                  ['🍜', 'Kuy Teav', '$3.50'],
+                ].map(([emoji, name, price]) => (
+                  <div key={name} className="flex items-center gap-2.5 p-2" style={{ background: t.vars['--card'], border: `1px solid ${t.vars['--border']}`, borderRadius: t.radius }}>
+                    <span className="grid size-9 place-items-center text-lg" style={{ background: t.vars['--secondary'], borderRadius: t.radius }}>
+                      {emoji}
+                    </span>
+                    <span className="flex-1 text-sm font-semibold">{name}</span>
+                    <span className="text-sm font-bold">{price}</span>
+                    <span className="grid size-6 place-items-center rounded-full text-sm font-bold" style={{ background: t.accent, color: t.vars['--primary-foreground'] ?? '#fff' }}>
+                      +
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="bg-card px-5 py-3">
+                <p className="font-bold">{t.name}</p>
+                <p className="text-sm text-muted-foreground">{t.description}</p>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+
       <section className="mx-auto grid max-w-6xl gap-10 px-5 py-16 lg:grid-cols-2">
         <div>
           <h2 className="text-3xl font-extrabold tracking-tight">How it works</h2>
@@ -165,7 +204,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      <footer className="border-t py-8 text-center text-sm text-muted-foreground">© {new Date().getFullYear()} KhMenu · App kon Khmer · ធ្វើដោយខ្មែរ សម្រាប់ខ្មែរ</footer>
+      <footer className="border-t py-8 text-center text-sm text-muted-foreground">© {new Date().getFullYear()} KhMenu · App កូនខ្មែរ · ធ្វើដោយខ្មែរ សម្រាប់ខ្មែរ</footer>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { toast } from 'sonner';
-import { ImagePlus } from 'lucide-react';
+import { Check, ExternalLink, ImagePlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -8,6 +8,8 @@ import { uploadImage } from '@/lib/images';
 import { supabase } from '@/lib/supabase';
 import type { Restaurant } from '@/lib/types';
 import { Field } from './MenuEditor';
+import { THEMES } from '@/lib/themes';
+import { cn } from '@/lib/utils';
 
 export function SettingsForm({ restaurant, onSaved }: { restaurant: Restaurant; onSaved: (r: Restaurant) => void }) {
   const [r, setR] = useState<Restaurant>(restaurant);
@@ -41,6 +43,7 @@ export function SettingsForm({ restaurant, onSaved }: { restaurant: Restaurant; 
         show_khr: r.show_khr,
         ordering_enabled: r.ordering_enabled,
         accent_color: r.accent_color,
+        theme: r.theme,
         logo_url: r.logo_url,
         cover_url: r.cover_url,
       })
@@ -73,6 +76,47 @@ export function SettingsForm({ restaurant, onSaved }: { restaurant: Restaurant; 
         <Field label="Address">
           <Input value={r.address ?? ''} onChange={(e) => set('address', e.target.value)} />
         </Field>
+      </Section>
+
+      <Section title="Menu style">
+        <p className="-mt-2 text-sm text-muted-foreground">Pick the vibe that matches your restaurant. You can still change the brand colour below.</p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {THEMES.map((t) => {
+            const selected = r.theme === t.id;
+            return (
+              <button
+                type="button"
+                key={t.id}
+                onClick={() => setR((prev) => ({ ...prev, theme: t.id, accent_color: t.accent }))}
+                className={cn('overflow-hidden rounded-2xl border-2 text-left transition', selected ? 'border-primary shadow-md' : 'border-transparent ring-1 ring-foreground/10 hover:ring-foreground/25')}
+              >
+                <div className="relative space-y-1.5 p-3" style={{ background: t.vars['--background'], color: t.vars['--foreground'] }}>
+                  {selected && (
+                    <span className="absolute top-2 right-2 grid size-5 place-items-center rounded-full bg-primary text-primary-foreground">
+                      <Check className="size-3" />
+                    </span>
+                  )}
+                  {t.fontUrl && <link rel="stylesheet" href={t.fontUrl} />}
+                  <p className="text-xl leading-none" style={{ fontFamily: t.headingFont }}>
+                    Aa
+                  </p>
+                  <div className="flex items-center gap-2 p-1.5" style={{ background: t.vars['--card'], borderRadius: t.radius, border: `1px solid ${t.vars['--border']}` }}>
+                    <span className="size-6 shrink-0" style={{ background: t.vars['--secondary'], borderRadius: t.radius }} />
+                    <span className="h-1.5 flex-1 rounded-full" style={{ background: t.vars['--muted-foreground'], opacity: 0.4 }} />
+                    <span className="size-4 shrink-0 rounded-full" style={{ background: t.accent }} />
+                  </div>
+                </div>
+                <div className="bg-card px-3 py-2">
+                  <p className="text-sm font-bold">{t.name}</p>
+                  <p className="line-clamp-2 text-xs text-muted-foreground">{t.description}</p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        <a className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary" href={`#/r/${restaurant.slug}?theme=${r.theme}`} target="_blank" rel="noreferrer">
+          <ExternalLink className="size-4" /> Preview this style on your menu
+        </a>
       </Section>
 
       <Section title="Look">

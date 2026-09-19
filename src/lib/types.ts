@@ -10,6 +10,7 @@ export type Restaurant = {
   show_khr: boolean;
   ordering_enabled: boolean;
   accent_color: string;
+  theme: string;
   logo_url: string | null;
   cover_url: string | null;
 };
