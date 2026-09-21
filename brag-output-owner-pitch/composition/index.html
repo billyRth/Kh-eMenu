@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>KhMenu owner pitch</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2'); font-weight: 800; }
+      @font-face { font-family: 'Kantumruy Pro'; src: url('assets/fonts/kantumruy-pro-khmer-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Microsoft YaHei'; src: local('Microsoft YaHei'), local('Microsoft YaHei UI'); font-weight: 400 800; }
+
+      :root { --orange: #c2410c; --deep: #7c2d12; --cream: #faf8f5; --ink: #292524; --muted: #78716c; --line: #e7e2da; --soft: #f3eee6;
+              --night: #1c1917; --card: #292524; --edge: #44403c; --pain: #ef4444; --dim: #a8a29e; }
+      * { box-sizing: border-box; margin: 0; }
+      body { background: var(--cream); color: var(--ink); font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', 'Microsoft YaHei', sans-serif; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--cream); }
+      .scene { position: absolute; inset: 0; overflow: hidden; }
+      .stack { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 56px; padding: 170px 80px 220px; }
+      .km { font-family: 'Kantumruy Pro', sans-serif; }
+      .zh { font-family: 'Microsoft YaHei', sans-serif; }
+      .caption { font-size: 78px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.08; text-align: center; max-width: 920px; }
+      .caption em { font-style: normal; color: var(--orange); }
+
+      /* ---------- scene 1: hook ---------- */
+      #s1, #s2 { background: radial-gradient(ellipse at 50% 30%, #292524 0%, var(--night) 65%); color: #fafaf9; z-index: 1; }
+      .paper { position: relative; width: 560px; padding: 54px 56px 60px; background: #f3e9d2; color: #3f3a36; border-radius: 10px; transform: rotate(-5deg); box-shadow: 0 40px 80px rgb(0 0 0 / 0.5); }
+      .paper h4 { font-size: 64px; font-weight: 800; letter-spacing: 0.2em; text-align: center; margin-bottom: 26px; }
+      .paper .row { display: flex; align-items: baseline; gap: 12px; font-size: 32px; font-weight: 700; padding: 10px 0; }
+      .paper .row .dots { flex: 1; border-bottom: 4px dotted #b9ab8c; }
+      .paper .row s { color: #7a6b5c; }
+      .paper .row .pen { color: #1d4ed8; font-style: italic; margin-left: 6px; }
+      .ring { position: absolute; right: 40px; bottom: 30px; width: 170px; height: 170px; border-radius: 50%; border: 14px solid rgb(120 72 30 / 0.28); }
+      .slip { position: absolute; background: #fff; color: #3f3a36; font-size: 30px; font-weight: 700; font-style: italic; padding: 18px 24px; border-radius: 6px; box-shadow: 0 16px 30px rgb(0 0 0 / 0.45); }
+      .hook-km { font-family: 'Kantumruy Pro', sans-serif; font-size: 86px; font-weight: 700; line-height: 1.6; text-align: center; }
+      .hook-en { font-size: 64px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; text-align: center; max-width: 880px; margin-top: -12px; }
+      .hook-en em { font-style: normal; color: var(--pain); }
+
+      /* ---------- scene 2: pains ---------- */
+      .label { font-size: 44px; font-weight: 700; color: var(--dim); letter-spacing: 0.01em; }
+      .pains { display: flex; flex-direction: column; gap: 34px; width: 920px; }
+      .pain { display: flex; align-items: center; gap: 34px; background: var(--card); border: 3px solid var(--edge); border-radius: 40px; padding: 38px 40px; }
+      .pain .pi { position: relative; width: 124px; height: 124px; flex-shrink: 0; border-radius: 36px; background: rgb(239 68 68 / 0.16); display: grid; place-items: center; font-size: 64px; }
+      .pain .x { position: absolute; right: -12px; top: -12px; width: 50px; height: 50px; border-radius: 50%; background: var(--pain); color: #fff; font-size: 30px; font-weight: 800; display: grid; place-items: center; border: 5px solid var(--card); }
+      .pain h3 { font-size: 48px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.12; }
+      .pain p { font-size: 32px; color: var(--dim); margin-top: 10px; }
+      .pain .note { display: inline-block; background: #fef3c7; color: #3f3a36; font-style: italic; font-weight: 700; padding: 12px 18px; border-radius: 10px; transform: rotate(-2deg); }
+      .pain .qq { color: var(--pain); font-weight: 800; display: inline-block; }
+
+      /* ---------- scene 3: turn ---------- */
+      #s3 { background: linear-gradient(160deg, #ea580c 0%, var(--orange) 45%, var(--deep) 100%); color: #fff; z-index: 2; }
+      .logo-row { display: flex; align-items: center; gap: 36px; }
+      .app-icon { width: 180px; height: 180px; border-radius: 48px; background: #fff; display: grid; place-items: center; box-shadow: 0 30px 60px rgb(0 0 0 / 0.25); }
+      .wordmark { font-size: 170px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; }
+      .pill { padding: 16px 44px; border-radius: 999px; border: 3px solid rgb(255 255 255 / 0.45); background: rgb(255 255 255 / 0.14); font-size: 56px; font-weight: 700; line-height: 1.6; }
+      .reveal-sub { font-size: 50px; font-weight: 700; }
+      .better { font-size: 46px; font-weight: 700; opacity: 0.95; }
+
+      /* ---------- phone ---------- */
+      .phone { position: relative; width: 640px; height: 1000px; border-radius: 86px; background: #1c1917; padding: 20px; box-shadow: 0 50px 100px rgb(41 37 36 / 0.28); }
+      .screen { position: relative; width: 100%; height: 100%; border-radius: 68px; overflow: hidden; background: var(--cream); }
+      .island { position: absolute; top: 18px; left: 50%; margin-left: -80px; width: 160px; height: 44px; border-radius: 24px; background: #1c1917; z-index: 5; }
+      .phead { padding: 82px 30px 0; display: flex; align-items: center; gap: 18px; }
+      .rlogo { width: 80px; height: 80px; border-radius: 22px; background: var(--orange); color: #fff; font-weight: 800; font-size: 40px; display: grid; place-items: center; }
+      .rname2 { font-size: 36px; font-weight: 800; }
+      .rtag { font-size: 23px; color: var(--muted); }
+      .langs { position: relative; display: flex; gap: 0; margin: 30px 30px 0; background: #fff; border: 2px solid var(--line); border-radius: 999px; padding: 6px; }
+      .langs span { position: relative; z-index: 1; flex: 1; text-align: center; font-size: 30px; font-weight: 700; line-height: 64px; height: 64px; color: var(--muted); }
+      .langs .knob { position: absolute; z-index: 0; top: 6px; left: 6px; width: calc((100% - 12px) / 3); height: 64px; border-radius: 999px; background: var(--orange); }
+      .langs .on { color: #fff; }
+      .search { position: relative; margin: 24px 30px 0; height: 76px; border-radius: 22px; background: #fff; border: 2px solid var(--line); }
+      .swap { position: relative; }
+      .swap > span { position: absolute; left: 0; top: 0; white-space: nowrap; }
+      .search .swap { position: absolute; left: 28px; top: 0; height: 76px; }
+      .search .swap > span { font-size: 27px; color: var(--muted); line-height: 76px; font-weight: 500; }
+      .cat { position: relative; margin: 30px 34px 0; height: 56px; }
+      .cat .swap > span { font-size: 34px; font-weight: 800; line-height: 56px; }
+      .items { margin: 12px 30px 0; background: #fff; border: 2px solid #eee8df; border-radius: 30px; }
+      .item { display: flex; gap: 22px; padding: 22px; align-items: center; border-bottom: 2px solid #eee8df; }
+      .item:last-child { border-bottom: 0; }
+      .thumb { width: 116px; height: 116px; flex-shrink: 0; border-radius: 26px; background: linear-gradient(135deg, var(--soft), #f8d9c6); display: grid; place-items: center; font-size: 60px; }
+      .item .t { flex: 1; }
+      .item .nm { position: relative; height: 54px; }
+      .item .nm > span { font-size: 31px; font-weight: 800; line-height: 54px; }
+      .item .nm .km { font-weight: 700; font-size: 29px; }
+      .item .p { font-weight: 800; font-size: 29px; margin-top: 6px; }
+      .item .p i { font-style: normal; font-weight: 700; font-size: 24px; color: var(--orange); margin-left: 10px; }
+      .chips { display: flex; gap: 20px; margin-top: -14px; }
+      .badge { padding: 18px 34px; border-radius: 28px; background: var(--ink); color: #fff; font-size: 38px; font-weight: 800; box-shadow: 0 20px 40px rgb(0 0 0 / 0.25); white-space: nowrap; }
+      .badge b { color: #fdba74; }
+
+      /* ---------- scene 5: staff ---------- */
+      .notif { width: 920px; background: #fff; border-radius: 40px; padding: 28px 32px; display: flex; gap: 24px; align-items: center; box-shadow: 0 24px 50px rgb(41 37 36 / 0.16), 0 0 0 2px var(--line); }
+      .notif .ic { width: 96px; height: 96px; flex-shrink: 0; border-radius: 26px; background: var(--orange); display: grid; place-items: center; }
+      .notif .app { font-size: 22px; font-weight: 700; letter-spacing: 0.06em; color: var(--muted); text-transform: uppercase; }
+      .notif .title { font-size: 38px; font-weight: 800; margin-top: 2px; }
+      .notif .body { font-size: 28px; color: #57534e; margin-top: 2px; }
+      .panel { width: 920px; background: #fff; border-radius: 44px; padding: 34px; box-shadow: 0 16px 40px rgb(41 37 36 / 0.08), 0 0 0 2px var(--line); }
+      .panel .ph { display: flex; justify-content: space-between; align-items: baseline; font-size: 36px; font-weight: 800; margin-bottom: 24px; }
+      .panel .ph span { font-size: 26px; font-weight: 700; color: var(--muted); }
+      .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+      .tbl { position: relative; height: 180px; }
+      .st { position: absolute; inset: 0; border-radius: 28px; border: 4px solid; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; }
+      .st .n { font-size: 44px; font-weight: 800; }
+      .st .s { font-size: 24px; font-weight: 800; }
+      .free { background: #fafaf9; border-color: #e7e5e4; color: #78716c; }
+      .eat { background: #fff1e8; border-color: #fb923c; color: #9a3412; }
+      .call { background: #fef3c7; border-color: #d97706; color: #92400e; }
+      .bill { background: #dcfce7; border-color: #16a34a; color: #166534; }
+      .split { width: 920px; background: var(--ink); color: #fff; border-radius: 40px; padding: 30px 34px; }
+      .split .sh { display: flex; justify-content: space-between; font-size: 32px; font-weight: 800; }
+      .split .sh span { color: #d6d3d1; font-weight: 700; }
+      .people { display: flex; gap: 18px; margin-top: 22px; }
+      .person { flex: 1; background: rgb(255 255 255 / 0.1); border-radius: 24px; padding: 16px 20px; display: flex; align-items: center; gap: 14px; font-size: 32px; font-weight: 800; }
+      .person i { width: 50px; height: 50px; border-radius: 50%; background: #fb923c; color: var(--ink); font-style: normal; display: grid; place-items: center; font-size: 26px; }
+
+      /* ---------- scene 6: report ---------- */
+      .report { width: 920px; background: #fff; border-radius: 48px; padding: 40px; box-shadow: 0 20px 50px rgb(41 37 36 / 0.1), 0 0 0 2px var(--line); }
+      .report .rh h4 { font-size: 50px; font-weight: 800; letter-spacing: -0.02em; }
+      .report .rh p { font-size: 26px; color: var(--muted); margin-top: 4px; }
+      .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 30px; }
+      .stat { border-radius: 32px; background: var(--cream); border: 3px solid var(--line); padding: 26px 28px; }
+      .stat .k { font-size: 27px; font-weight: 700; color: var(--muted); }
+      .stat .v { font-size: 64px; font-weight: 800; letter-spacing: -0.03em; margin-top: 6px; font-variant-numeric: tabular-nums; }
+      .stat .sub { font-size: 24px; color: var(--muted); margin-top: 2px; font-weight: 500; }
+      .stat .up { font-size: 24px; font-weight: 800; color: #15803d; margin-top: 4px; }
+      .stat.hero { background: #fff1e8; border-color: var(--orange); }
+      .stat.hero .v { color: var(--orange); }
+      .best { margin-top: 30px; }
+      .best h5 { font-size: 30px; font-weight: 800; margin-bottom: 14px; }
+      .bar-row { display: flex; align-items: center; gap: 16px; font-size: 26px; font-weight: 700; margin-top: 12px; }
+      .bar-row .nm { width: 280px; }
+      .bar-row .b { height: 26px; border-radius: 0 8px 8px 0; background: var(--orange); transform-origin: left center; }
+      .bar-row .q { font-weight: 800; }
+
+      /* ---------- scene 7: outro ---------- */
+      #s7 .wordmark { color: var(--ink); }
+      #s7 .wordmark b { color: var(--orange); font-weight: 800; }
+      .outro-sub { font-size: 52px; font-weight: 700; color: var(--muted); line-height: 1.6; }
+      .cta { padding: 38px 76px; border-radius: 999px; background: var(--orange); color: #fff; font-size: 64px; font-weight: 800; box-shadow: 0 20px 40px rgb(41 37 36 / 0.18); }
+      .cta2 { font-size: 46px; font-weight: 700; color: var(--ink); margin-top: -18px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="31.1">
+      <!-- Scene 1 — Hook -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="3.27" data-track-index="0">
+        <div class="slip" id="slip1" style="left: 70px; top: 190px; transform: rotate(-12deg)">T3 ×2 amok</div>
+        <div class="slip" id="slip2" style="right: 60px; top: 300px; transform: rotate(9deg)">T7 — coffee??</div>
+        <div class="slip" id="slip3" style="right: 90px; top: 960px; transform: rotate(-7deg)">T1 no chilli</div>
+        <div class="stack" style="gap: 70px; padding-top: 240px">
+          <div class="paper" id="paper">
+            <h4>MENU</h4>
+            <p class="row"><span>Fish Amok</span><span class="dots"></span><s>$5.50</s><span class="pen">$6.50</span></p>
+            <p class="row"><span>Beef Lok Lak</span><span class="dots"></span><span>$6.00</span></p>
+            <p class="row"><span>Iced Coffee</span><span class="dots"></span><s>$1.50</s><span class="pen">$1.75</span></p>
+            <p class="row"><span>Nom Banh Chok</span><span class="dots"></span><span class="pen">sold out</span></p>
+            <div class="ring"></div>
+          </div>
+          <div>
+            <p class="hook-km" id="hook-km">នៅតែប្រើម៉ឺនុយក្រដាស?</p>
+            <p class="hook-en" id="hook-en">Still running your restaurant <em>on paper?</em></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 2 — The mess -->
+      <section id="s2" class="scene clip" data-start="3.27" data-duration="6.07" data-track-index="0">
+        <div class="stack" style="gap: 50px">
+          <p class="label" id="s2-label">Every service, the same problems</p>
+          <div class="pains">
+            <div class="pain" id="p1"><div class="pi">🏃<span class="x">✕</span></div><div><h3>Waiters running back and forth</h3><p>Table → kitchen → table, all night</p></div></div>
+            <div class="pain" id="p2"><div class="pi">📝<span class="x">✕</span></div><div><h3>Missed &amp; mixed-up orders</h3><p><span class="note">T4: 2 amok… or 3?</span></p></div></div>
+            <div class="pain" id="p3"><div class="pi">🤷<span class="x">✕</span></div><div><h3>No idea what you made today</h3><p>Profit today: <span class="qq" id="qq">???</span></p></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 3 — The turn -->
+      <section id="s3" class="scene clip" data-start="8.74" data-duration="2.72" data-track-index="1">
+        <div class="stack" style="gap: 50px">
+          <p class="better" id="better">There's a better way.</p>
+          <div class="logo-row" id="logo">
+            <div class="app-icon">
+              <svg width="112" height="112" viewBox="0 0 512 512" fill="none" stroke="#c2410c" stroke-width="40" stroke-linecap="round"><path d="M150 400h212" /><path d="M170 360a86 86 0 0 1 172 0z" fill="#c2410c" /><path d="M256 190v-24" /><circle cx="256" cy="150" r="18" fill="#c2410c" stroke="none" /></svg>
+            </div>
+            <span class="wordmark">KhMenu</span>
+          </div>
+          <span class="pill" id="s3-pill">App <span class="km">កូនខ្មែរ</span></span>
+          <p class="reveal-sub" id="s3-sub">QR menu &amp; table ordering</p>
+        </div>
+      </section>
+
+      <!-- Scene 4 — Diners order themselves -->
+      <section id="s4" class="scene clip" data-start="11.46" data-duration="5.47" data-track-index="0">
+        <div class="stack" style="gap: 40px; padding-top: 150px">
+          <p class="caption" id="s4-cap">Diners scan &amp; <em>order themselves</em></p>
+          <div class="chips"><span class="badge" id="badge1"><span class="km">ខ្មែរ</span> · English · <span class="zh">中文</span></span><span class="badge" id="badge2"><b>$</b> + <b class="km">៛</b> prices</span></div>
+          <div class="phone" id="phone1">
+            <div class="screen">
+              <div class="island"></div>
+              <div class="phead"><div class="rlogo">S</div><div><p class="rname2">Sabay Kitchen</p><p class="rtag">Table 4 · order from your phone</p></div></div>
+              <div class="langs">
+                <div class="knob" id="knob"></div>
+                <span><span class="ls" id="l-en">English</span></span><span class="km"><span class="ls" id="l-km">ខ្មែរ</span></span><span class="zh"><span class="ls" id="l-zh">中文</span></span>
+              </div>
+              <div class="search"><div class="swap"><span class="L0">🔍 Search dishes</span><span class="L1 km">🔍 ស្វែងរកម្ហូប</span><span class="L2 zh">🔍 搜索菜品</span></div></div>
+              <div class="cat"><div class="swap"><span class="L0">Chef’s picks</span><span class="L1 km">ម្ហូបណែនាំ</span><span class="L2 zh">主厨推荐</span></div></div>
+              <div class="items">
+                <div class="item"><div class="thumb">🐟</div><div class="t"><div class="nm swap"><span class="L0">Fish Amok</span><span class="L1 km">អាម៉ុកត្រី</span><span class="L2 zh">鱼肉阿莫克</span></div><p class="p">$6.50<i>26,700៛</i></p></div></div>
+                <div class="item"><div class="thumb">🥩</div><div class="t"><div class="nm swap"><span class="L0">Beef Lok Lak</span><span class="L1 km">ឡុកឡាក់សាច់គោ</span><span class="L2 zh">柬式炒牛肉</span></div><p class="p">$6.00<i>24,600៛</i></p></div></div>
+                <div class="item"><div class="thumb">☕</div><div class="t"><div class="nm swap"><span class="L0">Iced Khmer Coffee</span><span class="L1 km">កាហ្វេទឹកដោះគោទឹកកក</span><span class="L2 zh">柬式冰咖啡</span></div><p class="p">$1.75<i>7,200៛</i></p></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 5 — Staff see it live -->
+      <section id="s5" class="scene clip" data-start="16.93" data-duration="5.44" data-track-index="0">
+        <div class="stack" style="gap: 40px; padding-top: 150px">
+          <p class="caption" id="s5-cap" style="max-width: 860px">Every order, <em>live</em> on your staff’s phones</p>
+          <div class="notif" id="notif">
+            <div class="ic">
+              <svg width="60" height="60" viewBox="0 0 512 512" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round"><path d="M150 400h212" /><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff" /><path d="M256 190v-24" /><circle cx="256" cy="150" r="18" fill="#fff" stroke="none" /></svg>
+            </div>
+            <div>
+              <p class="app">KhMenu Staff · now</p>
+              <p class="title">New order · Table 4</p>
+              <p class="body">2× Fish Amok, 1× Iced Khmer Coffee · $14.75</p>
+            </div>
+          </div>
+          <div class="panel" id="panel">
+            <p class="ph">Tables <span>8 tables · 5 busy</span></p>
+            <div class="grid">
+              <div class="tbl"><div class="st eat"><span class="n">1</span><span class="s">$12.50</span></div></div>
+              <div class="tbl" id="t2"><div class="st eat"><span class="n">2</span><span class="s">$25.20</span></div><div class="st bill" id="t2-bill" style="opacity: 0"><span class="n">2</span><span class="s">Wants bill</span></div></div>
+              <div class="tbl"><div class="st free"><span class="n">3</span><span class="s">Free</span></div></div>
+              <div class="tbl" id="t4"><div class="st free"><span class="n">4</span><span class="s">Free</span></div><div class="st eat" id="t4-eat" style="opacity: 0"><span class="n">4</span><span class="s">$14.75</span></div></div>
+              <div class="tbl"><div class="st free"><span class="n">5</span><span class="s">Free</span></div></div>
+              <div class="tbl" id="t6"><div class="st eat"><span class="n">6</span><span class="s">$9.00</span></div><div class="st call" id="t6-call" style="opacity: 0"><span class="n">6</span><span class="s">Calling</span></div></div>
+              <div class="tbl"><div class="st eat"><span class="n">7</span><span class="s">$31.00</span></div></div>
+              <div class="tbl"><div class="st free"><span class="n">8</span><span class="s">Free</span></div></div>
+            </div>
+          </div>
+          <div class="split" id="split">
+            <p class="sh">Table 2 · Split the bill <span>$25.20</span></p>
+            <div class="people"><div class="person"><i>1</i>$8.40</div><div class="person"><i>2</i>$8.40</div><div class="person"><i>3</i>$8.40</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 6 — Know your profit -->
+      <section id="s6" class="scene clip" data-start="22.37" data-duration="4.37" data-track-index="0">
+        <div class="stack" style="gap: 56px">
+          <p class="caption" id="s6-cap">Know your <em>profit</em> before you close</p>
+          <div class="report" id="report">
+            <div class="rh"><h4>Today</h4><p>End-of-day report · Friday</p></div>
+            <div class="stats">
+              <div class="stat"><p class="k">Total sales</p><p class="v" id="v-sales">$0.00</p><p class="up" id="up">▲ +12% vs day before</p></div>
+              <div class="stat hero"><p class="k">Profit</p><p class="v" id="v-profit">$0.00</p><p class="sub">After food costs</p></div>
+              <div class="stat"><p class="k">Orders</p><p class="v">64</p><p class="sub">Avg $7.60 per order</p></div>
+              <div class="stat"><p class="k">Items sold</p><p class="v">151</p><p class="sub">Drinks 58 · Mains 71</p></div>
+            </div>
+            <div class="best">
+              <h5>Best sellers</h5>
+              <div class="bar-row"><span class="nm">Iced Khmer Coffee</span><span class="b" id="b1" style="width: 380px"></span><span class="q">45</span></div>
+              <div class="bar-row"><span class="nm">Fish Amok</span><span class="b" id="b2" style="width: 321px"></span><span class="q">38</span></div>
+              <div class="bar-row"><span class="nm">Beef Lok Lak</span><span class="b" id="b3" style="width: 228px"></span><span class="q">27</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 7 — CTA -->
+      <section id="s7" class="scene clip" data-start="26.74" data-duration="4.36" data-track-index="0">
+        <div class="stack" style="gap: 54px">
+          <div class="app-icon" id="s7-icon" style="background: var(--orange)">
+            <svg width="112" height="112" viewBox="0 0 512 512" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round"><path d="M150 400h212" /><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff" /><path d="M256 190v-24" /><circle cx="256" cy="150" r="18" fill="#fff" stroke="none" /></svg>
+          </div>
+          <span class="wordmark" id="s7-word"><b>Kh</b>Menu</span>
+          <p class="outro-sub" id="s7-sub">App <span class="km">កូនខ្មែរ</span> · Made in Phnom Penh</p>
+          <span class="cta" id="cta">Try the live demo</span>
+          <p class="cta2" id="cta2">Message us to get set up</p>
+        </div>
+      </section>
+
+      <!-- Audio -->
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3" data-start="0" data-duration="31.1" data-track-index="10" data-volume="0.8"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.55},{"t":8.6,"v":0.55},{"t":8.8,"v":1},{"t":29.9,"v":1},{"t":31.1,"v":0}]}]}'></audio>
+      <audio id="sfx-p1" src="assets/sfx/drop_002.ogg" data-start="3.82" data-duration="0.19" data-track-index="11" data-volume="0.7"></audio>
+      <audio id="sfx-p2" src="assets/sfx/drop_002.ogg" data-start="4.91" data-duration="0.19" data-track-index="12" data-volume="0.7"></audio>
+      <audio id="sfx-p3" src="assets/sfx/drop_002.ogg" data-start="6.0" data-duration="0.19" data-track-index="13" data-volume="0.7"></audio>
+      <audio id="sfx-qq" src="assets/sfx/error_005.ogg" data-start="6.56" data-duration="0.5" data-track-index="14" data-volume="0.35"></audio>
+      <audio id="sfx-turn" src="assets/sfx/impactSoft_medium_002.ogg" data-start="8.74" data-duration="0.13" data-track-index="15" data-volume="0.9"></audio>
+      <audio id="sfx-lang1" src="assets/sfx/switch_002.ogg" data-start="12.55" data-duration="0.6" data-track-index="16" data-volume="0.55"></audio>
+      <audio id="sfx-lang2" src="assets/sfx/switch_002.ogg" data-start="13.64" data-duration="0.6" data-track-index="17" data-volume="0.55"></audio>
+      <audio id="sfx-notif" src="assets/sfx/bong_001.ogg" data-start="17.47" data-duration="0.12" data-track-index="18" data-volume="0.9"></audio>
+      <audio id="sfx-g1" src="assets/sfx/click_002.ogg" data-start="18.56" data-duration="0.01" data-track-index="19" data-volume="0.7"></audio>
+      <audio id="sfx-g2" src="assets/sfx/click_002.ogg" data-start="19.66" data-duration="0.01" data-track-index="20" data-volume="0.7"></audio>
+      <audio id="sfx-split" src="assets/sfx/card-slide-1.ogg" data-start="20.75" data-duration="0.5" data-track-index="21" data-volume="0.5"></audio>
+      <audio id="sfx-count" src="assets/sfx/chips-stack-2.ogg" data-start="22.93" data-duration="0.17" data-track-index="22" data-volume="0.6"></audio>
+      <audio id="sfx-cta" src="assets/sfx/impactBell_heavy_003.ogg" data-start="27.3" data-duration="0.65" data-track-index="23" data-volume="0.55"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const E = 'power3.out';
+      const up = (sel, t, d = 0.45, y = 50) => tl.fromTo(sel, { y, opacity: 0 }, { y: 0, opacity: 1, duration: d, ease: E }, t);
+
+      // ---- Scene 1: hook (0–3.27)
+      tl.fromTo('#paper', { y: 120, rotation: -14, opacity: 0 }, { y: 0, rotation: -5, opacity: 1, duration: 0.6, ease: E }, 0.05);
+      ['#slip1', '#slip2', '#slip3'].forEach((s, i) => tl.fromTo(s, { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2)' }, 0.25 + i * 0.12));
+      up('#hook-km', 0.56);
+      up('#hook-en', 1.09);
+      tl.to('#paper', { rotation: -3, duration: 2.2, ease: 'sine.inOut' }, 1.0);
+
+      // ---- Scene 2: pains (3.27–8.74, lingers to 9.34 under the turn)
+      up('#s2-label', 3.3, 0.4, 30);
+      [['#p1', 3.82], ['#p2', 4.91], ['#p3', 6.0]].forEach(([id, t]) => tl.fromTo(id, { y: 80, opacity: 0, scale: 0.96 }, { y: 0, opacity: 1, scale: 1, duration: 0.4, ease: 'back.out(1.4)' }, t - 0.05));
+      tl.to('#qq', { x: 6, duration: 0.05, yoyo: true, repeat: 7, ease: 'none' }, 6.56);
+      tl.to(['#p1', '#p2', '#p3', '#s2-label'], { y: 160, opacity: 0, duration: 0.4, ease: 'power2.in', stagger: 0.06 }, 8.2);
+
+      // ---- Scene 3: turn (8.74–11.46) — strong cue 8.74
+      tl.fromTo('#s3', { clipPath: 'circle(0% at 50% 50%)' }, { clipPath: 'circle(80% at 50% 50%)', duration: 0.55, ease: 'power2.out' }, 8.74);
+      up('#better', 8.85, 0.4, 30);
+      tl.fromTo('#logo', { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.8)' }, 9.2);
+      up('#s3-pill', 9.83, 0.4, 40);
+      up('#s3-sub', 10.2, 0.4, 40);
+
+      // ---- Scene 4: diners (11.46–16.93) — language switches on 12.55 / 13.64
+      up('#s4-cap', 11.5);
+      tl.fromTo('#phone1', { y: 260, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: E }, 11.55);
+      tl.set('#s4 .L1, #s4 .L2', { opacity: 0 }, 11.46);
+      tl.set('#l-en', { color: '#fff' }, 11.46);
+      const lang = (from, to, knobX, t) => {
+        tl.to('#knob', { xPercent: knobX, duration: 0.25, ease: 'power2.inOut' }, t - 0.12);
+        tl.to(`#s4 .${from}`, { opacity: 0, y: -12, duration: 0.15 }, t - 0.05);
+        tl.fromTo(`#s4 .${to}`, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.2, ease: E }, t + 0.05);
+      };
+      lang('L0', 'L1', 100, 12.55);
+      tl.set('#l-en', { color: '#78716c' }, 12.5);
+      tl.set('#l-km', { color: '#fff' }, 12.55);
+      lang('L1', 'L2', 200, 13.64);
+      tl.set('#l-km', { color: '#78716c' }, 13.6);
+      tl.set('#l-zh', { color: '#fff' }, 13.64);
+      tl.fromTo('#badge1', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.6)' }, 14.2);
+      tl.fromTo('#badge2', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.6)' }, 14.73);
+
+      // ---- Scene 5: staff (16.93–22.37) — push on 17.47, grid 18.56 / 19.66, split 20.75
+      up('#s5-cap', 16.96);
+      tl.fromTo('#panel', { y: 120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: E }, 17.05);
+      tl.fromTo('#notif', { y: -200, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: 'back.out(1.4)' }, 17.44);
+      tl.to('#t4-eat', { opacity: 1, duration: 0.2 }, 17.6);
+      tl.to('#t4 > .st:first-child', { opacity: 0, duration: 0.15 }, 17.6);
+      tl.fromTo('#t4', { scale: 1 }, { scale: 1.1, duration: 0.15, yoyo: true, repeat: 1 }, 17.6);
+      tl.to('#t6-call', { opacity: 1, duration: 0.15 }, 18.56);
+      tl.to('#t6 > .st:first-child', { opacity: 0, duration: 0.15 }, 18.56);
+      tl.fromTo('#t6', { scale: 1 }, { scale: 1.1, duration: 0.15, yoyo: true, repeat: 1 }, 18.56);
+      tl.to('#t2-bill', { opacity: 1, duration: 0.15 }, 19.66);
+      tl.to('#t2 > .st:first-child', { opacity: 0, duration: 0.15 }, 19.66);
+      tl.fromTo('#t2', { scale: 1 }, { scale: 1.1, duration: 0.15, yoyo: true, repeat: 1 }, 19.66);
+      tl.fromTo('#split', { y: 140, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: E }, 20.7);
+
+      // ---- Scene 6: profit (22.37–26.74) — count-up on 22.93
+      up('#s6-cap', 22.4);
+      tl.fromTo('#report', { y: 160, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: E }, 22.45);
+      const fmt = (n) => '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      const sales = { v: 0 }, profit = { v: 0 };
+      tl.fromTo(sales, { v: 0 }, { v: 486.5, duration: 1.1, ease: 'power2.out', onUpdate: () => (document.getElementById('v-sales').textContent = fmt(sales.v)) }, 22.93);
+      tl.fromTo(profit, { v: 0 }, { v: 212.4, duration: 1.1, ease: 'power2.out', onUpdate: () => (document.getElementById('v-profit').textContent = fmt(profit.v)) }, 23.46);
+      tl.fromTo('#up', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 24.0);
+      tl.fromTo(['#b1', '#b2', '#b3'], { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: E, stagger: 0.12 }, 24.2);
+
+      // ---- Scene 7: CTA (26.74–31.1) — CTA on 27.30
+      tl.fromTo('#s7-icon', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(1.8)' }, 26.77);
+      up('#s7-word', 26.9);
+      up('#s7-sub', 27.1, 0.4, 40);
+      tl.fromTo('#cta', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, 27.3);
+      up('#cta2', 27.83, 0.4, 30);
+      tl.to('#cta', { scale: 1.04, duration: 0.27, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 28.9);
+
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>
