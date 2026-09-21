@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Coffee, Download, CupSoda, IceCreamCone, Lock, Receipt, Salad, ShoppingBag, TrendingDown, TrendingUp, Trophy, Utensils, Wallet } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Coffee, Download, CupSoda, IceCreamCone, Lock, Receipt, Salad, ShoppingBag, TrendingDown, TrendingUp, Trophy, Users, Utensils, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { friendlyError, supabase } from '@/lib/supabase';
@@ -94,10 +94,22 @@ export function DailyReport({ restaurant }: { restaurant: Restaurant }) {
   const [date, setDate] = useState(businessDate);
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [guests, setGuests] = useState<{ guests: number; parties: number } | null>(null);
   const { lang, t } = useT();
 
   const load = useCallback(async () => {
     setError(null);
+    // Guests come from the seating log (tables staff seated with "how many people"), same Phnom Penh day as the report.
+    supabase
+      .from('seatings')
+      .select('party_size')
+      .eq('restaurant_id', restaurant.id)
+      .gte('seated_at', `${date}T00:00:00+07:00`)
+      .lt('seated_at', `${shiftDate(date, 1)}T00:00:00+07:00`)
+      .then(({ data }) => {
+        const sized = (data ?? []).filter((s) => s.party_size);
+        setGuests({ guests: sized.reduce((n, s) => n + s.party_size, 0), parties: sized.length });
+      });
     const { data, error: rpcError } = await supabase.rpc('daily_report', { p_restaurant_id: restaurant.id, p_date: date });
     if (rpcError) {
       setReport(null);
@@ -160,7 +172,13 @@ export function DailyReport({ restaurant }: { restaurant: Restaurant }) {
       {r && r.orders > 0 && (
         <>
           {/* Headline numbers */}
-          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+            <Stat
+              icon={<Users />}
+              label={t('s_guests')}
+              value={String(guests?.guests ?? '–')}
+              sub={guests?.guests ? t('s_guestsSub', { n: guests.parties, amt: usd(Number(r.sales) / guests.guests) }) : t('s_guestsNone')}
+            />
             <Stat icon={<Receipt />} label={t('s_totalSales')} value={usd(Number(r.sales))} sub={restaurant.show_khr ? khr(Number(r.sales), restaurant.khr_rate) : undefined}>
               {change !== null && (
                 <span className={cn('inline-flex items-center gap-1 text-xs font-semibold', change >= 0 ? 'text-emerald-700' : 'text-destructive')}>
