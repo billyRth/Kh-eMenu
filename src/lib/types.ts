@@ -62,6 +62,7 @@ export type DiningTable = {
   cleared_at: string | null;
   seated_at: string | null;
   party_size: number | null;
+  joined_to: string | null;
 };
 
 export type OrderStatus = 'new' | 'preparing' | 'served' | 'cancelled';
