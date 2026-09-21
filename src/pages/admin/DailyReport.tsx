@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { friendlyError, supabase } from '@/lib/supabase';
 import { khr, usd } from '@/lib/format';
+import { useT, type Lang, type StringKey } from '@/lib/i18n';
 import type { Restaurant } from '@/lib/types';
 
 type Report = {
@@ -34,19 +35,22 @@ function shiftDate(iso: string, days: number) {
   return d.toISOString().slice(0, 10);
 }
 
-function dayLabel(iso: string) {
+function dayLabel(iso: string, lang: Lang, t: (k: StringKey) => string) {
   const today = businessDate();
-  if (iso === today) return 'Today';
-  if (iso === shiftDate(today, -1)) return 'Yesterday';
-  return new Date(`${iso}T00:00:00Z`).toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' });
+  if (iso === today) return t('s_tabToday');
+  if (iso === shiftDate(today, -1)) return t('s_yesterday');
+  const locale = lang === 'km' ? 'km-KH' : lang === 'zh' ? 'zh-CN' : [];
+  return new Date(`${iso}T00:00:00Z`).toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'short', timeZone: 'UTC' });
 }
 
-const hourLabel = (h: number) => `${((h + 11) % 12) + 1}${h < 12 ? 'am' : 'pm'}`;
+/** 9am / 2pm in English; Khmer and Chinese staff read 24-hour times (9:00 / 14:00). */
+const hourLabel = (h: number, lang: Lang) => (lang === 'en' ? `${((h + 11) % 12) + 1}${h < 12 ? 'am' : 'pm'}` : `${h}:00`);
 
 export function DailyReport({ restaurant }: { restaurant: Restaurant }) {
   const [date, setDate] = useState(businessDate);
   const [report, setReport] = useState<Report | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { lang, t } = useT();
 
   const load = useCallback(async () => {
     setError(null);
@@ -69,9 +73,9 @@ export function DailyReport({ restaurant }: { restaurant: Restaurant }) {
         <div className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary">
           <Lock className="size-6" />
         </div>
-        <h2 className="mt-4 text-xl font-bold">Daily report is an add-on</h2>
+        <h2 className="mt-4 text-xl font-bold">{t('s_reportLocked')}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          See today’s sales, profit, orders, drinks and best sellers the moment you close. Ask KhMenu to switch it on for your restaurant.
+          {t('s_reportLockedBody')}
         </p>
       </div>
     );
@@ -88,69 +92,68 @@ export function DailyReport({ restaurant }: { restaurant: Restaurant }) {
     <div className="mx-auto max-w-5xl space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         <div className="mr-auto">
-          <h2 className="text-2xl font-extrabold tracking-tight">{dayLabel(date)}</h2>
-          <p className="text-sm text-muted-foreground">End-of-day report · {date}</p>
+          <h2 className="text-2xl font-extrabold tracking-tight">{dayLabel(date, lang, t)}</h2>
+          <p className="text-sm text-muted-foreground">{t('s_endOfDay', { date })}</p>
         </div>
-        <Button variant="outline" size="icon" aria-label="Previous day" onClick={() => setDate((d) => shiftDate(d, -1))}>
+        <Button variant="outline" size="icon" aria-label={t('s_prevDay')} onClick={() => setDate((d) => shiftDate(d, -1))}>
           <ChevronLeft />
         </Button>
-        <Button variant="outline" size="icon" aria-label="Next day" disabled={date >= businessDate()} onClick={() => setDate((d) => shiftDate(d, 1))}>
+        <Button variant="outline" size="icon" aria-label={t('s_nextDay')} disabled={date >= businessDate()} onClick={() => setDate((d) => shiftDate(d, 1))}>
           <ChevronRight />
         </Button>
       </div>
 
       {error && <p className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
-      {!r && !error && <p className="text-sm text-muted-foreground">Loading…</p>}
+      {!r && !error && <p className="text-sm text-muted-foreground">{t('loading')}</p>}
 
       {r && r.orders === 0 && (
-        <div className="rounded-3xl bg-card p-8 text-center text-muted-foreground ring-1 ring-foreground/5">No orders on this day yet.</div>
+        <div className="rounded-3xl bg-card p-8 text-center text-muted-foreground ring-1 ring-foreground/5">{t('s_noOrdersDay')}</div>
       )}
 
       {r && r.orders > 0 && (
         <>
           {/* Headline numbers */}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <Stat icon={<Receipt />} label="Total sales" value={usd(Number(r.sales))} sub={restaurant.show_khr ? khr(Number(r.sales), restaurant.khr_rate) : undefined}>
+            <Stat icon={<Receipt />} label={t('s_totalSales')} value={usd(Number(r.sales))} sub={restaurant.show_khr ? khr(Number(r.sales), restaurant.khr_rate) : undefined}>
               {change !== null && (
                 <span className={cn('inline-flex items-center gap-1 text-xs font-semibold', change >= 0 ? 'text-emerald-700' : 'text-destructive')}>
                   {change >= 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
-                  {change >= 0 ? '+' : ''}
-                  {change.toFixed(0)}% vs day before
+                  {t('s_vsDayBefore', { pct: `${change >= 0 ? '+' : ''}${change.toFixed(0)}` })}
                 </span>
               )}
             </Stat>
             <Stat
               icon={<Wallet />}
-              label="Profit"
-              value={r.profit_coverage > 0 ? usd(Number(r.profit)) : 'n/a'}
-              sub={r.profit_coverage >= 100 ? 'After food costs' : r.profit_coverage > 0 ? `Based on ${r.profit_coverage}% of items with a cost set` : 'Add dish costs in Menu to see profit'}
+              label={t('s_profit')}
+              value={r.profit_coverage > 0 ? usd(Number(r.profit)) : t('s_na')}
+              sub={r.profit_coverage >= 100 ? t('s_afterCosts') : r.profit_coverage > 0 ? t('s_profitPartial', { pct: r.profit_coverage }) : t('s_profitNone')}
             />
-            <Stat icon={<ShoppingBag />} label="Orders" value={String(r.orders)} sub={`Avg ${usd(Number(r.sales) / r.orders)} per order`} />
-            <Stat icon={<Utensils />} label="Items sold" value={String(r.items_sold)} sub={`Collected ${usd(Number(r.collected))}`} />
+            <Stat icon={<ShoppingBag />} label={t('orders')} value={String(r.orders)} sub={t('s_avgPerOrder', { amt: usd(Number(r.sales) / r.orders) })} />
+            <Stat icon={<Utensils />} label={t('s_itemsSold')} value={String(r.items_sold)} sub={t('s_collected', { amt: usd(Number(r.collected)) })} />
           </div>
 
           {/* By category */}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-            <GroupTile icon={<CupSoda />} label="Drinks" data={groups.drink} />
-            <GroupTile icon={<Salad />} label="Appetizers" data={groups.starter} />
-            <GroupTile icon={<Utensils />} label="Mains" data={groups.main} />
-            <GroupTile icon={<IceCreamCone />} label="Desserts" data={groups.dessert} />
+            <GroupTile icon={<CupSoda />} label={t('s_grpDrink')} data={groups.drink} />
+            <GroupTile icon={<Salad />} label={t('s_grpStarter')} data={groups.starter} />
+            <GroupTile icon={<Utensils />} label={t('s_grpMain')} data={groups.main} />
+            <GroupTile icon={<IceCreamCone />} label={t('s_grpDessert')} data={groups.dessert} />
           </div>
 
           {/* Winners */}
           <div className="grid gap-3 sm:grid-cols-2">
-            <Winner icon={<Trophy />} label="Most popular dish" item={r.top_dish} />
-            <Winner icon={<Coffee />} label="Most popular drink" item={r.top_drink} />
+            <Winner icon={<Trophy />} label={t('s_topDish')} item={r.top_dish} />
+            <Winner icon={<Coffee />} label={t('s_topDrink')} item={r.top_drink} />
           </div>
 
           <div className="grid gap-4 lg:grid-cols-2">
             {/* Top sellers: horizontal bars, value at the tip */}
             <section className="rounded-3xl bg-card p-5 ring-1 ring-foreground/5">
-              <h3 className="font-bold">Best sellers</h3>
-              <p className="text-xs text-muted-foreground">Portions sold</p>
+              <h3 className="font-bold">{t('s_bestSellers')}</h3>
+              <p className="text-xs text-muted-foreground">{t('s_portionsSold')}</p>
               <ul className="mt-4 space-y-3">
                 {r.top_items.map((it) => (
-                  <li key={it.name} title={`${it.name}: ${it.qty} sold · ${usd(Number(it.sales))}`}>
+                  <li key={it.name} title={t('s_itemTitle', { name: it.name, n: it.qty, amt: usd(Number(it.sales)) })}>
                     <div className="mb-1 flex justify-between gap-3 text-sm">
                       <span className="truncate font-medium">{it.name}</span>
                       <span className="shrink-0 text-muted-foreground tabular-nums">{usd(Number(it.sales))}</span>
@@ -166,9 +169,10 @@ export function DailyReport({ restaurant }: { restaurant: Restaurant }) {
 
             {/* Orders by hour: columns from one baseline, hover for values, label only the peak */}
             <section className="rounded-3xl bg-card p-5 ring-1 ring-foreground/5">
-              <h3 className="font-bold">Busiest hours</h3>
+              <h3 className="font-bold">{t('s_busiestHours')}</h3>
               <p className="text-xs text-muted-foreground">
-                Orders per hour{peak ? ` · peak ${hourLabel(peak.hour)} with ${peak.orders} orders` : ''}
+                {t('s_ordersPerHour')}
+                {peak ? t('s_peak', { hour: hourLabel(peak.hour, lang), n: peak.orders }) : ''}
               </p>
               <HourChart data={r.by_hour} max={hourMax} peakHour={peak?.hour} />
             </section>
@@ -194,11 +198,12 @@ function Stat({ icon, label, value, sub, children }: { icon: ReactNode; label: s
 }
 
 function GroupTile({ icon, label, data }: { icon: ReactNode; label: string; data?: { qty: number; sales: number } }) {
+  const { t } = useT();
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-card p-3.5 ring-1 ring-foreground/5">
       <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary [&_svg]:size-5">{icon}</div>
       <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">{label} sold</p>
+        <p className="text-xs text-muted-foreground">{t('s_groupSold', { group: label })}</p>
         <p className="font-bold tabular-nums">
           {data?.qty ?? 0}
           <span className="ml-1.5 text-xs font-medium text-muted-foreground">{usd(Number(data?.sales ?? 0))}</span>
@@ -209,13 +214,14 @@ function GroupTile({ icon, label, data }: { icon: ReactNode; label: string; data
 }
 
 function Winner({ icon, label, item }: { icon: ReactNode; label: string; item: { name: string; qty: number } | null }) {
+  const { t } = useT();
   return (
     <div className="flex items-center gap-4 rounded-3xl bg-card p-4 ring-1 ring-foreground/5">
       <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-amber-100 text-amber-800 [&_svg]:size-6">{icon}</div>
       <div className="min-w-0">
         <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="truncate text-lg font-bold">{item ? item.name : 'None yet'}</p>
-        {item && <p className="text-xs text-muted-foreground">{item.qty} sold</p>}
+        <p className="truncate text-lg font-bold">{item ? item.name : t('s_noneYet')}</p>
+        {item && <p className="text-xs text-muted-foreground">{t('s_nSold', { n: item.qty })}</p>}
       </div>
     </div>
   );
@@ -223,6 +229,7 @@ function Winner({ icon, label, item }: { icon: ReactNode; label: string; item: {
 
 function HourChart({ data, max, peakHour }: { data: Report['by_hour']; max: number; peakHour?: number }) {
   const [hover, setHover] = useState<number | null>(null);
+  const { lang, t } = useT();
   if (data.length === 0) return null;
   // Show a continuous range from the first to the last active hour so quiet hours read as gaps.
   const first = Math.min(...data.map((d) => d.hour));
@@ -247,13 +254,13 @@ function HourChart({ data, max, peakHour }: { data: Report['by_hour']; max: numb
       <div className="mt-1.5 flex gap-0.5 text-[10px] text-muted-foreground">
         {hours.map((h) => (
           <span key={h} className="flex-1 text-center">
-            {(h - first) % 2 === 0 ? hourLabel(h) : ''}
+            {(h - first) % 2 === 0 ? hourLabel(h, lang) : ''}
           </span>
         ))}
       </div>
       {hover !== null && (
         <div className="pointer-events-none absolute top-0 right-0 rounded-lg bg-foreground px-2.5 py-1.5 text-xs text-background shadow">
-          <b>{hourLabel(hover)}</b> · {byHour.get(hover)?.orders ?? 0} orders · {usd(Number(byHour.get(hover)?.sales ?? 0))}
+          <b>{hourLabel(hover, lang)}</b> · {t('s_nOrders', { n: byHour.get(hover)?.orders ?? 0 })} · {usd(Number(byHour.get(hover)?.sales ?? 0))}
         </div>
       )}
     </div>

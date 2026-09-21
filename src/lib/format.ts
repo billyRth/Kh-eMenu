@@ -1,3 +1,5 @@
+import { translate, type Lang } from './i18n';
+
 export function usd(amount: number): string {
   return `$${amount.toFixed(2)}`;
 }
@@ -8,12 +10,11 @@ export function khr(amountUsd: number, rate: number): string {
   return `${riel.toLocaleString('en-US')}៛`;
 }
 
-export function timeAgo(iso: string): string {
+export function timeAgo(iso: string, lang: Lang = 'en'): string {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 1) return 'just now';
-  if (mins < 60) return `${mins} min ago`;
-  const hours = Math.floor(mins / 60);
-  return `${hours}h ${mins % 60}m ago`;
+  if (mins < 1) return translate(lang, 's_justNow');
+  if (mins < 60) return translate(lang, 's_minAgo', { n: mins });
+  return translate(lang, 's_hoursAgo', { h: Math.floor(mins / 60), m: mins % 60 });
 }
 
 export function clockTime(iso: string): string {

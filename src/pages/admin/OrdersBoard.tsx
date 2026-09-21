@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/lib/supabase';
 import { khr, timeAgo, usd } from '@/lib/format';
+import { useT } from '@/lib/i18n';
 import type { DiningTable, Order, OrderStatus, Restaurant, ServiceRequest } from '@/lib/types';
 import { DeviceSetup } from './DeviceSetup';
 
@@ -59,6 +60,12 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
   const audio = useRef<AudioContext | null>(null);
   const seen = useRef<Set<string> | null>(null);
   useWakeLock(alertsOn);
+  const { lang, t } = useT();
+  // refresh() reads the language through a ref so switching language doesn't resubscribe realtime.
+  const tRef = useRef(t);
+  useEffect(() => {
+    tRef.current = t;
+  }, [t]);
 
   const refresh = useCallback(async () => {
     const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
@@ -77,10 +84,11 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
         const fresh = [...nextOrders.filter((x) => !seen.current!.has(x.id)), ...nextRequests.filter((x) => !seen.current!.has(x.id))];
         if (fresh.length) {
           if (audio.current) chime(audio.current);
+          const t = tRef.current;
           for (const f of fresh) {
-            const label = f.dining_tables?.label ?? 'A table';
-            if ('order_number' in f) toast(`New order #${f.order_number} · ${label}`, { icon: <ChefHat className="size-4" /> });
-            else toast(`${label} ${f.kind === 'bill' ? 'asked for the bill' : 'is calling a waiter'}`, { icon: <BellRing className="size-4" /> });
+            const label = f.dining_tables?.label ?? t('s_aTable');
+            if ('order_number' in f) toast(t('s_newOrderToast', { n: f.order_number, table: label }), { icon: <ChefHat className="size-4" /> });
+            else toast(t(f.kind === 'bill' ? 's_askedBillToast' : 's_callingToast', { table: label }), { icon: <BellRing className="size-4" /> });
           }
         }
       }
@@ -121,12 +129,12 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
   }
 
   async function setStatus(order: Order, status: OrderStatus) {
-    if (status === 'cancelled' && !window.confirm(`Cancel order #${order.order_number}?`)) return;
+    if (status === 'cancelled' && !window.confirm(t('s_confirmCancel', { n: order.order_number }))) return;
     setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, status } : o)));
     // Only change it if nobody else did first: another phone may be showing an older status.
     const { data, error } = await supabase.from('orders').update({ status }).eq('id', order.id).eq('status', order.status).select('id');
     if (error) toast.error(error.message);
-    else if (!data.length) toast.warning(`Order #${order.order_number} was already updated on another device`);
+    else if (!data.length) toast.warning(t('s_alreadyUpdated', { n: order.order_number }));
     refresh();
   }
 
@@ -136,19 +144,19 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
   }
 
   async function closeTable({ tableId, label, total, orderIds }: TableBill) {
-    if (!window.confirm(`Mark ${label} as paid (${usd(total)}) and clear it for the next guests?`)) return;
+    if (!window.confirm(t('s_confirmClose', { table: label, amt: usd(total) }))) return;
     const now = new Date().toISOString();
     // Pay only the orders on the bill that was shown, never one that arrived while the prompt was open.
     const { data: paid, error } = await supabase.from('orders').update({ paid_at: now }).in('id', orderIds).is('paid_at', null).select('id');
     if (error) return toast.error(error.message);
     if (!paid.length) {
-      toast.warning(`${label} was already closed on another device`);
+      toast.warning(t('s_alreadyClosed', { table: label }));
       return refresh();
     }
     if (tableId) {
       const { count } = await supabase.from('orders').select('id', { count: 'exact', head: true }).eq('table_id', tableId).is('paid_at', null).neq('status', 'cancelled');
       if (count) {
-        toast.warning(`${label}: paid ${usd(total)}, but a new order just came in, so the table stays open`);
+        toast.warning(t('s_paidButNew', { table: label, amt: usd(total) }));
         return refresh();
       }
       // Clearing the table starts a fresh bill: the next guests who scan see nothing from before.
@@ -157,7 +165,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
         supabase.from('dining_tables').update({ cleared_at: now }).eq('id', tableId),
       ]);
     }
-    toast.success(`${label} closed · ${usd(total)}`);
+    toast.success(t('s_tableClosed', { table: label, amt: usd(total) }));
     refresh();
   }
 
@@ -168,11 +176,11 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
   for (const o of orders) {
     if (o.paid_at || o.status === 'cancelled') continue;
     const key = o.table_id ?? 'none';
-    const bill: TableBill = bills.get(key) ?? { tableId: o.table_id, label: o.dining_tables?.label ?? 'No table', total: 0, orderIds: [], since: o.created_at, people: new Map() };
+    const bill: TableBill = bills.get(key) ?? { tableId: o.table_id, label: o.dining_tables?.label ?? t('s_noTable'), total: 0, orderIds: [], since: o.created_at, people: new Map() };
     const amount = Number(o.total_usd);
     bill.total += amount;
     bill.orderIds.push(o.id);
-    const who = o.guest_name?.trim() || 'Guest';
+    const who = o.guest_name?.trim() || t('guest');
     bill.people.set(who, (bill.people.get(who) ?? 0) + amount);
     bills.set(key, bill);
   }
@@ -184,15 +192,15 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
       <div className="flex flex-wrap items-center gap-3">
         <span className={cn('inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs font-bold', live ? 'text-emerald-700' : 'text-muted-foreground')}>
           <span className={cn('size-2 rounded-full', live ? 'bg-emerald-500 shadow-[0_0_0_3px] shadow-emerald-500/20' : 'bg-muted-foreground/40')} />
-          {live ? 'Live' : 'Connecting…'}
+          {live ? t('s_live') : t('s_connecting')}
         </span>
         {alertsOn ? (
           <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Volume2 className="size-3.5" /> Sound on · screen stays awake · keep this tab open
+            <Volume2 className="size-3.5" /> {t('s_alertsOnNote')}
           </span>
         ) : (
           <Button size="lg" onClick={enableAlerts} className="font-bold">
-            <Volume2 /> Turn on order alerts
+            <Volume2 /> {t('s_turnOnAlerts')}
           </Button>
         )}
       </div>
@@ -200,8 +208,8 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
       {tables.length > 0 && (
         <section className="rounded-3xl bg-card/60 p-3 ring-1 ring-foreground/5">
           <h3 className="flex items-center gap-2 px-1 pb-2 font-bold">
-            <LayoutGrid className="size-4 text-muted-foreground" /> Tables
-            <span className="ml-auto text-xs font-medium text-muted-foreground">Tap a busy table when the guests leave</span>
+            <LayoutGrid className="size-4 text-muted-foreground" /> {t('s_tables')}
+            <span className="ml-auto text-xs font-medium text-muted-foreground">{t('s_tablesHint')}</span>
           </h3>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-8">
             {tables.map((tb) => {
@@ -221,7 +229,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
                 >
                   <p className="truncate text-sm font-bold">{tb.label}</p>
                   <p className={cn('text-xs font-semibold', wants ? 'text-emerald-700' : calling ? 'text-amber-700' : busy ? 'text-foreground' : 'text-muted-foreground')}>
-                    {wants ? 'Wants bill' : calling ? 'Calling' : busy ? usd(bill.total) : 'Free'}
+                    {wants ? t('s_wantsBill') : calling ? t('s_calling') : busy ? usd(bill.total) : t('s_free')}
                   </p>
                 </button>
               );
@@ -245,12 +253,12 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
               </div>
               <div className="flex-1 text-sm">
                 <p className="font-bold">
-                  {r.dining_tables?.label ?? 'A table'} {r.kind === 'bill' ? 'wants the bill' : 'is calling a waiter'}
+                  {t(r.kind === 'bill' ? 's_wantsBillLine' : 's_callingToast', { table: r.dining_tables?.label ?? t('s_aTable') })}
                 </p>
-                <p className="text-xs text-muted-foreground">{timeAgo(r.created_at)}</p>
+                <p className="text-xs text-muted-foreground">{timeAgo(r.created_at, lang)}</p>
               </div>
               <Button size="sm" variant="outline" className="bg-card" onClick={() => resolveRequest(r)}>
-                <Check /> Done
+                <Check /> {t('s_done')}
               </Button>
             </div>
           ))}
@@ -264,19 +272,19 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
             <section key={status} className="space-y-3 rounded-3xl bg-card/60 p-3 ring-1 ring-foreground/5">
               <h3 className="flex items-center gap-2 px-1 pt-1 font-bold">
                 {status === 'new' ? <BellRing className="size-4 text-blue-600" /> : <ChefHat className="size-4 text-amber-600" />}
-                {status === 'new' ? 'New' : 'Preparing'}
+                {status === 'new' ? t('s_colNew') : t('status_preparing')}
                 <span className="ml-auto rounded-full bg-secondary px-2.5 text-xs leading-5">{list.length}</span>
               </h3>
-              {list.length === 0 && <p className="px-1 pb-2 text-sm text-muted-foreground">Nothing here.</p>}
+              {list.length === 0 && <p className="px-1 pb-2 text-sm text-muted-foreground">{t('s_nothingHere')}</p>}
               {list.map((o) => (
                 <article key={o.id} className="overflow-hidden rounded-2xl bg-card shadow-sm ring-1 ring-foreground/5">
                   <div className="space-y-3 p-3.5">
                     <div className="flex items-center gap-2">
                       <span className="text-lg font-extrabold">#{o.order_number}</span>
-                      <Badge className="bg-foreground text-background">{o.dining_tables?.label ?? 'No table'}</Badge>
+                      <Badge className="bg-foreground text-background">{o.dining_tables?.label ?? t('s_noTable')}</Badge>
                       {o.guest_name && <span className="truncate text-xs text-muted-foreground">{o.guest_name}</span>}
                       <span className="ml-auto inline-flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="size-3" /> {timeAgo(o.created_at)}
+                        <Clock className="size-3" /> {timeAgo(o.created_at, lang)}
                       </span>
                     </div>
                     <ul className="space-y-1.5">
@@ -298,15 +306,15 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
                   <div className="flex items-center gap-2 border-t bg-secondary/40 px-3.5 py-2.5">
                     <span className="font-bold tabular-nums">{usd(Number(o.total_usd))}</span>
                     <Button variant="ghost" size="sm" className="ml-auto text-muted-foreground" onClick={() => setStatus(o, 'cancelled')}>
-                      <X /> Cancel
+                      <X /> {t('s_cancel')}
                     </Button>
                     {status === 'new' ? (
                       <Button size="sm" onClick={() => setStatus(o, 'preparing')}>
-                        <ChefHat /> Start cooking
+                        <ChefHat /> {t('s_startCooking')}
                       </Button>
                     ) : (
                       <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => setStatus(o, 'served')}>
-                        <Check /> Served
+                        <Check /> {t('status_served')}
                       </Button>
                     )}
                   </div>
@@ -318,20 +326,20 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
 
         <section className="space-y-3 rounded-3xl bg-card/60 p-3 ring-1 ring-foreground/5">
           <h3 className="flex items-center gap-2 px-1 pt-1 font-bold">
-            <Receipt className="size-4 text-emerald-600" /> Open bills
+            <Receipt className="size-4 text-emerald-600" /> {t('s_openBills')}
             <span className="ml-auto rounded-full bg-secondary px-2.5 text-xs leading-5">{bills.size}</span>
           </h3>
-          {bills.size === 0 && <p className="px-1 pb-2 text-sm text-muted-foreground">No unpaid tables.</p>}
+          {bills.size === 0 && <p className="px-1 pb-2 text-sm text-muted-foreground">{t('s_noOpenBills')}</p>}
           {[...bills.values()].map((b) => (
             <article key={b.tableId ?? 'none'} className={cn('space-y-2.5 rounded-2xl bg-card p-3.5 shadow-sm ring-1', billRequested.has(b.tableId) ? 'ring-2 ring-emerald-500' : 'ring-foreground/5')}>
               <div className="flex items-start gap-2">
                 <div className="flex-1">
                   <p className="font-bold">
                     {b.label}
-                    {billRequested.has(b.tableId) && <Badge className="ml-2 bg-emerald-100 text-emerald-800">Wants bill</Badge>}
+                    {billRequested.has(b.tableId) && <Badge className="ml-2 bg-emerald-100 text-emerald-800">{t('s_wantsBill')}</Badge>}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {b.orderIds.length} order{b.orderIds.length === 1 ? '' : 's'} · since {timeAgo(b.since)}
+                    {t(b.orderIds.length === 1 ? 's_billOrders1' : 's_billOrdersN', { n: b.orderIds.length, time: timeAgo(b.since, lang) })}
                   </p>
                 </div>
                 <div className="text-right">
@@ -349,7 +357,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
                 </div>
               )}
               <Button className="w-full bg-emerald-600 font-bold hover:bg-emerald-700" onClick={() => closeTable(b)}>
-                <Check /> Paid, close bill
+                <Check /> {t('s_paidClose')}
               </Button>
             </article>
           ))}
@@ -357,7 +365,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
       </div>
 
       <p className="flex items-center gap-2 text-xs text-muted-foreground">
-        <MonitorSmartphone className="size-3.5" /> Tip: open this page on a tablet at the counter or in the kitchen. Any phone signed in here gets the same live orders.
+        <MonitorSmartphone className="size-3.5" /> {t('s_boardTip')}
       </p>
     </div>
   );

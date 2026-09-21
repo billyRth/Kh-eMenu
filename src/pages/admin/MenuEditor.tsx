@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { uploadImage } from '@/lib/images';
 import { supabase } from '@/lib/supabase';
 import { usd } from '@/lib/format';
+import { useT } from '@/lib/i18n';
 import type { Category, I18nText, MenuItem, Restaurant } from '@/lib/types';
 import { OptionsEditor, cleanOptions } from './OptionsEditor';
 
@@ -41,6 +42,7 @@ export function MenuEditor({ restaurant }: { restaurant: Restaurant }) {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [newCategory, setNewCategory] = useState('');
+  const { t } = useT();
 
   const load = useCallback(async () => {
     const [c, i] = await Promise.all([
@@ -79,10 +81,10 @@ export function MenuEditor({ restaurant }: { restaurant: Restaurant }) {
 
   async function deleteCategory(cat: Category) {
     if (items.some((i) => i.category_id === cat.id)) {
-      toast.error(`Move or delete the dishes in “${cat.name}” first.`);
+      toast.error(t('s_moveDishesFirst', { name: cat.name }));
       return;
     }
-    if (window.confirm(`Delete category “${cat.name}”?`)) await run(supabase.from('categories').delete().eq('id', cat.id));
+    if (window.confirm(t('s_confirmDeleteCat', { name: cat.name }))) await run(supabase.from('categories').delete().eq('id', cat.id));
   }
 
   async function moveCategory(index: number, dir: -1 | 1) {
@@ -101,13 +103,13 @@ export function MenuEditor({ restaurant }: { restaurant: Restaurant }) {
   async function toggleAvailable(item: MenuItem, available: boolean) {
     setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, is_available: available } : i)));
     if (await run(supabase.from('menu_items').update({ is_available: available }).eq('id', item.id))) {
-      toast.success(available ? `${item.name} is back on` : `${item.name} marked sold out`, { duration: 1500 });
+      toast.success(t(available ? 's_backOn' : 's_markedSoldOut', { name: item.name }), { duration: 1500 });
     }
   }
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
-      <p className="text-sm text-muted-foreground">Flip the switch to mark a dish sold out. Diners’ phones update within a minute.</p>
+      <p className="text-sm text-muted-foreground">{t('s_menuIntro')}</p>
 
       {categories.map((cat, index) => {
         const catItems = items.filter((i) => i.category_id === cat.id);
@@ -120,25 +122,25 @@ export function MenuEditor({ restaurant }: { restaurant: Restaurant }) {
               <select
                 className="h-7 rounded-md border border-input bg-transparent px-2 text-xs"
                 value={cat.report_group}
-                title="Counts toward this group in the daily report"
+                title={t('s_reportGroupHint')}
                 onChange={(e) => run(supabase.from('categories').update({ report_group: e.target.value }).eq('id', cat.id))}
               >
-                <option value="starter">Appetizers</option>
-                <option value="main">Mains</option>
-                <option value="drink">Drinks</option>
-                <option value="dessert">Desserts</option>
-                <option value="other">Other</option>
+                <option value="starter">{t('s_grpStarter')}</option>
+                <option value="main">{t('s_grpMain')}</option>
+                <option value="drink">{t('s_grpDrink')}</option>
+                <option value="dessert">{t('s_grpDessert')}</option>
+                <option value="other">{t('s_grpOther')}</option>
               </select>
-              <Button variant="ghost" size="icon-sm" title="Move up" onClick={() => moveCategory(index, -1)} disabled={index === 0}>
+              <Button variant="ghost" size="icon-sm" title={t('s_moveUp')} onClick={() => moveCategory(index, -1)} disabled={index === 0}>
                 <ArrowUp />
               </Button>
-              <Button variant="ghost" size="icon-sm" title="Move down" onClick={() => moveCategory(index, 1)} disabled={index === categories.length - 1}>
+              <Button variant="ghost" size="icon-sm" title={t('s_moveDown')} onClick={() => moveCategory(index, 1)} disabled={index === categories.length - 1}>
                 <ArrowDown />
               </Button>
               <Button variant="ghost" size="sm" onClick={() => renameCategory(cat)}>
-                <Pencil /> Rename
+                <Pencil /> {t('s_rename')}
               </Button>
-              <Button variant="ghost" size="icon-sm" className="text-destructive" title="Delete category" onClick={() => deleteCategory(cat)}>
+              <Button variant="ghost" size="icon-sm" className="text-destructive" title={t('s_deleteCategory')} onClick={() => deleteCategory(cat)}>
                 <Trash2 />
               </Button>
             </header>
@@ -154,7 +156,7 @@ export function MenuEditor({ restaurant }: { restaurant: Restaurant }) {
                     <p className="text-sm text-muted-foreground tabular-nums">{usd(Number(item.price_usd))}</p>
                   </button>
                   <label className="flex shrink-0 cursor-pointer items-center gap-2 text-xs font-semibold">
-                    <span className={item.is_available ? 'text-emerald-700' : 'text-destructive'}>{item.is_available ? 'Available' : 'Sold out'}</span>
+                    <span className={item.is_available ? 'text-emerald-700' : 'text-destructive'}>{item.is_available ? t('s_available') : t('s_soldOutShort')}</span>
                     <Switch checked={item.is_available} onCheckedChange={(v) => toggleAvailable(item, v)} />
                   </label>
                 </li>
@@ -162,7 +164,7 @@ export function MenuEditor({ restaurant }: { restaurant: Restaurant }) {
             </ul>
             <div className="px-4 py-3">
               <Button variant="outline" size="sm" onClick={() => setDraft(blankDraft(cat.id))}>
-                <Plus /> Add dish
+                <Plus /> {t('s_addDish')}
               </Button>
             </div>
           </section>
@@ -170,9 +172,9 @@ export function MenuEditor({ restaurant }: { restaurant: Restaurant }) {
       })}
 
       <form onSubmit={addCategory} className="flex gap-2 rounded-2xl bg-card p-3 shadow-sm ring-1 ring-foreground/5">
-        <Input placeholder="New category, e.g. Breakfast" value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="h-10" />
+        <Input placeholder={t('s_newCatPlaceholder')} value={newCategory} onChange={(e) => setNewCategory(e.target.value)} className="h-10" />
         <Button type="submit" className="h-10" disabled={!newCategory.trim()}>
-          <Plus /> Add category
+          <Plus /> {t('s_addCategory')}
         </Button>
       </form>
 
@@ -221,6 +223,7 @@ function ItemDialog({
   const [tags, setTags] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useT();
 
   useEffect(() => {
     if (!draft) return;
@@ -240,7 +243,7 @@ function ItemDialog({
     try {
       set('image_url', await uploadImage(restaurant.id, file));
     } catch (e) {
-      setError(`Photo upload failed: ${(e as Error).message}`);
+      setError(t('s_photoFailed', { msg: (e as Error).message }));
     }
     setBusy(false);
   }
@@ -249,10 +252,10 @@ function ItemDialog({
     e.preventDefault();
     if (!d) return;
     const priceNum = Number(price);
-    if (!d.name.trim()) return setError('Give the dish a name.');
-    if (!price.trim() || !Number.isFinite(priceNum) || priceNum < 0) return setError('Enter a valid price in USD, e.g. 4.50');
+    if (!d.name.trim()) return setError(t('s_needName'));
+    if (!price.trim() || !Number.isFinite(priceNum) || priceNum < 0) return setError(t('s_badPrice'));
     const costNum = cost.trim() ? Number(cost) : null;
-    if (costNum !== null && (!Number.isFinite(costNum) || costNum < 0)) return setError('Cost must be a number in USD, or left empty.');
+    if (costNum !== null && (!Number.isFinite(costNum) || costNum < 0)) return setError(t('s_badCost'));
 
     setBusy(true);
     const row = {
@@ -270,7 +273,7 @@ function ItemDialog({
       i18n: d.i18n,
       tags: tags
         .split(',')
-        .map((t) => t.trim())
+        .map((tag) => tag.trim())
         .filter(Boolean),
     };
     const { error: dbError } = d.id
@@ -278,15 +281,15 @@ function ItemDialog({
       : await supabase.from('menu_items').insert({ ...row, restaurant_id: restaurant.id, sort_order: nextSort });
     setBusy(false);
     if (dbError) return setError(dbError.message);
-    toast.success(d.id ? 'Dish saved' : 'Dish added to the menu');
+    toast.success(t(d.id ? 's_dishSaved' : 's_dishAdded'));
     onSaved();
   }
 
   async function remove() {
-    if (!d?.id || !window.confirm(`Delete “${d.name}” from the menu?`)) return;
+    if (!d?.id || !window.confirm(t('s_confirmDeleteDish', { name: d.name }))) return;
     const { error: dbError } = await supabase.from('menu_items').delete().eq('id', d.id);
     if (dbError) return setError(dbError.message);
-    toast.success('Dish deleted');
+    toast.success(t('s_dishDeleted'));
     onSaved();
   }
 
@@ -296,42 +299,42 @@ function ItemDialog({
         {d && (
           <form onSubmit={save} className="space-y-4">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold">{d.id ? 'Edit dish' : 'New dish'}</DialogTitle>
+              <DialogTitle className="text-lg font-bold">{d.id ? t('s_editDish') : t('s_newDish')}</DialogTitle>
             </DialogHeader>
 
             <div className="flex items-center gap-4">
               <FoodImage src={d.image_url} emoji={d.emoji} alt="" className="size-24 shrink-0 rounded-2xl" emojiClass="text-4xl" />
               <div className="space-y-2">
                 <label className={cn(buttonLike, 'cursor-pointer')}>
-                  <ImagePlus className="size-4" /> {d.image_url ? 'Change photo' : 'Upload photo'}
+                  <ImagePlus className="size-4" /> {d.image_url ? t('s_changePhoto') : t('s_uploadPhoto')}
                   <input type="file" accept="image/*" hidden onChange={(e) => onPhoto(e.target.files?.[0])} />
                 </label>
                 {d.image_url && (
                   <Button type="button" variant="ghost" size="sm" onClick={() => set('image_url', null)}>
-                    Remove photo
+                    {t('s_removePhoto')}
                   </Button>
                 )}
-                <p className="text-xs text-muted-foreground">No photo yet? The emoji is shown instead.</p>
+                <p className="text-xs text-muted-foreground">{t('s_noPhotoHint')}</p>
               </div>
             </div>
 
-            <Field label="Name">
+            <Field label={t('s_name')}>
               <Input required value={d.name} onChange={(e) => set('name', e.target.value)} placeholder="Fish Amok" />
             </Field>
-            <Field label="Description">
+            <Field label={t('s_description')}>
               <Textarea rows={2} value={d.description ?? ''} onChange={(e) => set('description', e.target.value)} placeholder="Steamed fish curry in banana leaf" />
             </Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Price (USD)">
+              <Field label={t('s_priceUsd')}>
                 <Input inputMode="decimal" required value={price} onChange={(e) => setPrice(e.target.value)} placeholder="4.50" />
               </Field>
-              <Field label="Cost to make (USD, private)">
-                <Input inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} placeholder="optional, for profit report" />
+              <Field label={t('s_costUsd')}>
+                <Input inputMode="decimal" value={cost} onChange={(e) => setCost(e.target.value)} placeholder={t('s_costPlaceholder')} />
               </Field>
-              <Field label="Emoji">
+              <Field label={t('s_emoji')}>
                 <Input value={d.emoji ?? ''} maxLength={4} onChange={(e) => set('emoji', e.target.value)} placeholder="🍜" />
               </Field>
-              <Field label="Category">
+              <Field label={t('s_category')}>
                 <select className={nativeSelect} value={d.category_id} onChange={(e) => set('category_id', e.target.value)}>
                   {categories.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -340,12 +343,12 @@ function ItemDialog({
                   ))}
                 </select>
               </Field>
-              <Field label="Spicy">
+              <Field label={t('s_spicy')}>
                 <select className={nativeSelect} value={d.spicy_level} onChange={(e) => set('spicy_level', Number(e.target.value))}>
-                  <option value={0}>Not spicy</option>
-                  <option value={1}>🌶️ Mild</option>
-                  <option value={2}>🌶️🌶️ Medium</option>
-                  <option value={3}>🌶️🌶️🌶️ Hot</option>
+                  <option value={0}>{t('s_notSpicy')}</option>
+                  <option value={1}>🌶️ {t('s_mild')}</option>
+                  <option value={2}>🌶️🌶️ {t('s_medium')}</option>
+                  <option value={3}>🌶️🌶️🌶️ {t('s_hot')}</option>
                 </select>
               </Field>
             </div>
@@ -362,16 +365,16 @@ function ItemDialog({
               );
             })}
             <OptionsEditor value={d.options} onChange={(v) => set('options', v)} languages={(restaurant.languages ?? []).filter((l): l is 'km' | 'zh' => l !== 'en')} />
-            <Field label="Tags (comma separated)">
+            <Field label={t('s_tags')}>
               <Input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Vegetarian, New, Signature" />
             </Field>
             <div className="space-y-3 rounded-xl bg-secondary/60 p-3">
               <label className="flex cursor-pointer items-center justify-between gap-3 text-sm font-medium">
-                Chef’s pick (shown at the top of the menu)
+                {t('s_chefsPickToggle')}
                 <Switch checked={d.is_featured} onCheckedChange={(v) => set('is_featured', v)} />
               </label>
               <label className="flex cursor-pointer items-center justify-between gap-3 text-sm font-medium">
-                Available today
+                {t('s_availableToday')}
                 <Switch checked={d.is_available} onCheckedChange={(v) => set('is_available', v)} />
               </label>
             </div>
@@ -380,13 +383,13 @@ function ItemDialog({
             <DialogFooter className="gap-2 sm:justify-between">
               {d.id ? (
                 <Button type="button" variant="destructive" onClick={remove}>
-                  <Trash2 /> Delete
+                  <Trash2 /> {t('s_delete')}
                 </Button>
               ) : (
                 <span />
               )}
               <Button type="submit" size="lg" disabled={busy} className="font-bold">
-                {busy ? 'Saving…' : 'Save dish'}
+                {busy ? t('s_saving') : t('s_saveDish')}
               </Button>
             </DialogFooter>
           </form>
@@ -420,6 +423,7 @@ function CategoryDialog({
 }) {
   const [name, setName] = useState('');
   const [i18n, setI18n] = useState<I18nText>({});
+  const { t } = useT();
   useEffect(() => {
     if (!category) return;
     setName(category.name);
@@ -437,9 +441,9 @@ function CategoryDialog({
           }}
         >
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold">Category</DialogTitle>
+            <DialogTitle className="text-lg font-bold">{t('s_category')}</DialogTitle>
           </DialogHeader>
-          <Field label="Name">
+          <Field label={t('s_name')}>
             <Input required value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
           {languages.map((l) => (
@@ -449,7 +453,7 @@ function CategoryDialog({
           ))}
           <DialogFooter>
             <Button type="submit" className="font-bold">
-              Save
+              {t('s_save')}
             </Button>
           </DialogFooter>
         </form>

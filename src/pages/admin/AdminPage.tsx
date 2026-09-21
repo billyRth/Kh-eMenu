@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingScreen, MessageScreen, useBrandColor } from '@/components/common';
 import { cn } from '@/lib/utils';
+import { ALL_LANGS, LANGS, LangContext, useLang, useT, type StringKey } from '@/lib/i18n';
 import { supabase } from '@/lib/supabase';
 import type { Restaurant } from '@/lib/types';
 import { OrdersBoard } from './OrdersBoard';
@@ -15,15 +16,36 @@ import { SettingsForm } from './SettingsForm';
 import { DailyReport } from './DailyReport';
 
 type Tab = 'orders' | 'report' | 'menu' | 'tables' | 'settings';
-const TABS = [
-  { id: 'orders', label: 'Orders', icon: BellRing },
-  { id: 'report', label: 'Today', icon: ChartColumn },
-  { id: 'menu', label: 'Menu', icon: BookOpen },
-  { id: 'tables', label: 'Tables & QR', icon: QrCode },
-  { id: 'settings', label: 'Settings', icon: Settings },
-] as const;
+const TABS: { id: Tab; label: StringKey; icon: typeof BellRing }[] = [
+  { id: 'orders', label: 'orders', icon: BellRing },
+  { id: 'report', label: 's_tabToday', icon: ChartColumn },
+  { id: 'menu', label: 's_tabMenu', icon: BookOpen },
+  { id: 'tables', label: 's_tabTables', icon: QrCode },
+  { id: 'settings', label: 's_tabSettings', icon: Settings },
+];
+
+/** Compact EN / ខ្មែរ / 中文 switch. Shares the `khmenu:lang` choice with the diner menu. */
+function LangSwitch({ className }: { className?: string }) {
+  const { lang, setLang, t } = useT();
+  return (
+    <div className={cn('flex shrink-0 items-center rounded-full bg-secondary p-0.5', className)} role="group" aria-label={t('s_language')}>
+      {LANGS.map((l) => (
+        <button
+          key={l.id}
+          type="button"
+          onClick={() => setLang(l.id)}
+          aria-pressed={lang === l.id}
+          className={cn('rounded-full px-2 py-1 text-xs font-semibold leading-none transition-colors', lang === l.id ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground')}
+        >
+          {l.short}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 export function AdminPage() {
+  const i18n = useLang(ALL_LANGS, false);
   const [session, setSession] = useState<Session | null | undefined>(undefined);
 
   useEffect(() => {
@@ -33,12 +55,15 @@ export function AdminPage() {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  if (session === undefined) return <LoadingScreen />;
-  if (!session) return <Login />;
-  return <Dashboard session={session} />;
+  return (
+    <LangContext value={i18n}>
+      {session === undefined ? <LoadingScreen label={i18n.t('loading')} /> : !session ? <Login /> : <Dashboard session={session} />}
+    </LangContext>
+  );
 }
 
 function Login() {
+  const { t } = useT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -50,33 +75,36 @@ function Login() {
     setError(null);
     const { error: authError } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     setBusy(false);
-    if (authError) setError(authError.message === 'Invalid login credentials' ? 'Wrong email or password.' : authError.message);
+    if (authError) setError(authError.message === 'Invalid login credentials' ? t('s_wrongLogin') : authError.message);
   }
 
   return (
     <div className="grid min-h-dvh place-items-center bg-secondary/60 p-4">
       <form onSubmit={submit} className="w-full max-w-sm space-y-5 rounded-3xl border bg-card p-7 shadow-xl shadow-black/5">
         <div className="space-y-2">
-          <div className="grid size-12 place-items-center rounded-2xl bg-primary text-primary-foreground">
-            <UtensilsCrossed className="size-6" />
+          <div className="flex items-start justify-between gap-2">
+            <div className="grid size-12 place-items-center rounded-2xl bg-primary text-primary-foreground">
+              <UtensilsCrossed className="size-6" />
+            </div>
+            <LangSwitch />
           </div>
-          <h1 className="text-2xl font-extrabold tracking-tight">Staff sign in</h1>
-          <p className="text-sm text-muted-foreground">Orders, menu and table QR codes for your restaurant.</p>
+          <h1 className="text-2xl font-extrabold tracking-tight">{t('s_signInTitle')}</h1>
+          <p className="text-sm text-muted-foreground">{t('s_signInIntro')}</p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t('s_email')}</Label>
           <Input id="email" type="email" autoComplete="username" required value={email} onChange={(e) => setEmail(e.target.value)} className="h-11" />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t('s_password')}</Label>
           <Input id="password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} className="h-11" />
         </div>
         {error && <p className="rounded-lg bg-destructive/10 p-2.5 text-sm text-destructive">{error}</p>}
         <Button type="submit" className="h-11 w-full text-base font-bold" disabled={busy}>
-          {busy ? 'Signing in…' : 'Sign in'}
+          {busy ? t('s_signingIn') : t('s_signIn')}
         </Button>
         <a href="#/" className="block text-center text-sm text-muted-foreground hover:text-foreground">
-          ← Back to KhMenu
+          {t('s_backHome')}
         </a>
       </form>
     </div>
@@ -84,6 +112,7 @@ function Login() {
 }
 
 function Dashboard({ session }: { session: Session }) {
+  const { t } = useT();
   const [restaurant, setRestaurant] = useState<Restaurant | null | undefined>(undefined);
   const [tab, setTab] = useState<Tab>(() => {
     try {
@@ -113,13 +142,14 @@ function Dashboard({ session }: { session: Session }) {
     }
   }
 
-  if (restaurant === undefined) return <LoadingScreen />;
+  if (restaurant === undefined) return <LoadingScreen label={t('loading')} />;
   if (restaurant === null) {
     return (
-      <MessageScreen icon={<UtensilsCrossed />} title="No restaurant linked">
-        <p className="text-muted-foreground">This account isn’t linked to a restaurant yet. Contact KhMenu support.</p>
+      <MessageScreen icon={<UtensilsCrossed />} title={t('s_noRestaurant')}>
+        <p className="text-muted-foreground">{t('s_noRestaurantBody')}</p>
+        <LangSwitch />
         <Button variant="outline" onClick={() => supabase.auth.signOut()}>
-          Sign out
+          {t('s_signOut')}
         </Button>
       </MessageScreen>
     );
@@ -137,10 +167,11 @@ function Dashboard({ session }: { session: Session }) {
             <p className="truncate text-xs text-muted-foreground">{session.user.email}</p>
           </div>
           <a className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'hidden sm:inline-flex')} href={`#/r/${restaurant.slug}`} target="_blank" rel="noreferrer">
-            <ExternalLink /> View menu
+            <ExternalLink /> {t('s_viewMenu')}
           </a>
-          <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()}>
-            <LogOut /> <span className="hidden sm:inline">Sign out</span>
+          <LangSwitch />
+          <Button variant="ghost" size="sm" onClick={() => supabase.auth.signOut()} aria-label={t('s_signOut')}>
+            <LogOut /> <span className="hidden sm:inline">{t('s_signOut')}</span>
           </Button>
         </div>
         <nav className="no-scrollbar mx-auto flex max-w-7xl gap-1 overflow-x-auto px-3">
@@ -153,7 +184,7 @@ function Dashboard({ session }: { session: Session }) {
                 tab === id ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground',
               )}
             >
-              <Icon className="size-4" /> {label}
+              <Icon className="size-4" /> {t(label)}
             </button>
           ))}
         </nav>

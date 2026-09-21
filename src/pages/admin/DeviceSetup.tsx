@@ -4,6 +4,7 @@ import { BellOff, BellRing, Download, Share, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { currentSubscription, disablePush, enablePush, isInstalled, isIos, pushSupported, sendTestPush } from '@/lib/push';
 import { installPrompt, onInstallPromptChange } from '@/lib/install';
+import { useT } from '@/lib/i18n';
 import type { Restaurant } from '@/lib/types';
 
 /** "Install the app" + "Turn on notifications" card shown above the order board. */
@@ -11,6 +12,7 @@ export function DeviceSetup({ restaurant }: { restaurant: Restaurant }) {
   const [subscribed, setSubscribed] = useState<boolean | null>(null);
   const [canInstall, setCanInstall] = useState(!!installPrompt());
   const [busy, setBusy] = useState(false);
+  const { t } = useT();
 
   useEffect(() => {
     currentSubscription().then((s) => setSubscribed(!!s));
@@ -23,7 +25,7 @@ export function DeviceSetup({ restaurant }: { restaurant: Restaurant }) {
       await enablePush(restaurant.id);
       setSubscribed(true);
       const sent = await sendTestPush(restaurant.id);
-      toast.success(sent > 0 ? 'Notifications on. A test alert was sent.' : 'Notifications on for this device.');
+      toast.success(t(sent > 0 ? 's_pushOnTest' : 's_pushOn'));
     } catch (e) {
       toast.error((e as Error).message);
     }
@@ -33,7 +35,7 @@ export function DeviceSetup({ restaurant }: { restaurant: Restaurant }) {
   async function turnOff() {
     await disablePush();
     setSubscribed(false);
-    toast('Notifications off for this device');
+    toast(t('s_pushOff'));
   }
 
   async function install() {
@@ -49,10 +51,22 @@ export function DeviceSetup({ restaurant }: { restaurant: Restaurant }) {
   // iPhone only allows notifications from the installed app, not from Safari tabs.
   if (isIos() && !isInstalled()) {
     return (
-      <Card icon={<Smartphone className="size-5" />} title="Install the staff app on this iPhone">
+      <Card icon={<Smartphone className="size-5" />} title={t('s_iosTitle')}>
         <p>
-          Tap <Share className="inline size-4 align-text-bottom" /> <b>Share</b> in Safari, then <b>Add to Home Screen</b>. Open <b>KhMenu Staff</b> from your home screen, sign in, and turn on
-          notifications.
+          {/* Split on {share}/{add}/{app} so each language can put the bold labels where its word order needs them. */}
+          {t('s_iosSteps').split(/(\{\w+\})/).map((part, i) =>
+            part === '{share}' ? (
+              <span key={i}>
+                <Share className="inline size-4 align-text-bottom" /> <b>{t('s_iosShare')}</b>
+              </span>
+            ) : part === '{add}' ? (
+              <b key={i}>{t('s_iosAdd')}</b>
+            ) : part === '{app}' ? (
+              <b key={i}>KhMenu Staff</b>
+            ) : (
+              part
+            ),
+          )}
         </p>
       </Card>
     );
@@ -60,8 +74,8 @@ export function DeviceSetup({ restaurant }: { restaurant: Restaurant }) {
 
   if (!pushSupported()) {
     return (
-      <Card icon={<BellOff className="size-5" />} title="This browser can’t show notifications">
-        <p>Use Chrome on Android or a computer, or the installed app on iPhone. Orders still appear here live with a sound.</p>
+      <Card icon={<BellOff className="size-5" />} title={t('s_noPushTitle')}>
+        <p>{t('s_noPushBody')}</p>
       </Card>
     );
   }
@@ -70,27 +84,27 @@ export function DeviceSetup({ restaurant }: { restaurant: Restaurant }) {
     return (
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm text-emerald-900">
         <BellRing className="size-4" />
-        <span className="mr-auto font-semibold">Notifications are on for this device</span>
-        <Button size="sm" variant="outline" className="bg-card" onClick={() => sendTestPush(restaurant.id).then(() => toast.success('Test alert sent'))}>
-          Send test
+        <span className="mr-auto font-semibold">{t('s_pushIsOn')}</span>
+        <Button size="sm" variant="outline" className="bg-card" onClick={() => sendTestPush(restaurant.id).then(() => toast.success(t('s_testSent')))}>
+          {t('s_sendTest')}
         </Button>
         <Button size="sm" variant="ghost" onClick={turnOff}>
-          Turn off
+          {t('s_turnOff')}
         </Button>
       </div>
     );
   }
 
   return (
-    <Card icon={<BellRing className="size-5" />} title="Get an alert for every order, even when the app is closed">
-      <p>Turn this on for each phone or tablet that should ring: the counter tablet, the kitchen, waiters’ phones.</p>
+    <Card icon={<BellRing className="size-5" />} title={t('s_pushCardTitle')}>
+      <p>{t('s_pushCardBody')}</p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button onClick={turnOn} disabled={busy} className="font-bold">
-          <BellRing /> {busy ? 'Turning on…' : 'Turn on notifications'}
+          <BellRing /> {busy ? t('s_turningOn') : t('s_turnOnPush')}
         </Button>
         {canInstall && !isInstalled() && (
           <Button variant="outline" onClick={install}>
-            <Download /> Install app
+            <Download /> {t('s_installApp')}
           </Button>
         )}
       </div>
