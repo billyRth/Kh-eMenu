@@ -77,6 +77,15 @@ check('staff reads order with items', staffOrders?.[0]?.order_items?.length === 
 const { error: upErr } = await staff.from('orders').update({ status: 'preparing' }).eq('id', order.order_id);
 check('staff updates status', !upErr, upErr?.message ?? '');
 
+// Two staff phones at once (same queries as OrdersBoard): a stale screen can't undo a newer status...
+const { data: stale } = await staff.from('orders').update({ status: 'cancelled' }).eq('id', order.order_id).eq('status', 'new').select('id');
+check('stale status change is ignored', stale?.length === 0);
+// ...and closing a table pays only the orders on the bill shown, not one placed while the prompt was open.
+const { data: late } = await anon.rpc('place_order', { p_token: token, p_items: [{ item_id: items[0].id, qty: 1 }] });
+await staff.from('orders').update({ paid_at: new Date().toISOString() }).in('id', [order.order_id]).is('paid_at', null);
+const { data: lateRow } = await staff.from('orders').select('paid_at').eq('id', late.order_id).single();
+check('order placed after the bill stays unpaid', lateRow?.paid_at === null);
+
 // Clean up: clear the table the way staff do, so the demo stays tidy.
 const now = new Date().toISOString();
 await staff.from('orders').update({ status: 'served', paid_at: now }).eq('table_id', tables[0].id).is('paid_at', null);

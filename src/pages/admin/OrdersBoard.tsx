@@ -9,7 +9,9 @@ import { khr, timeAgo, usd } from '@/lib/format';
 import type { DiningTable, Order, OrderStatus, Restaurant, ServiceRequest } from '@/lib/types';
 import { DeviceSetup } from './DeviceSetup';
 
-const ORDER_SELECT = '*, order_items(id, name, unit_price_usd, qty, note, options), dining_tables(label)';
+type TableBill = { tableId: string | null; label: string; total: number; orderIds: string[]; since: string; people: Map<string, number> };
+
+const ORDER_SELECT ='*, order_items(id, name, unit_price_usd, qty, note, options), dining_tables(label)';
 
 /** Short two-tone chime generated in the browser, so there is no audio file to host. */
 function chime(ctx: AudioContext) {
@@ -121,8 +123,10 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
   async function setStatus(order: Order, status: OrderStatus) {
     if (status === 'cancelled' && !window.confirm(`Cancel order #${order.order_number}?`)) return;
     setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, status } : o)));
-    const { error } = await supabase.from('orders').update({ status }).eq('id', order.id);
+    // Only change it if nobody else did first: another phone may be showing an older status.
+    const { data, error } = await supabase.from('orders').update({ status }).eq('id', order.id).eq('status', order.status).select('id');
     if (error) toast.error(error.message);
+    else if (!data.length) toast.warning(`Order #${order.order_number} was already updated on another device`);
     refresh();
   }
 
@@ -131,14 +135,22 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
     await supabase.from('service_requests').update({ resolved_at: new Date().toISOString() }).eq('id', req.id);
   }
 
-  async function closeTable(tableId: string | null, label: string, total: number) {
+  async function closeTable({ tableId, label, total, orderIds }: TableBill) {
     if (!window.confirm(`Mark ${label} as paid (${usd(total)}) and clear it for the next guests?`)) return;
     const now = new Date().toISOString();
-    let q = supabase.from('orders').update({ paid_at: now }).eq('restaurant_id', restaurant.id).is('paid_at', null);
-    q = tableId ? q.eq('table_id', tableId) : q.is('table_id', null);
-    const { error } = await q;
+    // Pay only the orders on the bill that was shown, never one that arrived while the prompt was open.
+    const { data: paid, error } = await supabase.from('orders').update({ paid_at: now }).in('id', orderIds).is('paid_at', null).select('id');
     if (error) return toast.error(error.message);
+    if (!paid.length) {
+      toast.warning(`${label} was already closed on another device`);
+      return refresh();
+    }
     if (tableId) {
+      const { count } = await supabase.from('orders').select('id', { count: 'exact', head: true }).eq('table_id', tableId).is('paid_at', null).neq('status', 'cancelled');
+      if (count) {
+        toast.warning(`${label}: paid ${usd(total)}, but a new order just came in, so the table stays open`);
+        return refresh();
+      }
       // Clearing the table starts a fresh bill: the next guests who scan see nothing from before.
       await Promise.all([
         supabase.from('service_requests').update({ resolved_at: now }).eq('table_id', tableId).is('resolved_at', null),
@@ -152,15 +164,14 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
   const active = orders.filter((o) => (o.status === 'new' || o.status === 'preparing') && !o.paid_at);
 
   // Unpaid, non-cancelled orders grouped into each table's running bill, with a per-person split.
-  type TableBill = { tableId: string | null; label: string; total: number; count: number; since: string; people: Map<string, number> };
   const bills = new Map<string, TableBill>();
   for (const o of orders) {
     if (o.paid_at || o.status === 'cancelled') continue;
     const key = o.table_id ?? 'none';
-    const bill = bills.get(key) ?? { tableId: o.table_id, label: o.dining_tables?.label ?? 'No table', total: 0, count: 0, since: o.created_at, people: new Map() };
+    const bill: TableBill = bills.get(key) ?? { tableId: o.table_id, label: o.dining_tables?.label ?? 'No table', total: 0, orderIds: [], since: o.created_at, people: new Map() };
     const amount = Number(o.total_usd);
     bill.total += amount;
-    bill.count += 1;
+    bill.orderIds.push(o.id);
     const who = o.guest_name?.trim() || 'Guest';
     bill.people.set(who, (bill.people.get(who) ?? 0) + amount);
     bills.set(key, bill);
@@ -202,7 +213,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
                 <button
                   key={tb.id}
                   disabled={!busy && !wants && !calling}
-                  onClick={() => (bill ? closeTable(tb.id, tb.label, bill.total) : wants ? resolveRequest(wants) : calling && resolveRequest(calling))}
+                  onClick={() => (bill ? closeTable(bill) : wants ? resolveRequest(wants) : calling && resolveRequest(calling))}
                   className={cn(
                     'rounded-2xl border-2 p-2.5 text-left transition active:scale-95 disabled:cursor-default',
                     wants ? 'border-emerald-500 bg-emerald-50' : calling ? 'border-amber-400 bg-amber-50' : busy ? 'border-primary/40 bg-card' : 'border-dashed border-border bg-transparent',
@@ -320,7 +331,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
                     {billRequested.has(b.tableId) && <Badge className="ml-2 bg-emerald-100 text-emerald-800">Wants bill</Badge>}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {b.count} order{b.count === 1 ? '' : 's'} · since {timeAgo(b.since)}
+                    {b.orderIds.length} order{b.orderIds.length === 1 ? '' : 's'} · since {timeAgo(b.since)}
                   </p>
                 </div>
                 <div className="text-right">
@@ -337,7 +348,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
                   ))}
                 </div>
               )}
-              <Button className="w-full bg-emerald-600 font-bold hover:bg-emerald-700" onClick={() => closeTable(b.tableId, b.label, b.total)}>
+              <Button className="w-full bg-emerald-600 font-bold hover:bg-emerald-700" onClick={() => closeTable(b)}>
                 <Check /> Paid, close bill
               </Button>
             </article>
