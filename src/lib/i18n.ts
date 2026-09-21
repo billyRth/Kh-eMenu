@@ -158,7 +158,7 @@ const STRINGS = {
   s_clearLeft: { en: 'Guests left · clear table', km: 'ភ្ញៀវចេញហើយ · បិទតុ', zh: '客人已离开 · 清台' },
   s_changeGuests: { en: 'Change number of guests', km: 'ប្ដូរចំនួនភ្ញៀវ', zh: '修改人数' },
   s_noFreeTables: { en: 'No free tables right now', km: 'មិនមានតុទំនេរទេ', zh: '现在没有空桌' },
-  s_noBusyTables: { en: 'No tables with guests to combine with', km: 'មិនមានតុមានភ្ញៀវ ដើម្បីផ្គុំ', zh: '没有可合并的有客餐桌' },
+  s_noBusyTables: { en: 'No other tables to combine with', km: 'មិនមានតុផ្សេងទៀត ដើម្បីផ្គុំ', zh: '没有其他可合并的餐桌' },
   s_tableChanged: { en: '{table} was already changed on another device', km: '{table} ត្រូវបានកែរួចហើយលើឧបករណ៍ផ្សេង', zh: '{table}已在其他设备上更改' },
   s_tableNotFree: { en: 'That table is no longer free', km: 'តុនោះលែងទំនេរហើយ', zh: '该桌已不再空闲' },
   s_downloadCsv: { en: 'Download CSV', km: 'ទាញយក CSV', zh: '下载 CSV' },

@@ -34,7 +34,8 @@ export function TableSheet({ table, tables, busyIds, billTotal, requests, onClea
   const off = table.unavailable !== null;
   const isFree = !busyIds.has(table.id);
   const freeTables = tables.filter((x) => x.id !== table.id && !busyIds.has(x.id));
-  const partyTables = tables.filter((x) => x.id !== table.id && busyIds.has(x.id) && !x.joined_to && x.unavailable === null);
+  // Any other usable table; picking a joined table combines with its main table.
+  const combineTables = tables.filter((x) => x.id !== table.id && x.id !== table.joined_to && x.joined_to !== table.id && x.unavailable === null);
 
   const close = () => {
     setMode('main');
@@ -153,6 +154,9 @@ export function TableSheet({ table, tables, busyIds, billTotal, requests, onClea
             <Button variant="outline" className="h-12 justify-start text-base" disabled={busy} onClick={() => setMode('move')}>
               <ArrowRightLeft /> {t('s_move')}
             </Button>
+            <Button variant="outline" className="h-12 justify-start text-base" disabled={busy} onClick={() => setMode('combine')}>
+              <Combine /> {t('s_combine')}
+            </Button>
             <Button variant="outline" className="h-12 justify-start text-base" disabled={busy} onClick={() => setMode('guests')}>
               <Users /> {t('s_changeGuests')}
             </Button>
@@ -166,7 +170,7 @@ export function TableSheet({ table, tables, busyIds, billTotal, requests, onClea
         )}
 
         {mode === 'combine' && (
-          <TablePicker title={t('s_combineWith', { table: label })} empty={t('s_noBusyTables')} options={partyTables} onPick={combineWith} disabled={busy} />
+          <TablePicker title={t('s_combineWith', { table: label })} empty={t('s_noBusyTables')} options={combineTables} onPick={combineWith} disabled={busy} />
         )}
       </DialogContent>
     </Dialog>
