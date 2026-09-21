@@ -202,7 +202,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
   // A table is taken if it has guests seated, an open bill, a call, or is joined to / by another table.
   const busyIds = new Set(
     tables
-      .filter((tb) => tb.seated_at || tb.joined_to || bills.has(tb.id) || requests.some((r) => r.table_id === tb.id) || tables.some((x) => x.joined_to === tb.id))
+      .filter((tb) => tb.seated_at || tb.joined_to || tb.unavailable !== null || bills.has(tb.id) || requests.some((r) => r.table_id === tb.id) || tables.some((x) => x.joined_to === tb.id))
       .map((tb) => tb.id),
   );
   const sheetTable = tables.find((tb) => tb.id === sheetId) ?? null;
@@ -239,13 +239,14 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
               const calling = requests.find((r) => r.table_id === tb.id && r.kind === 'waiter');
               const main = tb.joined_to ? tables.find((x) => x.id === tb.joined_to) : undefined;
               const busy = busyIds.has(tb.id);
+              const off = tb.unavailable !== null;
               return (
                 <button
                   key={tb.id}
                   onClick={() => setSheetId(tb.id)}
                   className={cn(
                     'rounded-2xl border-2 p-2.5 text-left transition active:scale-95',
-                    wants ? 'border-emerald-500 bg-emerald-50' : calling ? 'border-amber-400 bg-amber-50' : main ? 'border-primary/25 bg-primary/5' : busy ? 'border-primary/40 bg-card' : 'border-dashed border-border bg-transparent',
+                    wants ? 'border-emerald-500 bg-emerald-50' : calling ? 'border-amber-400 bg-amber-50' : off ? 'border-border bg-muted text-muted-foreground' : main ? 'border-primary/25 bg-primary/5' : busy ? 'border-primary/40 bg-card' : 'border-dashed border-border bg-transparent',
                   )}
                 >
                   <p className="flex items-center gap-1 truncate text-sm font-bold">
@@ -257,7 +258,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
                     )}
                   </p>
                   <p className={cn('truncate text-xs font-semibold', wants ? 'text-emerald-700' : calling ? 'text-amber-700' : busy ? 'text-foreground' : 'text-muted-foreground')}>
-                    {wants ? t('s_wantsBill') : calling ? t('s_calling') : main ? t('s_joinedWith', { table: main.label }) : bill ? usd(bill.total) : busy ? t('s_seated') : t('s_free')}
+                    {wants ? t('s_wantsBill') : calling ? t('s_calling') : off ? tb.unavailable || t('s_unavailable') : main ? t('s_joinedWith', { table: main.label }) : bill ? usd(bill.total) : busy ? t('s_seated') : t('s_free')}
                   </p>
                 </button>
               );

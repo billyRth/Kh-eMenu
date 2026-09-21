@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { ArrowLeft, ArrowRightLeft, BellRing, Check, Combine, Receipt, Unlink, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRightLeft, Ban, BellRing, Check, Combine, Receipt, Unlink, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -24,15 +24,17 @@ type Props = {
 /** What happens when staff tap a table: seat guests, combine, move, change guests or clear. */
 export function TableSheet({ table, tables, busyIds, billTotal, requests, onClear, onResolve, onChanged, onClose }: Props) {
   const { t } = useT();
-  const [mode, setMode] = useState<'main' | 'guests' | 'move' | 'combine'>('main');
+  const [mode, setMode] = useState<'main' | 'guests' | 'move' | 'combine' | 'unavailable'>('main');
   const [busy, setBusy] = useState(false);
+  const [reason, setReason] = useState('');
 
   if (!table) return null;
   const label = table.label;
   const main = table.joined_to ? tables.find((x) => x.id === table.joined_to) : undefined;
+  const off = table.unavailable !== null;
   const isFree = !busyIds.has(table.id);
   const freeTables = tables.filter((x) => x.id !== table.id && !busyIds.has(x.id));
-  const partyTables = tables.filter((x) => x.id !== table.id && busyIds.has(x.id) && !x.joined_to);
+  const partyTables = tables.filter((x) => x.id !== table.id && busyIds.has(x.id) && !x.joined_to && x.unavailable === null);
 
   const close = () => {
     setMode('main');
@@ -44,7 +46,7 @@ export function TableSheet({ table, tables, busyIds, billTotal, requests, onClea
     setBusy(true);
     const { data, error } = await action;
     setBusy(false);
-    if (error) toast.error(error.message.includes('TABLE_BUSY') ? t('s_tableNotFree') : error.message);
+    if (error) toast.error(/TABLE_BUSY|table_unavailable/.test(error.message) ? t('s_tableNotFree') : error.message);
     else if (Array.isArray(data) && data.length === 0) toast.warning(t('s_tableChanged', { table: label }));
     else if (success) toast.success(success);
     onChanged();
@@ -71,7 +73,16 @@ export function TableSheet({ table, tables, busyIds, billTotal, requests, onClea
         .select('id'),
     );
 
-  const subtitle = main
+  const markUnavailable = () =>
+    run(
+      supabase.from('dining_tables').update({ unavailable: reason.trim().slice(0, 60) }).eq('id', table.id).is('seated_at', null).is('joined_to', null).select('id'),
+      `${label} · ${t('s_unavailable')}`,
+    );
+  const makeAvailable = () => run(supabase.from('dining_tables').update({ unavailable: null }).eq('id', table.id).select('id'));
+
+  const subtitle = off
+    ? table.unavailable || t('s_unavailable')
+    : main
     ? t('s_joinedWith', { table: main.label })
     : isFree
       ? t('s_free')
@@ -98,7 +109,26 @@ export function TableSheet({ table, tables, busyIds, billTotal, requests, onClea
             <Button variant="outline" className="h-12 w-full justify-start text-base" disabled={busy} onClick={() => setMode('combine')}>
               <Combine /> {t('s_combine')}
             </Button>
+            <Button variant="ghost" className="h-12 w-full justify-start text-base text-muted-foreground" disabled={busy} onClick={() => setMode('unavailable')}>
+              <Ban /> {t('s_markUnavailable')}
+            </Button>
           </div>
+        )}
+
+        {mode === 'unavailable' && (
+          <div className="space-y-2">
+            <p className="font-bold">{t('s_markUnavailable')}</p>
+            <Input autoFocus maxLength={60} placeholder={t('s_unavailableReason')} value={reason} onChange={(e) => setReason(e.target.value)} className="h-12 text-base" />
+            <Button className="h-12 w-full text-base font-bold" disabled={busy} onClick={markUnavailable}>
+              <Ban /> {t('s_unavailable')}
+            </Button>
+          </div>
+        )}
+
+        {mode === 'main' && off && (
+          <Button className="h-12 w-full justify-start text-base font-bold" disabled={busy} onClick={makeAvailable}>
+            <Check /> {t('s_makeAvailable')}
+          </Button>
         )}
 
         {mode === 'main' && main && (
@@ -110,7 +140,7 @@ export function TableSheet({ table, tables, busyIds, billTotal, requests, onClea
           </div>
         )}
 
-        {mode === 'main' && !isFree && !main && (
+        {mode === 'main' && !isFree && !main && (!off || !!billTotal || requests.length > 0) && (
           <div className="grid gap-2">
             {requests.map((r) => (
               <Button key={r.id} variant="outline" className="h-12 justify-start border-amber-300 bg-amber-50 text-base" onClick={() => { onResolve(r); close(); }}>

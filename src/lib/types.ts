@@ -63,6 +63,8 @@ export type DiningTable = {
   seated_at: string | null;
   party_size: number | null;
   joined_to: string | null;
+  /** null = available; any text (even empty) = out of use, with an optional reason. */
+  unavailable: string | null;
 };
 
 export type OrderStatus = 'new' | 'preparing' | 'served' | 'cancelled';
