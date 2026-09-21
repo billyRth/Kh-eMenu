@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, Coffee, CupSoda, IceCreamCone, Lock, Receipt, Salad, ShoppingBag, TrendingDown, TrendingUp, Trophy, Utensils, Wallet } from 'lucide-react';
+import { toast } from 'sonner';
+import { ChevronLeft, ChevronRight, Coffee, Download, CupSoda, IceCreamCone, Lock, Receipt, Salad, ShoppingBag, TrendingDown, TrendingUp, Trophy, Utensils, Wallet } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { friendlyError, supabase } from '@/lib/supabase';
@@ -45,6 +46,49 @@ function dayLabel(iso: string, lang: Lang, t: (k: StringKey) => string) {
 
 /** 9am / 2pm in English; Khmer and Chinese staff read 24-hour times (9:00 / 14:00). */
 const hourLabel = (h: number, lang: Lang) => (lang === 'en' ? `${((h + 11) % 12) + 1}${h < 12 ? 'am' : 'pm'}` : `${h}:00`);
+
+type CsvOrder = {
+  order_number: number;
+  created_at: string;
+  status: string;
+  paid_at: string | null;
+  guest_name: string | null;
+  dining_tables: { label: string } | null;
+  order_items: { name: string; qty: number; unit_price_usd: number; options: { choice: string }[] | null }[];
+};
+
+/** One row per dish for the day (same Phnom Penh calendar day as the report), ready for Excel / Google Sheets. */
+async function downloadCsv(restaurant: Restaurant, date: string) {
+  const { data, error } = await supabase
+    .from('orders')
+    .select('order_number, created_at, status, paid_at, guest_name, dining_tables(label), order_items(name, qty, unit_price_usd, options)')
+    .eq('restaurant_id', restaurant.id)
+    .gte('created_at', `${date}T00:00:00+07:00`)
+    .lt('created_at', `${shiftDate(date, 1)}T00:00:00+07:00`)
+    .order('created_at');
+  if (error) return toast.error(friendlyError(error.message));
+
+  const time = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { timeZone: 'Asia/Phnom_Penh', hour: '2-digit', minute: '2-digit' });
+  const cell = (v: string | number) => (/[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
+  const rows = [['Date', 'Time', 'Order #', 'Table', 'Guest', 'Item', 'Options', 'Qty', 'Unit price (USD)', 'Line total (USD)', 'Status', 'Paid']];
+  for (const o of data as unknown as CsvOrder[]) {
+    for (const it of o.order_items) {
+      const unit = Number(it.unit_price_usd);
+      rows.push([
+        date, time(o.created_at), String(o.order_number), o.dining_tables?.label ?? '', o.guest_name ?? '', it.name,
+        (it.options ?? []).map((op) => op.choice).join(' · '), String(it.qty), unit.toFixed(2), (unit * it.qty).toFixed(2),
+        o.status, o.paid_at ? 'yes' : 'no',
+      ]);
+    }
+  }
+  // The BOM makes Excel read the file as UTF-8, so Khmer and Chinese names show correctly.
+  const blob = new Blob(['﻿' + rows.map((r) => r.map(cell).join(',')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `khmenu-${restaurant.slug}-${date}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
 export function DailyReport({ restaurant }: { restaurant: Restaurant }) {
   const [date, setDate] = useState(businessDate);
@@ -95,6 +139,9 @@ export function DailyReport({ restaurant }: { restaurant: Restaurant }) {
           <h2 className="text-2xl font-extrabold tracking-tight">{dayLabel(date, lang, t)}</h2>
           <p className="text-sm text-muted-foreground">{t('s_endOfDay', { date })}</p>
         </div>
+        <Button variant="outline" onClick={() => downloadCsv(restaurant, date)}>
+          <Download /> {t('s_downloadCsv')}
+        </Button>
         <Button variant="outline" size="icon" aria-label={t('s_prevDay')} onClick={() => setDate((d) => shiftDate(d, -1))}>
           <ChevronLeft />
         </Button>

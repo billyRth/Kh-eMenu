@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { BellRing, Check, LayoutGrid, ChefHat, Clock, HandPlatter, MonitorSmartphone, Receipt, StickyNote, Volume2, X } from 'lucide-react';
+import { BellRing, Check, LayoutGrid, ChefHat, Clock, HandPlatter, MonitorSmartphone, Receipt, StickyNote, Users, Volume2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -9,6 +9,7 @@ import { khr, timeAgo, usd } from '@/lib/format';
 import { useT } from '@/lib/i18n';
 import type { DiningTable, Order, OrderStatus, Restaurant, ServiceRequest } from '@/lib/types';
 import { DeviceSetup } from './DeviceSetup';
+import { TableSheet } from './TableSheet';
 
 type TableBill = { tableId: string | null; label: string; total: number; orderIds: string[]; since: string; people: Map<string, number> };
 
@@ -56,6 +57,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
   const [tables, setTables] = useState<DiningTable[]>([]);
   const [alertsOn, setAlertsOn] = useState(false);
   const [live, setLive] = useState(false);
+  const [sheetId, setSheetId] = useState<string | null>(null);
   const [, setTick] = useState(0);
   const audio = useRef<AudioContext | null>(null);
   const seen = useRef<Set<string> | null>(null);
@@ -104,6 +106,7 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
       .channel(`orders-${restaurant.id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders', filter: `restaurant_id=eq.${restaurant.id}` }, () => refresh())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'service_requests', filter: `restaurant_id=eq.${restaurant.id}` }, () => refresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'dining_tables', filter: `restaurant_id=eq.${restaurant.id}` }, () => refresh())
       .subscribe((status) => setLive(status === 'SUBSCRIBED'));
     // Backup in case the realtime connection drops on flaky Wi-Fi.
     const poll = window.setInterval(refresh, 20_000);
@@ -159,14 +162,25 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
         toast.warning(t('s_paidButNew', { table: label, amt: usd(total) }));
         return refresh();
       }
-      // Clearing the table starts a fresh bill: the next guests who scan see nothing from before.
-      await Promise.all([
-        supabase.from('service_requests').update({ resolved_at: now }).eq('table_id', tableId).is('resolved_at', null),
-        supabase.from('dining_tables').update({ cleared_at: now }).eq('id', tableId),
-      ]);
+      await resetTable(tableId, now);
     }
     toast.success(t('s_tableClosed', { table: label, amt: usd(total) }));
     refresh();
+  }
+
+  // Clearing a table starts fresh: the next guests who scan see nothing from before, and joined tables are freed.
+  async function resetTable(tableId: string, now = new Date().toISOString()) {
+    await Promise.all([
+      supabase.from('service_requests').update({ resolved_at: now }).eq('table_id', tableId).is('resolved_at', null),
+      supabase.from('dining_tables').update({ cleared_at: now, seated_at: null, party_size: null }).eq('id', tableId),
+      supabase.from('dining_tables').update({ cleared_at: now, seated_at: null, party_size: null, joined_to: null }).eq('joined_to', tableId),
+    ]);
+  }
+
+  function clearTable(tb: DiningTable) {
+    const bill = bills.get(tb.id);
+    if (bill) return closeTable(bill);
+    resetTable(tb.id).then(refresh);
   }
 
   const active = orders.filter((o) => (o.status === 'new' || o.status === 'preparing') && !o.paid_at);
@@ -185,6 +199,13 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
     bills.set(key, bill);
   }
   const billRequested = new Set(requests.filter((r) => r.kind === 'bill').map((r) => r.table_id));
+  // A table is taken if it has guests seated, an open bill, a call, or is joined to / by another table.
+  const busyIds = new Set(
+    tables
+      .filter((tb) => tb.seated_at || tb.joined_to || bills.has(tb.id) || requests.some((r) => r.table_id === tb.id) || tables.some((x) => x.joined_to === tb.id))
+      .map((tb) => tb.id),
+  );
+  const sheetTable = tables.find((tb) => tb.id === sheetId) ?? null;
 
   return (
     <div className="space-y-5">
@@ -216,20 +237,27 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
               const bill = bills.get(tb.id);
               const wants = requests.find((r) => r.table_id === tb.id && r.kind === 'bill');
               const calling = requests.find((r) => r.table_id === tb.id && r.kind === 'waiter');
-              const busy = !!bill;
+              const main = tb.joined_to ? tables.find((x) => x.id === tb.joined_to) : undefined;
+              const busy = busyIds.has(tb.id);
               return (
                 <button
                   key={tb.id}
-                  disabled={!busy && !wants && !calling}
-                  onClick={() => (bill ? closeTable(bill) : wants ? resolveRequest(wants) : calling && resolveRequest(calling))}
+                  onClick={() => setSheetId(tb.id)}
                   className={cn(
-                    'rounded-2xl border-2 p-2.5 text-left transition active:scale-95 disabled:cursor-default',
-                    wants ? 'border-emerald-500 bg-emerald-50' : calling ? 'border-amber-400 bg-amber-50' : busy ? 'border-primary/40 bg-card' : 'border-dashed border-border bg-transparent',
+                    'rounded-2xl border-2 p-2.5 text-left transition active:scale-95',
+                    wants ? 'border-emerald-500 bg-emerald-50' : calling ? 'border-amber-400 bg-amber-50' : main ? 'border-primary/25 bg-primary/5' : busy ? 'border-primary/40 bg-card' : 'border-dashed border-border bg-transparent',
                   )}
                 >
-                  <p className="truncate text-sm font-bold">{tb.label}</p>
-                  <p className={cn('text-xs font-semibold', wants ? 'text-emerald-700' : calling ? 'text-amber-700' : busy ? 'text-foreground' : 'text-muted-foreground')}>
-                    {wants ? t('s_wantsBill') : calling ? t('s_calling') : busy ? usd(bill.total) : t('s_free')}
+                  <p className="flex items-center gap-1 truncate text-sm font-bold">
+                    {tb.label}
+                    {tb.party_size && (
+                      <span className="ml-auto inline-flex items-center gap-0.5 text-xs font-semibold text-muted-foreground">
+                        <Users className="size-3" /> {tb.party_size}
+                      </span>
+                    )}
+                  </p>
+                  <p className={cn('truncate text-xs font-semibold', wants ? 'text-emerald-700' : calling ? 'text-amber-700' : busy ? 'text-foreground' : 'text-muted-foreground')}>
+                    {wants ? t('s_wantsBill') : calling ? t('s_calling') : main ? t('s_joinedWith', { table: main.label }) : bill ? usd(bill.total) : busy ? t('s_seated') : t('s_free')}
                   </p>
                 </button>
               );
@@ -237,6 +265,19 @@ export function OrdersBoard({ restaurant }: { restaurant: Restaurant }) {
           </div>
         </section>
       )}
+
+      <TableSheet
+        key={sheetId ?? 'none'}
+        table={sheetTable}
+        tables={tables}
+        busyIds={busyIds}
+        billTotal={sheetTable ? bills.get(sheetTable.id)?.total : undefined}
+        requests={requests.filter((r) => r.table_id === sheetId)}
+        onClear={clearTable}
+        onResolve={resolveRequest}
+        onChanged={refresh}
+        onClose={() => setSheetId(null)}
+      />
 
       {requests.length > 0 && (
         <div className="grid gap-2 sm:grid-cols-2">
