@@ -30,6 +30,7 @@ const STRINGS = {
   specialPlaceholder: { en: 'e.g. no chilli, no peanuts', km: 'ឧ. កុំដាក់ម្ទេស កុំដាក់សណ្តែកដី', zh: '例如：不要辣、不要花生' },
   scanToOrder: { en: 'To order, scan the QR code on your table or ask our staff.', km: 'ដើម្បីកុម្ម៉ង់ សូមស្កេន QR នៅលើតុ ឬសួរបុគ្គលិក។', zh: '如需点餐，请扫描桌上的二维码或询问服务员。' },
   add: { en: 'Add', km: 'បន្ថែម', zh: '加入' },
+  remove: { en: 'Remove', km: 'ដកចេញ', zh: '减少' },
   required: { en: 'Required', km: 'ត្រូវជ្រើស', zh: '必选' },
   optional: { en: 'Optional', km: 'មិនចាំបាច់', zh: '可选' },
   chooseAny: { en: 'Choose any', km: 'ជ្រើសបានច្រើន', zh: '可多选' },

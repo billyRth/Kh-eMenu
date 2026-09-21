@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { BellRing, Check, ChefHat, Clock, Flame, HandPlatter, Languages, MapPin, Phone, Plus, Receipt, Search, ShoppingBag, Star, UtensilsCrossed, X } from 'lucide-react';
+import { BellRing, Check, ChefHat, Clock, Flame, HandPlatter, Languages, MapPin, Minus, Phone, Plus, Receipt, Search, ShoppingBag, Star, UtensilsCrossed, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -118,6 +118,12 @@ export function MenuPage({ slug, table }: { slug: string; table?: TableInfo }) {
     if (item.options.length > 0) return setDetail(item);
     cart.add(item.id, 1, '');
     toast.success(`${loc(item, lang)} ${t('added')}`, { duration: 1500 });
+  }
+
+  // Takes one off the most recently added line of this dish (lines differ only by options/note).
+  function quickRemove(item: MenuItem) {
+    const index = cart.lines.findLastIndex((l) => l.item_id === item.id);
+    if (index >= 0) cart.setQty(index, cart.lines[index].qty - 1);
   }
 
   return (
@@ -272,16 +278,24 @@ export function MenuPage({ slug, table }: { slug: string; table?: TableInfo }) {
                     <div className="relative shrink-0">
                       <FoodImage src={item.image_url} emoji={item.emoji} alt={name} className="pointer-events-none size-24 rounded-xl" />
                       {canOrder && item.is_available && (
-                        <button
-                          onClick={() => quickAdd(item)}
-                          aria-label={`${t('add')} ${name}`}
+                        <div
                           className={cn(
-                            'absolute -right-1.5 -bottom-1.5 z-10 grid h-9 min-w-9 place-items-center rounded-full border-2 border-card px-2 text-sm font-bold shadow-md transition active:scale-90',
+                            'absolute -right-1.5 -bottom-1.5 z-10 flex h-9 items-center rounded-full border-2 border-card text-sm font-bold shadow-md',
                             inCart ? 'bg-primary text-primary-foreground' : 'bg-card text-primary',
                           )}
                         >
-                          {inCart ? inCart : <Plus className="size-4.5" strokeWidth={3} />}
-                        </button>
+                          {inCart > 0 && (
+                            <>
+                              <button onClick={() => quickRemove(item)} aria-label={`${t('remove')} ${name}`} className="grid size-8 place-items-center rounded-full transition active:scale-90">
+                                <Minus className="size-4.5" strokeWidth={3} />
+                              </button>
+                              <span className="min-w-4 text-center tabular-nums">{inCart}</span>
+                            </>
+                          )}
+                          <button onClick={() => quickAdd(item)} aria-label={`${t('add')} ${name}`} className="grid size-8 place-items-center rounded-full transition active:scale-90">
+                            <Plus className="size-4.5" strokeWidth={3} />
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
