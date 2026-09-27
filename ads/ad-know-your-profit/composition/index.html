@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="km">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>KhMenu — Know your numbers</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2'); font-weight: 800; }
+      @font-face { font-family: 'Kantumruy Pro'; src: url('assets/fonts/kantumruy-pro-khmer-700-normal.woff2') format('woff2'); font-weight: 700; }
+
+      :root { --orange: #c2410c; --flame: #ea580c; --deep: #7c2d12; --cream: #faf8f5; --sand: #f3eee6; --ink: #292524; --muted: #78716c; --line: #e7e2da; --night: #1c1917; --green: #15803d; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--night); }
+      body { color: var(--ink); font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', sans-serif; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--night); }
+      .scene { position: absolute; inset: 0; }
+      .wrap { position: absolute; inset: 0; overflow: hidden; }
+      .km { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; line-height: 1.55; }
+      .en { font-weight: 800; letter-spacing: -0.03em; line-height: 1.14; }
+      .num { font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+
+      /* ================= S1 · the pain: guessing ================= */
+      #s1 .wrap { background: radial-gradient(ellipse at 50% 44%, #33302c 0%, #1c1917 52%, #0c0a09 100%); }
+      #s1-ask { position: absolute; left: 60px; right: 60px; top: 268px; text-align: center; }
+      #s1-km { font-size: 92px; color: #fff; }
+      #s1-en { font-size: 58px; color: #d6d3d1; margin-top: 16px; }
+      #s1-en b { color: #fdba74; font-weight: 800; }
+
+      #book { position: absolute; left: 118px; top: 690px; width: 844px; height: 700px; background: linear-gradient(170deg, #fffdf8 0%, #f4eee2 100%); border-radius: 18px; box-shadow: 0 60px 120px rgb(0 0 0 / 0.6), 0 0 0 2px rgb(255 255 255 / 0.08); transform: rotate(-2.2deg); padding: 54px 62px; overflow: hidden; }
+      #book:before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 26px; background: repeating-linear-gradient(180deg, #d6d3d1 0 26px, transparent 26px 52px); opacity: 0.55; }
+      .bk-h { font-size: 34px; font-weight: 700; color: #6b625b; letter-spacing: 0.18em; text-transform: uppercase; }
+      .bk-rows { margin-top: 26px; }
+      .bk-row { display: flex; align-items: center; gap: 24px; height: 74px; border-bottom: 3px solid #e2ddd2; }
+      .bk-row .s { height: 14px; border-radius: 8px; background: #57534e; opacity: 0.4; }
+      .bk-row .amt { margin-left: auto; font-size: 40px; font-weight: 800; color: #57534e; opacity: 0.6; position: relative; }
+      .bk-row .amt.x:after { content: ''; position: absolute; left: -10px; right: -10px; top: 54%; height: 5px; background: #b91c1c; opacity: 0.8; transform: rotate(-3deg); }
+      .bk-total { display: flex; align-items: center; gap: 30px; margin-top: 18px; padding-top: 18px; border-top: 6px double #c9c1b4; }
+      .bk-total .lb { font-size: 38px; font-weight: 800; color: #6b625b; letter-spacing: 0.1em; text-transform: uppercase; line-height: 1.35; }
+      .bk-total .lb .km { display: block; font-size: 32px; color: #8a8078; letter-spacing: 0; text-transform: none; }
+      #qq { margin-left: auto; padding-right: 14px; font-size: 180px; line-height: 1; font-weight: 800; color: var(--orange); letter-spacing: -0.03em; }
+
+      #drawer { position: absolute; left: -40px; right: -40px; top: 1450px; height: 560px; background: linear-gradient(180deg, #44403c 0%, #292524 100%); border-radius: 40px 40px 0 0; box-shadow: inset 0 6px 0 rgb(255 255 255 / 0.07); display: flex; gap: 28px; padding: 46px 60px; }
+      #drawer .slot { flex: 1; border-radius: 16px; background: #2b2724; box-shadow: inset 0 8px 18px rgb(0 0 0 / 0.55); padding: 20px 14px; }
+      #drawer .note { height: 34px; border-radius: 6px; margin-bottom: 9px; opacity: 0.8; }
+      #s1-foot { position: absolute; left: 60px; right: 60px; top: 596px; text-align: center; font-size: 46px; font-weight: 800; color: #c4beb8; letter-spacing: 0.02em; }
+      #s1-foot span { color: #fdba74; } #s1-foot { font-size: 42px; letter-spacing: 0.06em; }
+
+      /* ================= S2 · the Today report builds itself ================= */
+      #s2 .wrap { background: linear-gradient(180deg, var(--cream) 0%, var(--sand) 100%); }
+      #card { position: absolute; left: 56px; top: 430px; width: 968px; height: 1116px; background: #fff; border-radius: 52px; box-shadow: 0 50px 110px rgb(41 37 36 / 0.22), 0 0 0 2px var(--line); padding: 38px 42px; }
+      .c-head { display: flex; align-items: center; gap: 22px; }
+      .c-head svg { width: 76px; height: 76px; flex: none; }
+      .c-head .ttl { font-size: 46px; font-weight: 800; letter-spacing: -0.02em; }
+      .c-head .ttl .km { font-size: 40px; color: var(--orange); }
+      .c-head .sub { font-size: 28px; color: var(--muted); font-weight: 700; margin-top: 2px; }
+      .c-head .pill { margin-left: auto; padding: 12px 26px; border-radius: 999px; background: #fff1e8; color: var(--orange); font-size: 30px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+
+      #hero { margin-top: 30px; border-radius: 36px; background: linear-gradient(150deg, var(--flame) 0%, var(--orange) 60%, var(--deep) 100%); color: #fff; padding: 24px 36px 24px; }
+      #hero .lab { font-size: 32px; font-weight: 700; opacity: 0.92; }
+      #hero .lab .km { font-size: 30px; }
+      #hero .row { display: flex; align-items: flex-end; gap: 24px; margin-top: 14px; }
+      #v-sales { font-size: 130px; line-height: 1; }
+      #hero .up { display: inline-flex; align-items: center; gap: 10px; padding: 10px 22px; border-radius: 999px; background: rgb(255 255 255 / 0.2); font-size: 32px; font-weight: 800; margin-bottom: 18px; }
+
+      .tiles { display: flex; gap: 22px; margin-top: 22px; }
+      .tile { flex: 1; border-radius: 30px; background: var(--cream); border: 2px solid var(--line); padding: 22px 26px 24px; }
+      .tile .lab { font-size: 29px; color: var(--muted); font-weight: 700; }
+      .tile .lab .km { font-size: 27px; }
+      .tile .val { font-size: 78px; line-height: 1.1; margin-top: 4px; }
+      .tile.p .val { color: var(--green); }
+      .tile .sub { font-size: 26px; color: var(--muted); font-weight: 700; margin-top: 4px; line-height: 1.45; }
+      .tile .sub .km { display: block; font-size: 24px; }
+
+      .row2 { display: flex; align-items: center; gap: 22px; margin-top: 18px; border-radius: 28px; background: var(--cream); border: 2px solid var(--line); padding: 16px 26px; }
+      .row2 .ic { width: 68px; height: 68px; border-radius: 20px; background: #fff1e8; color: var(--orange); display: grid; place-items: center; font-size: 36px; flex: none; }
+      .row2 .lab { font-size: 27px; color: var(--muted); font-weight: 700; }
+      .row2 .val { font-size: 46px; font-weight: 800; letter-spacing: -0.02em; }
+      .row2 .rt { margin-left: auto; text-align: right; font-size: 38px; font-weight: 800; color: var(--orange); white-space: nowrap; }
+      .row2 .rt .km { font-size: 26px; color: var(--muted); display: block; }
+
+      #csv { position: relative; margin-top: 20px; height: 104px; border-radius: 30px; background: var(--ink); color: #fff; display: flex; align-items: center; justify-content: center; gap: 18px; box-shadow: 0 20px 44px rgb(41 37 36 / 0.3); }
+      #csv .en { font-size: 46px; }
+      #csv .km { font-size: 34px; color: #fdba74; }
+      #cursor { position: absolute; left: 830px; top: 1455px; width: 62px; height: 62px; opacity: 0; }
+
+      #s2-top { position: absolute; left: 60px; right: 60px; top: 248px; text-align: center; }
+      #s2-top .en { font-size: 64px; }
+      #s2-top .en span { color: var(--orange); }
+      #s2-top .km { font-size: 48px; color: var(--muted); margin-top: 6px; }
+
+      /* ================= S3 · close ================= */
+      #s3 .wrap { background: radial-gradient(ellipse at 50% 40%, #fff 0%, var(--cream) 55%, #f6e7d8 100%); }
+      #s3 .safe { position: absolute; left: 70px; right: 70px; top: 280px; bottom: 360px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      .bellbox { position: relative; width: 210px; height: 210px; }
+      #s3-bell { width: 210px; height: 210px; filter: drop-shadow(0 26px 44px rgb(124 45 18 / 0.28)); transform-origin: 50% 90%; }
+      .ring { position: absolute; left: 50%; top: 50%; width: 210px; height: 210px; margin: -105px 0 0 -105px; border-radius: 50%; border: 8px solid var(--orange); opacity: 0; }
+      #s3-word { font-size: 96px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; margin-top: 28px; color: #1c1917; }
+      #s3-word b { color: var(--orange); font-weight: 800; }
+      #s3-km { font-size: 78px; color: var(--orange); margin-top: 30px; }
+      #s3-en { font-size: 92px; margin-top: 8px; color: #1c1917; }
+      #s3-en b { color: var(--orange); font-weight: 800; }
+      #s3-tag { font-size: 42px; font-weight: 700; color: var(--muted); margin-top: 28px; }
+      #s3-tag .km { color: var(--ink); font-size: 42px; }
+      #s3-cta { margin-top: 46px; display: flex; flex-direction: column; align-items: center; padding: 26px 58px 30px; border-radius: 40px; background: var(--orange); color: #fff; box-shadow: 0 24px 50px rgb(194 65 12 / 0.35); }
+      #s3-cta .en { font-size: 52px; }
+      #s3-cta .km { font-size: 40px; line-height: 1.45; opacity: 0.95; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="14.19">
+
+      <!-- ===== S1 · Hook (fully formed at frame 0, so the poster is the hook) ===== -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="3.5" data-track-index="0">
+        <div class="wrap" id="s1-wrap">
+          <div id="book">
+            <div class="bk-h">Today</div>
+            <div class="bk-rows">
+              <div class="bk-row"><div class="s" style="width: 300px"></div><div class="amt x">21.50</div></div>
+              <div class="bk-row"><div class="s" style="width: 420px"></div><div class="amt">8.00</div></div>
+              <div class="bk-row" style="border-bottom: 0"><div class="s" style="width: 240px"></div><div class="amt x">13.75</div></div>
+            </div>
+            <div class="bk-total">
+              <div class="lb">Total<span class="km">សរុប</span></div>
+              <div id="qq" class="num">???</div>
+            </div>
+          </div>
+          <div id="drawer" data-layout-allow-overflow>
+            <div class="slot"><div class="note" style="background: #86a98a"></div><div class="note" style="background: #86a98a"></div><div class="note" style="background: #7d9c81"></div></div>
+            <div class="slot"><div class="note" style="background: #c9a86a"></div><div class="note" style="background: #c9a86a"></div></div>
+            <div class="slot"><div class="note" style="background: #9b8ea8"></div><div class="note" style="background: #9b8ea8"></div><div class="note" style="background: #8f8399"></div></div>
+            <div class="slot"><div class="note" style="background: #a86a6a"></div></div>
+          </div>
+          <div id="s1-ask">
+            <div id="s1-km" class="km">ថ្ងៃនេះ អ្នករកបានប៉ុន្មាន?</div>
+            <div id="s1-en" class="en">Do you know what you <b>made today?</b></div>
+          </div>
+          <div id="s1-foot">Guessing · <span>ការទាយ</span></div>
+        </div>
+      </section>
+
+      <!-- ===== S2 · The Today report builds itself ===== -->
+      <section id="s2" class="scene clip" data-start="3.274" data-duration="7.4" data-track-index="1">
+        <div class="wrap" id="s2-wrap">
+          <div id="s2-top">
+            <div class="en">KhMenu <span>Today</span> report</div>
+            <div class="km">របាយការណ៍ថ្ងៃនេះ</div>
+          </div>
+
+          <div id="card">
+            <div class="c-head" id="c-head">
+              <svg viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#c2410c"/><g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"><path d="M150 400h212"/><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff"/><path d="M256 190v-24"/><circle cx="256" cy="150" r="16" fill="#fff" stroke="none"/></g></svg>
+              <div>
+                <div class="ttl">Today · <span class="km">ថ្ងៃនេះ</span></div>
+                <div class="sub">Sabay Kitchen · Phnom Penh</div>
+              </div>
+              <div class="pill">Demo</div>
+            </div>
+
+            <div id="hero">
+              <div class="lab">Total sales · <span class="km">ការលក់សរុប</span></div>
+              <div class="row">
+                <div id="v-sales" class="num">$0.00</div>
+                <div class="up" id="h-up">▲ 12% vs yesterday</div>
+              </div>
+            </div>
+
+            <div class="tiles">
+              <div class="tile p" id="t-profit">
+                <div class="lab">Profit · <span class="km">ចំណេញ</span></div>
+                <div class="val num" id="v-profit">$0.00</div>
+                <div class="sub">after food costs<span class="km">ក្រោយដកថ្លៃដើម</span></div>
+              </div>
+              <div class="tile" id="t-guests">
+                <div class="lab">Guests · <span class="km">ភ្ញៀវ</span></div>
+                <div class="val num">23</div>
+                <div class="sub">7 tables · $6.40 per guest<span class="km">តុ · ក្នុងម្នាក់</span></div>
+              </div>
+            </div>
+
+            <div class="row2" id="r-best">
+              <div class="ic">🏆</div>
+              <div>
+                <div class="lab">Best seller · <span class="km">លក់ដាច់បំផុត</span></div>
+                <div class="val">Fish Amok</div>
+              </div>
+              <div class="rt">14 sold<span class="km">អាម៉ុកត្រី</span></div>
+            </div>
+
+            <div class="row2" id="r-hour">
+              <div class="ic">📈</div>
+              <div>
+                <div class="lab">Busiest hour · <span class="km">ម៉ោងមមាញឹកបំផុត</span></div>
+                <div class="val">7pm – 8pm</div>
+              </div>
+              <div class="rt">6 orders<span class="km">ការកម្ម៉ង់</span></div>
+            </div>
+
+            <div id="csv">
+              <span class="en">Download CSV</span>
+              <span class="km">ទាញយក</span>
+            </div>
+          </div>
+
+          <svg id="cursor" viewBox="0 0 24 24" fill="#1c1917" stroke="#fff" stroke-width="1.4"><path d="M4 2l6.5 18 2.6-7.3 7.4-2.4z"/></svg>
+        </div>
+      </section>
+
+      <!-- ===== S3 · Close ===== -->
+      <section id="s3" class="scene clip" data-start="10.368" data-duration="3.822" data-track-index="2">
+        <div class="wrap" id="s3-wrap">
+          <div class="safe">
+            <div class="bellbox">
+              <div class="ring" id="r3a"></div><div class="ring" id="r3b"></div>
+              <svg id="s3-bell" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#c2410c"/><g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"><path d="M150 400h212"/><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff"/><path d="M256 190v-24"/><circle cx="256" cy="150" r="16" fill="#fff" stroke="none"/></g></svg>
+            </div>
+            <div id="s3-word"><b>Kh</b>Menu</div>
+            <div id="s3-km" class="km">ដឹងលេខរបស់អ្នក រាល់យប់</div>
+            <div id="s3-en" class="en">Know your numbers<br /><b>every night.</b></div>
+            <div id="s3-tag"><span class="km">App កូនខ្មែរ</span> · Made in Phnom Penh</div>
+            <div id="s3-cta">
+              <span class="en">Message us to try it</span>
+              <span class="km">ផ្ញើសារមកយើង ដើម្បីសាកល្បង</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Audio ===== -->
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3" data-start="0" data-duration="14.19" data-track-index="10" data-volume="0.7"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.42},{"t":3.0,"v":0.46},{"t":3.28,"v":0.78},{"t":12.9,"v":0.78},{"t":14.19,"v":0}]}]}'></audio>
+      <audio id="sfx-turn" src="assets/sfx/card-slide-1.ogg" data-start="3.274" data-duration="0.6" data-track-index="11" data-volume="0.5"></audio>
+      <audio id="sfx-sales" src="assets/sfx/chips-stack-2.ogg" data-start="3.82" data-duration="0.17" data-track-index="12" data-volume="0.5"></audio>
+      <audio id="sfx-sales2" src="assets/sfx/chips-stack-2.ogg" data-start="4.95" data-duration="0.17" data-track-index="19" data-volume="0.4"></audio>
+      <audio id="sfx-t1" src="assets/sfx/card-place-1.ogg" data-start="5.457" data-duration="0.5" data-track-index="13" data-volume="0.4"></audio>
+      <audio id="sfx-t2" src="assets/sfx/card-place-1.ogg" data-start="6.548" data-duration="0.5" data-track-index="14" data-volume="0.4"></audio>
+      <audio id="sfx-t3" src="assets/sfx/switch_002.ogg" data-start="7.639" data-duration="0.5" data-track-index="15" data-volume="0.34"></audio>
+      <audio id="sfx-t4" src="assets/sfx/switch_002.ogg" data-start="8.731" data-duration="0.5" data-track-index="16" data-volume="0.34"></audio>
+      <audio id="sfx-csv" src="assets/sfx/click_002.ogg" data-start="10.12" data-duration="0.01" data-track-index="17" data-volume="0.55"></audio>
+      <audio id="sfx-bell" src="assets/sfx/impactBell_heavy_003.ogg" data-start="10.45" data-duration="0.65" data-track-index="18" data-volume="0.55"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const E = 'power3.out';
+      const up = (sel, t, d = 0.5, y = 46) => tl.fromTo(sel, { y, opacity: 0 }, { y: 0, opacity: 1, duration: d, ease: E }, t);
+      const iris = (sel, t) => tl.fromTo(sel, { clipPath: 'circle(0% at 50% 46%)' }, { clipPath: 'circle(78% at 50% 46%)', duration: 0.6, ease: 'power2.inOut' }, t);
+      const money = (id, to, t, d = 1.25) => {
+        const o = { v: 0 };
+        const el = document.getElementById(id);
+        tl.fromTo(o, { v: 0 }, { v: to, duration: d, ease: 'power2.out', immediateRender: false,
+          onUpdate: () => (el.textContent = '$' + o.v.toFixed(2)) }, t);
+      };
+
+      // ---- S1 (0–3.5): everything is already on screen at frame 0 — the poster IS the hook.
+      // Only a slow push-in and a nervous "???" move, so nothing needs reading time.
+      tl.fromTo('#s1-wrap', { scale: 1 }, { scale: 1.055, duration: 3.5, ease: 'none' }, 0);
+      tl.fromTo('#qq', { scale: 1, rotation: -2 }, { scale: 1.06, rotation: 1.5, duration: 0.62, ease: 'sine.inOut', yoyo: true, repeat: 4 }, 0.1);
+      tl.fromTo('#s1-foot', { opacity: 0.35 }, { opacity: 1, duration: 0.45, ease: E }, 1.64);
+
+      // ---- S2 (3.274–10.674): the report builds itself, one number per beat
+      iris('#s2-wrap', 3.274);
+      up('#s2-top', 3.42, 0.45, 34);
+      tl.fromTo('#card', { y: 260, opacity: 0 }, { y: 0, opacity: 1, duration: 0.62, ease: E }, 3.33);
+      up('#hero', 3.72, 0.4, 24);
+      money('v-sales', 147.2, 3.82, 1.3);
+      tl.fromTo('#h-up', { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2)' }, 4.9);
+      tl.fromTo('#t-profit', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: E }, 5.457);
+      money('v-profit', 61.8, 5.55, 0.8);
+      tl.fromTo('#t-guests', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: E }, 6.548);
+      tl.fromTo('#r-best', { x: -50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, ease: E }, 7.639);
+      tl.fromTo('#r-hour', { x: -50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, ease: E }, 8.731);
+      tl.fromTo('#csv', { scale: 0.86, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.42, ease: 'back.out(2)' }, 9.822);
+      tl.fromTo('#cursor', { x: 60, y: 70, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: 0.34, ease: 'power2.out' }, 9.86);
+      tl.to('#csv', { keyframes: [{ scale: 0.965, duration: 0.1 }, { scale: 1, duration: 0.22, ease: 'back.out(3)' }] }, 10.12);
+      tl.to('#cursor', { scale: 0.86, duration: 0.1, yoyo: true, repeat: 1 }, 10.12);
+
+      // ---- S3 (10.368–14.19): close
+      iris('#s3-wrap', 10.368);
+      tl.fromTo('#s3-bell', { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2)' }, 10.4);
+      tl.to('#s3-bell', { keyframes: [{ rotation: 7, duration: 0.1 }, { rotation: -5, duration: 0.12 }, { rotation: 3, duration: 0.12 }, { rotation: 0, duration: 0.15 }] }, 10.5);
+      ['#r3a', '#r3b'].forEach((id, i) =>
+        tl.fromTo(id, { scale: 1, opacity: 0.62 }, { scale: 2.5 + i * 0.5, opacity: 0, duration: 1.2, ease: 'power2.out', immediateRender: false }, 10.47 + i * 0.17));
+      up('#s3-word', 10.82, 0.42, 34);
+      up('#s3-km', 11.0, 0.45, 38);
+      up('#s3-en', 11.34, 0.48, 42);
+      up('#s3-tag', 12.005, 0.45, 30);
+      tl.fromTo('#s3-cta', { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, 12.55);
+      tl.to('#s3-cta', { scale: 1.04, duration: 0.27, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 13.1);
+
+      tl.seek(0);
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

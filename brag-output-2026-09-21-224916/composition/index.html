@@ -1,0 +1,729 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>KhMenu Staff update</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2'); font-weight: 800; }
+      @font-face { font-family: 'Kantumruy Pro'; src: url('assets/fonts/kantumruy-pro-khmer-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Microsoft YaHei'; src: local('Microsoft YaHei'), local('Microsoft YaHei UI'); font-weight: 400 800; }
+
+      :root { --orange: #c2410c; --deep: #7c2d12; --bg: #faf8f5; --page: #f3efe9; --ink: #292524; --muted: #57534e; --line: #e7e2da; --sec: #f1ede7;
+              --em5: #10b981; --em50: #ecfdf5; --em6: #047857; --em7: #065f46; --am4: #fbbf24; --am50: #fffbeb; --am7: #92400e; }
+      * { box-sizing: border-box; margin: 0; }
+      body { background: var(--page); color: var(--ink); font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', 'Microsoft YaHei', sans-serif; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--page); }
+      .scene { position: absolute; inset: 0; overflow: hidden; }
+      svg { display: block; flex-shrink: 0; }
+      .km { font-family: 'Kantumruy Pro', sans-serif; }
+      .zh { font-family: 'Microsoft YaHei', sans-serif; }
+
+      /* ---------- orange scenes ---------- */
+      .orange { background: radial-gradient(ellipse at 50% 40%, #ea580c 0%, var(--orange) 50%, var(--deep) 110%); color: #fff; }
+      .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; }
+      .icon-big { width: 150px; height: 150px; border-radius: 40px; box-shadow: 0 0 0 5px rgb(255 255 255 / 0.9), 0 28px 60px rgb(0 0 0 / 0.28); }
+      .icon-big img { width: 100%; height: 100%; display: block; border-radius: 40px; }
+      .eyebrow { font-size: 44px; font-weight: 700; opacity: 0.92; line-height: 1.1; }
+      .wordmark { font-size: 132px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; }
+      .hook-sub { font-size: 40px; font-weight: 700; padding: 12px 34px; border-radius: 999px; background: rgb(255 255 255 / 0.16); border: 2px solid rgb(255 255 255 / 0.4); }
+      .chip { position: absolute; display: flex; align-items: center; gap: 10px; padding: 16px 26px; border-radius: 22px; background: #fff; color: var(--ink); font-size: 32px; font-weight: 800; box-shadow: 0 18px 40px rgb(0 0 0 / 0.25); white-space: nowrap; }
+      .chip.km { font-weight: 700; line-height: 1.5; padding: 10px 26px; }
+      .chip svg { width: 32px; height: 32px; color: var(--muted); }
+      .chip.grey { background: #ece8e2; color: #57534e; }
+      .chip.green { color: var(--em7); }
+      .chip.green svg { color: var(--em6); }
+
+      /* ---------- rail ---------- */
+      #rail { position: absolute; left: 64px; top: 70px; width: 560px; }
+      .upd { display: inline-flex; align-items: center; gap: 10px; padding: 8px 18px; border-radius: 999px; background: var(--orange); color: #fff; font-size: 20px; font-weight: 800; letter-spacing: 0.08em; }
+      .rail-title { font-size: 50px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.08; margin-top: 18px; }
+      .rail-title em { font-style: normal; color: var(--orange); }
+      .items { margin-top: 30px; display: flex; flex-direction: column; gap: 10px; }
+      .item { position: relative; display: flex; gap: 20px; align-items: flex-start; padding: 16px 20px; border-radius: 24px; }
+      .item .hl { position: absolute; inset: 0; border-radius: 24px; background: #fff; box-shadow: 0 0 0 3px var(--orange), 0 18px 36px rgb(124 45 18 / 0.14); opacity: 0; }
+      .num { position: relative; width: 50px; height: 50px; flex-shrink: 0; border-radius: 50%; background: #e4ddd3; color: #57534e; font-size: 24px; font-weight: 800; display: grid; place-items: center; }
+      .num .n, .num .ok, .num .on { position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center; }
+      .num .on { background: var(--orange); color: #fff; opacity: 0; }
+      .num .ok { background: var(--em6); color: #fff; opacity: 0; }
+      .num .ok svg { width: 26px; height: 26px; stroke-width: 3; }
+      .itxt { position: relative; }
+      .ititle { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.5; }
+      .ititle .km, .ititle .zh { font-weight: 700; }
+      .isub { font-size: 20px; font-weight: 500; color: #57534e; line-height: 1.3; }
+
+      /* ---------- tablet ---------- */
+      #tablet { position: absolute; left: 676px; top: 70px; width: 1196px; height: 940px; border-radius: 46px; background: #1c1917; padding: 16px; box-shadow: 0 40px 90px rgb(41 37 36 / 0.3); }
+      #screen { position: relative; width: 100%; height: 100%; border-radius: 32px; overflow: hidden; background: #f6f3ee; }
+      .hdr { height: 84px; background: #fff; display: flex; align-items: center; gap: 16px; padding: 0 26px; }
+      .rlogo { width: 48px; height: 48px; border-radius: 14px; background: var(--orange); color: #fff; font-weight: 800; font-size: 24px; display: grid; place-items: center; }
+      .rname { font-size: 22px; font-weight: 700; line-height: 1.2; }
+      .rsub { font-size: 16px; color: var(--muted); }
+      .obtn { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-size: 17px; font-weight: 600; white-space: nowrap; }
+      .obtn svg { width: 18px; height: 18px; }
+      .langsw { position: relative; display: flex; border-radius: 999px; background: var(--sec); padding: 4px; }
+      .langsw .knob { position: absolute; top: 4px; left: 4px; height: 38px; border-radius: 999px; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.14); }
+      .langsw span { position: relative; height: 38px; display: grid; place-items: center; padding: 0 14px; font-size: 17px; font-weight: 700; color: var(--muted); }
+      .langsw span.km { line-height: 1; }
+      .nav { position: relative; height: 58px; background: #fff; border-bottom: 1.5px solid var(--line); display: flex; gap: 4px; padding: 0 18px; }
+      .tab { position: relative; display: flex; align-items: center; gap: 9px; padding: 0 16px; font-size: 18px; font-weight: 700; color: var(--muted); }
+      .tab svg { width: 19px; height: 19px; }
+      .tab .tabon { position: absolute; inset: 0; display: flex; align-items: center; gap: 9px; padding: 0 16px; color: var(--ink); opacity: 0; }
+      .uline { position: absolute; bottom: -1.5px; height: 3px; background: var(--orange); border-radius: 2px; }
+      .main { position: absolute; left: 0; right: 0; top: 142px; bottom: 0; padding: 20px 24px; }
+      .liverow { display: flex; align-items: center; gap: 14px; height: 40px; }
+      .live { display: inline-flex; align-items: center; gap: 9px; height: 34px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; font-size: 15px; font-weight: 800; color: var(--em7); }
+      .live i { width: 10px; height: 10px; border-radius: 50%; background: var(--em5); box-shadow: 0 0 0 4px rgb(16 185 129 / 0.2); }
+      .note { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); }
+      .note svg { width: 17px; height: 17px; }
+      .sect { margin-top: 16px; border-radius: 28px; background: rgb(255 255 255 / 0.6); box-shadow: 0 0 0 1.5px rgb(41 37 36 / 0.05); padding: 14px; }
+      .sect h3 { display: flex; align-items: center; gap: 10px; padding: 0 4px 12px; font-size: 20px; font-weight: 800; }
+      .sect h3 svg { width: 19px; height: 19px; color: var(--muted); }
+      .sect h3 .hint { margin-left: auto; font-size: 15px; font-weight: 600; color: var(--muted); }
+      .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+      .tile { position: relative; height: 96px; padding: 13px 16px; }
+      .tile .fr { position: absolute; inset: 0; border-radius: 20px; border: 2.5px solid; opacity: 0; }
+      .fr.free { border-style: dashed; border-color: #d9d2c8; background: transparent; }
+      .fr.busy { border-color: rgb(194 65 12 / 0.4); background: #fff; }
+      .fr.calling { border-color: var(--am4); background: var(--am50); }
+      .fr.wants { border-color: var(--em5); background: var(--em50); }
+      .fr.joined { border-color: rgb(194 65 12 / 0.25); background: #fbf1ea; }
+      .fr.off { border-color: var(--line); background: #ece8e2; }
+      .tile .fr.s0 { opacity: 1; }
+      .trow { position: relative; display: flex; align-items: center; font-size: 20px; font-weight: 800; height: 32px; }
+      .party { position: absolute; right: 0; top: 0; height: 32px; display: flex; align-items: center; gap: 5px; font-size: 17px; font-weight: 700; color: var(--muted); }
+      .party svg { width: 17px; height: 17px; }
+      .st { position: relative; height: 34px; margin-top: 4px; }
+      .st > div { position: absolute; left: 0; top: 0; font-size: 18px; font-weight: 700; line-height: 34px; white-space: nowrap; opacity: 0; }
+      .st > div.s0 { opacity: 1; }
+      .c-muted { color: var(--muted); } .c-ink { color: var(--ink); } .c-am { color: var(--am7); } .c-em { color: var(--em7); } .c-off { color: #57534e; }
+      .cols { margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      .col { border-radius: 26px; background: rgb(255 255 255 / 0.6); box-shadow: 0 0 0 1.5px rgb(41 37 36 / 0.05); padding: 14px; height: 348px; overflow: hidden; }
+      .col h4 { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 800; padding: 2px 4px 12px; height: 46px; }
+      .col h4 svg { width: 19px; height: 19px; }
+      .col h4 .cnt { margin-left: auto; font-size: 14px; font-weight: 700; background: var(--sec); padding: 0 11px; border-radius: 999px; line-height: 24px; }
+      .card { border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.06), 0 0 0 1.5px rgb(41 37 36 / 0.05); overflow: hidden; }
+      .card .cb { padding: 14px 16px; }
+      .onum { display: flex; align-items: center; gap: 9px; }
+      .onum b { font-size: 22px; font-weight: 800; }
+      .badge { font-size: 14px; font-weight: 700; background: var(--ink); color: #fff; padding: 3px 10px; border-radius: 8px; }
+      .ago { margin-left: auto; font-size: 14px; color: var(--muted); }
+      .li { display: flex; align-items: center; gap: 9px; font-size: 17px; margin-top: 10px; font-weight: 500; }
+      .li i { font-style: normal; min-width: 26px; text-align: center; border-radius: 7px; background: var(--sec); font-weight: 800; font-size: 15px; line-height: 24px; }
+      .cf { display: flex; align-items: center; gap: 10px; border-top: 1.5px solid var(--line); background: #faf7f3; padding: 11px 16px; }
+      .cf b { font-size: 17px; }
+      .pbtn { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 11px; background: var(--orange); color: #fff; font-size: 15px; font-weight: 700; white-space: nowrap; }
+      .pbtn svg { width: 16px; height: 16px; }
+      .pbtn.em { background: var(--em6); }
+      .bill-t { font-size: 19px; font-weight: 800; display: flex; align-items: center; gap: 9px; }
+      .wbadge { font-size: 13px; font-weight: 700; background: #d1fae5; color: #065f46; padding: 3px 9px; border-radius: 8px; }
+      .bill-s { font-size: 14px; color: var(--muted); margin-top: 3px; }
+      .bill-amt { font-size: 22px; font-weight: 800; }
+      .fullbtn { margin-top: 12px; height: 40px; border-radius: 11px; background: var(--em6); color: #fff; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; }
+      .fullbtn svg { width: 17px; height: 17px; }
+      /* translatable stack */
+      .tr { display: inline-grid; }
+      .tr > span { grid-area: 1 / 1; white-space: nowrap; }
+      .tr > .L-km { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; opacity: 0; }
+      .tr > .L-zh { font-family: 'Microsoft YaHei', sans-serif; font-weight: 700; opacity: 0; }
+
+      /* ---------- dialog ---------- */
+      #backdrop { position: absolute; inset: 0; background: rgb(28 25 23 / 0.14); opacity: 0; }
+      .dwrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+      .dlg { width: 580px; border-radius: 22px; background: #fff; padding: 30px; box-shadow: 0 30px 70px rgb(0 0 0 / 0.25), 0 0 0 1.5px rgb(41 37 36 / 0.06); opacity: 0; }
+      .dlg h5 { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
+      .dlg .dd { font-size: 19px; color: var(--muted); margin-top: 4px; }
+      .dlg .lbl { font-size: 21px; font-weight: 800; margin: 22px 0 10px; }
+      .back { display: inline-flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; margin-top: 16px; }
+      .back svg { width: 19px; height: 19px; }
+      .g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+      .g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      .nb { height: 68px; border-radius: 14px; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 30px; font-weight: 800; background: #fff; }
+      .tb { height: 58px; border-radius: 14px; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 20px; font-weight: 700; background: #fff; }
+      .morerow { display: flex; gap: 10px; margin-top: 10px; }
+      .inp { flex: 1; height: 58px; border-radius: 14px; border: 1.5px solid var(--line); display: flex; align-items: center; padding: 0 18px; font-size: 20px; color: var(--muted); position: relative; }
+      .inp.focus { border-color: #a8a29e; box-shadow: 0 0 0 4px rgb(168 162 158 / 0.3); }
+      .chk { width: 64px; height: 58px; border-radius: 14px; background: #e3a88e; color: #fff; display: grid; place-items: center; }
+      .chk svg { width: 22px; height: 22px; }
+      .ab { height: 60px; border-radius: 14px; border: 1.5px solid var(--line); display: flex; align-items: center; gap: 12px; padding: 0 18px; font-size: 20px; font-weight: 600; background: #fff; margin-top: 10px; }
+      .ab svg { width: 21px; height: 21px; }
+      .ab.ghost { border-color: transparent; color: var(--muted); }
+      .ab.green { background: var(--em6); border-color: var(--em6); color: #fff; font-weight: 800; }
+      .ab.prim { background: var(--orange); border-color: var(--orange); color: #fff; font-weight: 800; justify-content: center; }
+      .typed { position: absolute; left: 18px; top: 0; line-height: 58px; color: var(--ink); font-size: 20px; display: flex; }
+      .typed span { opacity: 0; }
+      .ph { transition: none; }
+      .caret { width: 2px; height: 26px; background: var(--ink); margin-left: 2px; align-self: center; opacity: 0; }
+
+      /* ---------- toast ---------- */
+      .toast { position: absolute; right: 26px; bottom: 26px; max-width: 520px; display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px; border-radius: 14px; background: #fff; box-shadow: 0 12px 34px rgb(0 0 0 / 0.16), 0 0 0 1.5px rgb(41 37 36 / 0.06); font-size: 18px; font-weight: 600; line-height: 1.35; opacity: 0; }
+      .toast svg { width: 22px; height: 22px; color: var(--em6); margin-top: 1px; }
+
+      /* ---------- report ---------- */
+      #report { position: absolute; left: 0; right: 0; top: 142px; bottom: 0; padding: 22px 24px; opacity: 0; }
+      .rtop { display: flex; align-items: center; gap: 12px; }
+      .rtop h2 { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+      .rtop p { font-size: 16px; color: var(--muted); margin-top: 2px; }
+      .ibtn { width: 42px; height: 42px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; display: grid; place-items: center; }
+      .ibtn svg { width: 19px; height: 19px; }
+      .ibtn.dis { opacity: 0.5; }
+      .stats { margin-top: 20px; display: grid; grid-template-columns: 1.35fr 1fr 1fr 1fr 1fr; gap: 12px; }
+      .stat { position: relative; border-radius: 26px; background: #fff; box-shadow: 0 0 0 1.5px rgb(41 37 36 / 0.05); padding: 18px; height: 178px; }
+      .stat .sl { display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--muted); font-weight: 600; }
+      .stat .sl svg { width: 18px; height: 18px; }
+      .stat .sv { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin-top: 10px; font-variant-numeric: tabular-nums; }
+      .stat .ss { font-size: 15px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+      .stat .up { display: flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 700; color: var(--em7); margin-top: 6px; }
+      .stat .up svg { width: 15px; height: 15px; }
+      #g-ring { position: absolute; inset: 0; border-radius: 26px; box-shadow: 0 0 0 3px var(--orange), 0 14px 34px rgb(194 65 12 / 0.22); opacity: 0; }
+      .newtag { position: absolute; right: 14px; top: 14px; font-size: 13px; font-weight: 800; color: #fff; background: var(--orange); padding: 3px 10px; border-radius: 999px; letter-spacing: 0.04em; }
+      .groups { margin-top: 14px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+      .grp { display: flex; align-items: center; gap: 12px; border-radius: 20px; background: #fff; box-shadow: 0 0 0 1.5px rgb(41 37 36 / 0.05); padding: 14px; }
+      .grp .gi { width: 44px; height: 44px; border-radius: 13px; background: rgb(194 65 12 / 0.1); color: var(--orange); display: grid; place-items: center; }
+      .grp .gi svg { width: 22px; height: 22px; }
+      .grp p { font-size: 14px; color: var(--muted); }
+      .grp b { font-size: 19px; font-weight: 800; }
+      .grp b span { font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 6px; }
+      .best { margin-top: 14px; border-radius: 26px; background: #fff; box-shadow: 0 0 0 1.5px rgb(41 37 36 / 0.05); padding: 20px 22px; }
+      .best h6 { font-size: 19px; font-weight: 800; }
+      .best .bs { font-size: 14px; color: var(--muted); }
+      .bar { margin-top: 12px; }
+      .bar .bt { display: flex; justify-content: space-between; font-size: 16px; font-weight: 600; }
+      .bar .bt span { color: var(--muted); font-weight: 500; }
+      .bar .bb { display: flex; align-items: center; gap: 9px; margin-top: 5px; }
+      .bar .bb i { display: block; height: 13px; border-radius: 0 4px 4px 0; background: var(--orange); }
+      .bar .bb b { font-size: 14px; }
+      #csv { position: absolute; left: 1150px; top: 520px; width: 700px; border-radius: 20px; background: #fff; box-shadow: 0 36px 80px rgb(0 0 0 / 0.3), 0 0 0 1.5px rgb(41 37 36 / 0.08); overflow: hidden; opacity: 0; }
+      .csvh { display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: #f0fdf4; border-bottom: 1.5px solid #d1fae5; font-size: 19px; font-weight: 800; color: #065f46; }
+      .csvh svg { width: 26px; height: 26px; color: var(--em6); }
+      .csvt { width: 100%; border-collapse: collapse; font-size: 16px; }
+      .csvt th { text-align: left; font-weight: 800; background: #f6f3ee; padding: 9px 12px; border-bottom: 1.5px solid var(--line); }
+      .csvt td { padding: 9px 12px; border-bottom: 1px solid #efeae3; font-weight: 500; }
+      .csvt td.r, .csvt th.r { text-align: right; }
+
+      /* ---------- finger ---------- */
+      #finger { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgb(41 37 36 / 0.32); border: 4px solid #fff; box-shadow: 0 8px 22px rgb(0 0 0 / 0.3); opacity: 0; }
+      #ripple { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; border: 4px solid var(--orange); opacity: 0; }
+
+      /* ---------- outro ---------- */
+      .out-row { display: flex; align-items: center; gap: 40px; }
+      .out-pill { font-size: 46px; font-weight: 800; padding: 16px 44px; border-radius: 999px; background: #fff; color: var(--orange); }
+      .out-sub { font-size: 40px; font-weight: 700; line-height: 1.6; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="24">
+      <!-- ============ Scene 2: the staff app (under the hook) ============ -->
+      <section id="s2" class="scene clip" data-start="0" data-duration="21.3" data-track-index="0">
+        <div id="rail">
+          <div id="rail-head">
+            <span class="upd">UPDATE</span>
+            <h1 class="rail-title">What's new in <em>KhMenu Staff</em></h1>
+          </div>
+          <div class="items" id="items"></div>
+        </div>
+
+        <div id="tablet">
+          <div id="screen">
+            <div class="hdr">
+              <div class="rlogo">S</div>
+              <div style="flex: 1">
+                <p class="rname">Sabay Kitchen</p>
+                <p class="rsub">KhMenu Staff</p>
+              </div>
+              <span class="obtn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg><span class="tr" data-layout-allow-overlap data-t="viewMenu"></span></span>
+              <div class="langsw" id="langsw">
+                <div class="knob" id="knob"></div>
+                <span id="l-en">EN</span><span id="l-km" class="km">ខ្មែរ</span><span id="l-zh" class="zh">中文</span>
+              </div>
+              <span class="obtn" style="border-color: transparent"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path></svg></span>
+            </div>
+            <nav class="nav" id="nav"></nav>
+
+            <div class="main" id="board">
+              <div class="liverow">
+                <span class="live"><i></i><span class="tr" data-layout-allow-overlap data-t="live"></span></span>
+                <span class="note"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"></path><path d="M16 9a5 5 0 0 1 0 6"></path><path d="M19.364 18.364a9 9 0 0 0 0-12.728"></path></svg><span class="tr" data-layout-allow-overlap data-t="note"></span></span>
+              </div>
+              <section class="sect">
+                <h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg><span class="tr" data-layout-allow-overlap data-t="tables"></span><span class="hint"><span class="tr" data-layout-allow-overlap data-t="hint"></span></span></h3>
+                <div class="grid" id="grid"></div>
+              </section>
+              <div class="cols">
+                <div class="col">
+                  <h4><span style="color: #2563eb"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M22 8c0-2.3-.8-4.3-2-6"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path><path d="M4 2C2.8 3.7 2 5.7 2 8"></path></svg></span><span class="tr" data-layout-allow-overlap data-t="colNew"></span><span class="cnt">1</span></h4>
+                  <div class="card">
+                    <div class="cb">
+                      <div class="onum"><b>#24</b><span class="badge">Table 2</span><span class="ago">2 min</span></div>
+                      <div class="li"><i>2</i>Fish Amok</div>
+                      <div class="li"><i>1</i>Iced Khmer Coffee</div>
+                    </div>
+                    <div class="cf"><b>$14.75</b><span class="pbtn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"></path><path d="M6 17h12"></path></svg><span class="tr" data-layout-allow-overlap data-t="startCooking"></span></span></div>
+                  </div>
+                </div>
+                <div class="col">
+                  <h4><span style="color: #d97706"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"></path><path d="M6 17h12"></path></svg></span><span class="tr" data-layout-allow-overlap data-t="preparing"></span><span class="cnt">1</span></h4>
+                  <div class="card">
+                    <div class="cb">
+                      <div class="onum"><b>#23</b><span class="badge">Table 6</span><span class="ago">9 min</span></div>
+                      <div class="li"><i>2</i>Beef Lok Lak</div>
+                      <div class="li"><i>2</i>Mango Sticky Rice</div>
+                    </div>
+                    <div class="cf"><b>$21.00</b><span class="pbtn em"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="tr" data-layout-allow-overlap data-t="served"></span></span></div>
+                  </div>
+                </div>
+                <div class="col">
+                  <h4><span style="color: #059669"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17V7"></path><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"></path><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"></path></svg></span><span class="tr" data-layout-allow-overlap data-t="openBills"></span><span class="cnt">3</span></h4>
+                  <div class="card">
+                    <div class="cb" style="border-radius: 20px; box-shadow: inset 0 0 0 2.5px var(--em5)">
+                      <div style="display: flex; align-items: flex-start">
+                        <div style="flex: 1">
+                          <p class="bill-t">Table 6 <span class="wbadge"><span class="tr" data-layout-allow-overlap data-t="wants"></span></span></p>
+                          <p class="bill-s">2 orders · 31 min</p>
+                        </div>
+                        <p class="bill-amt">$31.00</p>
+                      </div>
+                      <div class="fullbtn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="tr" data-layout-allow-overlap data-t="paidClose"></span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="report">
+              <div class="rtop">
+                <div style="margin-right: auto">
+                  <h2>Today</h2>
+                  <p>End-of-day report · 2026-09-21</p>
+                </div>
+                <span class="obtn" id="csvbtn" style="height: 46px; font-size: 18px"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>Download CSV</span>
+                <span class="ibtn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></span>
+                <span class="ibtn dis"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span>
+              </div>
+              <div class="stats">
+                <div class="stat" id="st-guests">
+                  <div id="g-ring"></div>
+                  <span class="newtag">NEW</span>
+                  <div class="sl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>Guests</div>
+                  <p class="sv" id="v-guests">0</p>
+                  <p class="ss" id="g-sub">7 tables · $6.40 per guest</p>
+                </div>
+                <div class="stat">
+                  <div class="sl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17V7"></path><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"></path><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"></path></svg>Total sales</div>
+                  <p class="sv" id="v-sales">$0.00</p>
+                  <p class="ss">603,520៛</p>
+                  <p class="up"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg>+12% vs day before</p>
+                </div>
+                <div class="stat">
+                  <div class="sl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>Profit</div>
+                  <p class="sv" id="v-profit">$0.00</p>
+                  <p class="ss">After food costs</p>
+                </div>
+                <div class="stat">
+                  <div class="sl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 10a4 4 0 0 1-8 0"></path><path d="M3.103 6.034h17.794"></path><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"></path></svg>Orders</div>
+                  <p class="sv" id="v-orders">0</p>
+                  <p class="ss">Avg $7.75 per order</p>
+                </div>
+                <div class="stat">
+                  <div class="sl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg>Items sold</div>
+                  <p class="sv" id="v-items">0</p>
+                  <p class="ss">Collected $131.40</p>
+                </div>
+              </div>
+              <div class="groups">
+                <div class="grp"><div class="gi"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8"></path><path d="M5 8h14"></path><path d="M7 15a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0"></path><path d="m12 8 1-6h2"></path></svg></div><div><p>Drinks sold</p><b>21<span>$33.20</span></b></div></div>
+                <div class="grp"><div class="gi"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 21h10"></path><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"></path><path d="M11.38 12a2.4 2.4 0 0 1-.4-4.77 2.4 2.4 0 0 1 3.2-2.77 2.4 2.4 0 0 1 3.47-.63 2.4 2.4 0 0 1 3.37 3.37 2.4 2.4 0 0 1-1.1 3.7 2.51 2.51 0 0 1 .03 1.1"></path><path d="m13 12 4-4"></path><path d="M10.9 7.25A3.99 3.99 0 0 0 4 10c0 .73.2 1.41.54 2"></path></svg></div><div><p>Starters sold</p><b>5<span>$11.00</span></b></div></div>
+                <div class="grp"><div class="gi"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg></div><div><p>Mains sold</p><b>14<span>$97.00</span></b></div></div>
+                <div class="grp"><div class="gi"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 11 4.08 10.35a1 1 0 0 0 1.84 0L17 11"></path><path d="M17 7A5 5 0 0 0 7 7"></path><path d="M17 7a2 2 0 0 1 0 4H7a2 2 0 0 1 0-4"></path></svg></div><div><p>Desserts sold</p><b>2<span>$6.00</span></b></div></div>
+              </div>
+              <div class="best">
+                <h6>Best sellers</h6>
+                <p class="bs">Portions sold</p>
+                <div class="bar"><div class="bt">Iced Khmer Coffee<span>$24.50</span></div><div class="bb"><i style="width: 85%"></i><b>14</b></div></div>
+                <div class="bar"><div class="bt">Fish Amok<span>$52.00</span></div><div class="bb"><i style="width: 49%"></i><b>8</b></div></div>
+                <div class="bar"><div class="bt">Beef Lok Lak<span>$45.00</span></div><div class="bb"><i style="width: 36%"></i><b>6</b></div></div>
+              </div>
+            </div>
+
+            <div id="backdrop"></div>
+            <div id="dialogs" data-layout-allow-overlap></div>
+            <div id="toasts" data-layout-allow-overlap></div>
+          </div>
+        </div>
+
+        <div id="csv" data-layout-allow-overlap>
+          <div class="csvh"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M8 13h2"></path><path d="M14 13h2"></path><path d="M8 17h2"></path><path d="M14 17h2"></path></svg>khmenu-demo-2026-09-21.csv</div>
+          <table class="csvt">
+            <tr><th>Time</th><th>Order #</th><th>Table</th><th>Item</th><th class="r">Qty</th><th class="r">Line total</th></tr>
+            <tr><td>12:14</td><td>11</td><td>Table 2</td><td>Fish Amok</td><td class="r">2</td><td class="r">13.00</td></tr>
+            <tr><td>12:14</td><td>11</td><td>Table 2</td><td>Iced Khmer Coffee</td><td class="r">1</td><td class="r">1.75</td></tr>
+            <tr><td>12:31</td><td>12</td><td>Table 7</td><td>Beef Lok Lak</td><td class="r">2</td><td class="r">15.00</td></tr>
+            <tr><td>12:48</td><td>13</td><td>Table 5</td><td>Mango Sticky Rice</td><td class="r">2</td><td class="r">6.00</td></tr>
+          </table>
+        </div>
+
+        <div id="ripple"></div>
+        <div id="finger"></div>
+      </section>
+
+      <!-- ============ Scene 1: hook ============ -->
+      <section id="s1" class="scene clip orange" data-start="0" data-duration="2.9" data-track-index="1">
+        <div class="center">
+          <div class="icon-big" id="h-icon"><img src="assets/img/khmenu-icon.svg" alt="" /></div>
+          <p class="eyebrow" id="h-eyebrow">New in</p>
+          <p class="wordmark" id="h-word">KhMenu Staff</p>
+          <p class="hook-sub" id="h-sub">6 updates for your floor team</p>
+        </div>
+        <div class="chip km" id="c1" style="left: 170px; top: 150px">ខ្មែរ</div>
+        <div class="chip zh" id="c2" style="left: 1500px; top: 170px">中文</div>
+        <div class="chip" id="c3" style="left: 230px; top: 780px"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>4 · Seated</div>
+        <div class="chip" id="c4" style="left: 1380px; top: 800px">Table 3 → Table 7</div>
+        <div class="chip grey" id="c5" style="left: 120px; top: 470px"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M4.929 4.929 19.07 19.071"></path></svg>Broken</div>
+        <div class="chip green" id="c6" style="left: 1560px; top: 480px"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>CSV</div>
+      </section>
+
+      <!-- ============ Scene 3: outro ============ -->
+      <section id="s3" class="scene clip orange" data-start="20.74" data-duration="3.26" data-track-index="1">
+        <div class="center" style="gap: 40px">
+          <div class="out-row" id="o-logo">
+            <div class="icon-big" style="width: 170px; height: 170px"><img src="assets/img/khmenu-icon.svg" alt="" /></div>
+            <p class="wordmark">KhMenu Staff</p>
+          </div>
+          <p class="out-pill" id="o-pill">Update out now</p>
+          <p class="out-sub" id="o-sub"><span class="km">App កូនខ្មែរ</span> · Made in Phnom Penh</p>
+        </div>
+      </section>
+
+      <!-- ============ Audio ============ -->
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-10-by-ende-dot-app.mp3" data-start="0" data-duration="24" data-track-index="10" data-volume="0.8"></audio>
+      <audio id="sfx-0" src="assets/sfx/drop_002.ogg" data-start="0.22" data-duration="0.19" data-track-index="11" data-volume="0.7"></audio>
+      <audio id="sfx-1" src="assets/sfx/impactSoft_medium_002.ogg" data-start="2.46" data-duration="0.135" data-track-index="12" data-volume="0.8"></audio>
+      <audio id="sfx-2" src="assets/sfx/switch_002.ogg" data-start="3.55" data-duration="0.61" data-track-index="13" data-volume="0.5"></audio>
+      <audio id="sfx-3" src="assets/sfx/switch_002.ogg" data-start="4.64" data-duration="0.61" data-track-index="14" data-volume="0.5"></audio>
+      <audio id="sfx-4" src="assets/sfx/switch_002.ogg" data-start="5.46" data-duration="0.61" data-track-index="15" data-volume="0.5"></audio>
+      <audio id="sfx-5" src="assets/sfx/select_008.ogg" data-start="6.02" data-duration="0.047" data-track-index="16" data-volume="0.75"></audio>
+      <audio id="sfx-6" src="assets/sfx/select_008.ogg" data-start="7.35" data-duration="0.047" data-track-index="17" data-volume="0.75"></audio>
+      <audio id="sfx-7" src="assets/sfx/select_008.ogg" data-start="8.95" data-duration="0.047" data-track-index="18" data-volume="0.75"></audio>
+      <audio id="sfx-8" src="assets/sfx/select_008.ogg" data-start="9.95" data-duration="0.047" data-track-index="19" data-volume="0.75"></audio>
+      <audio id="sfx-9" src="assets/sfx/select_008.ogg" data-start="10.93" data-duration="0.047" data-track-index="20" data-volume="0.75"></audio>
+      <audio id="sfx-10" src="assets/sfx/select_008.ogg" data-start="12.3" data-duration="0.047" data-track-index="21" data-volume="0.75"></audio>
+      <audio id="sfx-11" src="assets/sfx/select_008.ogg" data-start="13.2" data-duration="0.047" data-track-index="22" data-volume="0.75"></audio>
+      <audio id="sfx-12" src="assets/sfx/select_008.ogg" data-start="14" data-duration="0.047" data-track-index="23" data-volume="0.75"></audio>
+      <audio id="sfx-13" src="assets/sfx/select_008.ogg" data-start="14.98" data-duration="0.047" data-track-index="24" data-volume="0.75"></audio>
+      <audio id="sfx-14" src="assets/sfx/select_008.ogg" data-start="15.85" data-duration="0.047" data-track-index="25" data-volume="0.75"></audio>
+      <audio id="sfx-15" src="assets/sfx/select_008.ogg" data-start="16.85" data-duration="0.047" data-track-index="26" data-volume="0.75"></audio>
+      <audio id="sfx-16" src="assets/sfx/select_008.ogg" data-start="17.66" data-duration="0.047" data-track-index="27" data-volume="0.75"></audio>
+      <audio id="sfx-17" src="assets/sfx/select_008.ogg" data-start="19.3" data-duration="0.047" data-track-index="28" data-volume="0.75"></audio>
+      <audio id="sfx-18" src="assets/sfx/drop_002.ogg" data-start="7.66" data-duration="0.19" data-track-index="29" data-volume="0.45"></audio>
+      <audio id="sfx-19" src="assets/sfx/drop_002.ogg" data-start="11.2" data-duration="0.19" data-track-index="30" data-volume="0.45"></audio>
+      <audio id="sfx-20" src="assets/sfx/drop_002.ogg" data-start="14.2" data-duration="0.19" data-track-index="31" data-volume="0.45"></audio>
+      <audio id="sfx-21" src="assets/sfx/drop_002.ogg" data-start="17.04" data-duration="0.19" data-track-index="32" data-volume="0.45"></audio>
+      <audio id="sfx-22" src="assets/sfx/keypress-001.wav" data-start="16.12" data-duration="0.25" data-track-index="33" data-volume="0.5"></audio>
+      <audio id="sfx-23" src="assets/sfx/keypress-002.wav" data-start="16.2" data-duration="0.25" data-track-index="34" data-volume="0.5"></audio>
+      <audio id="sfx-24" src="assets/sfx/keypress-003.wav" data-start="16.28" data-duration="0.25" data-track-index="35" data-volume="0.5"></audio>
+      <audio id="sfx-25" src="assets/sfx/keypress-004.wav" data-start="16.36" data-duration="0.25" data-track-index="36" data-volume="0.5"></audio>
+      <audio id="sfx-26" src="assets/sfx/keypress-005.wav" data-start="16.44" data-duration="0.25" data-track-index="37" data-volume="0.5"></audio>
+      <audio id="sfx-27" src="assets/sfx/keypress-006.wav" data-start="16.52" data-duration="0.25" data-track-index="38" data-volume="0.5"></audio>
+      <audio id="sfx-28" src="assets/sfx/chips-stack-2.ogg" data-start="17.85" data-duration="0.172" data-track-index="39" data-volume="0.6"></audio>
+      <audio id="sfx-29" src="assets/sfx/chips-stack-2.ogg" data-start="18.5" data-duration="0.172" data-track-index="40" data-volume="0.5"></audio>
+      <audio id="sfx-30" src="assets/sfx/card-slide-1.ogg" data-start="19.42" data-duration="0.6" data-track-index="41" data-volume="0.55"></audio>
+      <audio id="sfx-31" src="assets/sfx/impactBell_heavy_003.ogg" data-start="20.74" data-duration="0.653" data-track-index="42" data-volume="0.6"></audio>
+    </div>
+
+    <script>
+      const ICONS = {"Users":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"></path><path d=\"M16 3.128a4 4 0 0 1 0 7.744\"></path><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle></svg>","LayoutGrid":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"></rect><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"></rect><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"></rect><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"></rect></svg>","BellRing":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10.268 21a2 2 0 0 0 3.464 0\"></path><path d=\"M22 8c0-2.3-.8-4.3-2-6\"></path><path d=\"M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326\"></path><path d=\"M4 2C2.8 3.7 2 5.7 2 8\"></path></svg>","ChefHat":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z\"></path><path d=\"M6 17h12\"></path></svg>","Receipt":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 17V7\"></path><path d=\"M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8\"></path><path d=\"M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z\"></path></svg>","ArrowRightLeft":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m16 3 4 4-4 4\"></path><path d=\"M20 7H4\"></path><path d=\"m8 21-4-4 4-4\"></path><path d=\"M4 17h16\"></path></svg>","Combine":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14 3a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1\"></path><path d=\"M19 3a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1\"></path><path d=\"m7 15 3 3\"></path><path d=\"m7 21 3-3H5a2 2 0 0 1-2-2v-2\"></path><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"></rect><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"></rect></svg>","Ban":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M4.929 4.929 19.07 19.071\"></path></svg>","Check":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"></path></svg>","Download":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 15V3\"></path><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"></path><path d=\"m7 10 5 5 5-5\"></path></svg>","ChartColumn":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 3v16a2 2 0 0 0 2 2h16\"></path><path d=\"M18 17V9\"></path><path d=\"M13 17V5\"></path><path d=\"M8 17v-3\"></path></svg>","BookOpen":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v16\"></path><path d=\"M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z\"></path></svg>","QrCode":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\"></rect><rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\"></rect><rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"></rect><path d=\"M21 16h-3a2 2 0 0 0-2 2v3\"></path><path d=\"M21 21v.01\"></path><path d=\"M12 7v3a2 2 0 0 1-2 2H7\"></path><path d=\"M3 12h.01\"></path><path d=\"M12 3h.01\"></path><path d=\"M12 16v.01\"></path><path d=\"M16 12h1\"></path><path d=\"M21 12v.01\"></path><path d=\"M12 21v-1\"></path></svg>","Settings":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle></svg>","Wallet":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\"></path><path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\"></path></svg>","ShoppingBag":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 10a4 4 0 0 1-8 0\"></path><path d=\"M3.103 6.034h17.794\"></path><path d=\"M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z\"></path></svg>","ArrowLeft":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m12 19-7-7 7-7\"></path><path d=\"M19 12H5\"></path></svg>","Volume2":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\"></path><path d=\"M16 9a5 5 0 0 1 0 6\"></path><path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\"></path></svg>","LogOut":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m16 17 5-5-5-5\"></path><path d=\"M21 12H9\"></path><path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"></path></svg>","ChevronLeft":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m15 18-6-6 6-6\"></path></svg>","ChevronRight":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 18 6-6-6-6\"></path></svg>","Utensils":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\"></path><path d=\"M7 2v20\"></path><path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\"></path></svg>","TrendingUp":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 7h6v6\"></path><path d=\"m22 7-8.5 8.5-5-5L2 17\"></path></svg>","Clock":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 6v6l4 2\"></path></svg>","X":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"></path><path d=\"m6 6 12 12\"></path></svg>","FileSpreadsheet":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\"></path><path d=\"M14 2v5a1 1 0 0 0 1 1h5\"></path><path d=\"M8 13h2\"></path><path d=\"M14 13h2\"></path><path d=\"M8 17h2\"></path><path d=\"M14 17h2\"></path></svg>","CupSoda":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8\"></path><path d=\"M5 8h14\"></path><path d=\"M7 15a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0\"></path><path d=\"m12 8 1-6h2\"></path></svg>","Salad":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 21h10\"></path><path d=\"M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z\"></path><path d=\"M11.38 12a2.4 2.4 0 0 1-.4-4.77 2.4 2.4 0 0 1 3.2-2.77 2.4 2.4 0 0 1 3.47-.63 2.4 2.4 0 0 1 3.37 3.37 2.4 2.4 0 0 1-1.1 3.7 2.51 2.51 0 0 1 .03 1.1\"></path><path d=\"m13 12 4-4\"></path><path d=\"M10.9 7.25A3.99 3.99 0 0 0 4 10c0 .73.2 1.41.54 2\"></path></svg>","IceCreamCone":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m7 11 4.08 10.35a1 1 0 0 0 1.84 0L17 11\"></path><path d=\"M17 7A5 5 0 0 0 7 7\"></path><path d=\"M17 7a2 2 0 0 1 0 4H7a2 2 0 0 1 0-4\"></path></svg>","ExternalLink":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 3h6v6\"></path><path d=\"M10 14 21 3\"></path><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"></path></svg>"};
+      const ic = (n) => ICONS[n] || '';
+
+      // ---------- strings (verbatim from src/lib/i18n.ts) ----------
+      const T = {
+        orders: ['Orders', 'ការកុម្ម៉ង់', '订单'], today: ['Today', 'ថ្ងៃនេះ', '今日'], menu: ['Menu', 'ម៉ឺនុយ', '菜单'],
+        tablesQr: ['Tables & QR', 'តុ & QR', '餐桌二维码'], settings: ['Settings', 'ការកំណត់', '设置'],
+        viewMenu: ['View menu', 'មើលម៉ឺនុយ', '查看菜单'], live: ['Live', 'អនឡាញ', '实时'],
+        note: ['Sound on · screen stays awake · keep this tab open', 'បើកសំឡេង · អេក្រង់មិនបិទ · សូមទុកទំព័រនេះបើក', '声音已开 · 屏幕常亮 · 请保持此页面打开'],
+        tables: ['Tables', 'តុ', '餐桌'], hint: ['Tap a table to seat, move or clear it', 'ចុចលើតុ ដើម្បីដាក់ភ្ញៀវ ប្ដូរ ឬបិទតុ', '点餐桌可入座、换桌或清台'],
+        free: ['Free', 'ទំនេរ', '空闲'], calling: ['Calling', 'កំពុងហៅ', '呼叫中'], wants: ['Wants bill', 'សុំគិតលុយ', '要结账'],
+        colNew: ['New', 'ថ្មី', '新订单'], preparing: ['Preparing', 'កំពុងរៀបចំ', '准备中'], openBills: ['Open bills', 'វិក្កយបត្រមិនទាន់បង់', '未结账单'],
+        startCooking: ['Start cooking', 'ចាប់ផ្ដើមធ្វើ', '开始做'], served: ['Served', 'បានបម្រើ', '已上菜'], paidClose: ['Paid, close bill', 'បង់រួច បិទវិក្កយបត្រ', '已付款，结账'],
+      };
+      const tr = (k) => `<span class="L-en">${T[k][0]}</span><span class="L-km">${T[k][1]}</span><span class="L-zh">${T[k][2]}</span>`;
+      const trSpan = (k) => `<span class="tr" data-layout-allow-overlap>${tr(k)}</span>`;
+
+      // Inject icons + translatable text into static markup.
+      document.querySelectorAll('[data-t]').forEach((el) => (el.innerHTML = tr(el.dataset.t)));
+
+      // ---------- nav ----------
+      const tabs = [['orders', 'BellRing'], ['today', 'ChartColumn'], ['menu', 'BookOpen'], ['tablesQr', 'QrCode'], ['settings', 'Settings']];
+      document.getElementById('nav').innerHTML =
+        tabs.map(([k, i]) => `<div class="tab" data-layout-allow-overlap id="tab-${k}">${ic(i)}${trSpan(k)}<div class="tabon">${ic(i)}${trSpan(k)}</div></div>`).join('') + '<div class="uline" id="uline"></div>';
+
+      // ---------- rail ----------
+      const rail = [
+        ['<span>English · </span><span class="km">ខ្មែរ</span><span> · </span><span class="zh">中文</span>', 'The whole staff app, in your team’s language'],
+        ['Seat guests', 'Tap a free table, pick how many people'],
+        ['Move tables', 'Guests switch tables, the bill follows them'],
+        ['Combine tables', 'Push tables together for a big group'],
+        ['Block a table', 'Broken or reserved? Mark it unavailable'],
+        ['Guests today + CSV', '23 guests · 7 tables · $6.40 per guest'],
+      ];
+      document.getElementById('items').innerHTML = rail
+        .map(([h, s], i) => `<div class="item" id="it${i + 1}"><div class="hl"></div><div class="num" data-layout-allow-overlap><span class="n">${i + 1}</span><span class="on">${i + 1}</span><span class="ok">${ic('Check')}</span></div><div class="itxt"><p class="ititle">${h}</p><p class="isub">${s}</p></div></div>`)
+        .join('');
+
+      // ---------- tables grid: each tile lists the frames + status layers it will pass through ----------
+      const U = (n) => `${ic('Users')}${n}`;
+      const tiles = [
+        { n: 1, fr: ['free', 'off'], st: [[trSpan('free'), 'c-muted'], ['Broken', 'c-off']] },
+        { n: 2, fr: ['busy'], st: [['$24.75', 'c-ink']], party: [3] },
+        { n: 3, fr: ['busy', 'free'], st: [['$18.50', 'c-ink'], ['Free', 'c-muted']], party: [2] },
+        { n: 4, fr: ['calling'], st: [[trSpan('calling'), 'c-am']], party: [2] },
+        { n: 5, fr: ['free', 'busy'], st: [[trSpan('free'), 'c-muted'], ['Seated', 'c-ink']], party: [null, 4] },
+        { n: 6, fr: ['wants'], st: [[trSpan('wants'), 'c-em']], party: [4] },
+        { n: 7, fr: ['free', 'busy'], st: [[trSpan('free'), 'c-muted'], ['$18.50', 'c-ink']], party: [null, 2] },
+        { n: 8, fr: ['free', 'joined'], st: [[trSpan('free'), 'c-muted'], ['With Table 7', 'c-ink']] },
+      ];
+      document.getElementById('grid').innerHTML = tiles
+        .map((t) => {
+          const frames = t.fr.map((f, i) => `<div class="fr ${f} s${i}" id="t${t.n}-f${i}"></div>`).join('');
+          const party = (t.party || []).map((p, i) => (p ? `<span class="party" id="t${t.n}-p${i}" style="opacity:${i ? 0 : 1}">${U(p)}</span>` : '')).join('');
+          const st = t.st.map(([txt, c], i) => `<div class="${c} s${i}" id="t${t.n}-s${i}">${txt}</div>`).join('');
+          return `<div class="tile" data-layout-allow-overlap id="t${t.n}">${frames}<div class="trow">Table ${t.n}${party}</div><div class="st">${st}</div></div>`;
+        })
+        .join('');
+
+      // ---------- dialogs (TableSheet.tsx) ----------
+      const picker = (id) => `<p class="lbl">How many people?</p><div class="g4">${[1, 2, 3, 4, 5, 6, 7, 8].map((k) => `<div class="nb" id="${id}-n${k}">${k}</div>`).join('')}</div>
+        <div class="morerow"><div class="inp">More</div><div class="chk">${ic('Check')}</div></div>`;
+      const freeMain = (id, n) => `<h5>Table ${n}</h5><p class="dd">Free</p>${picker(id)}
+        <div class="ab" id="${id}-comb">${ic('Combine')}Combine with another table</div>
+        <div class="ab ghost" id="${id}-unav">${ic('Ban')}Mark table unavailable</div>`;
+      const back = `<div class="back">${ic('ArrowLeft')}Back</div>`;
+      const dialogs = {
+        dSeat: freeMain('dSeat', 5),
+        dBusy: `<h5>Table 3</h5><p class="dd">2 guests · $18.50</p><div style="margin-top: 14px">
+          <div class="ab green">${ic('Receipt')}Paid · clear table ($18.50)</div>
+          <div class="ab" id="dBusy-move">${ic('ArrowRightLeft')}Move to another table</div>
+          <div class="ab">${ic('Users')}Change number of guests</div></div>`,
+        dMove: `<h5>Table 3</h5><p class="dd">2 guests · $18.50</p>${back}<p class="lbl" style="margin-top: 14px">Move Table 3 to…</p>
+          <div class="g3"><div class="tb">Table 1</div><div class="tb" id="dMove-7">Table 7</div><div class="tb">Table 8</div></div>`,
+        dFree8: freeMain('dFree8', 8),
+        dComb: `<h5>Table 8</h5><p class="dd">Free</p>${back}<p class="lbl" style="margin-top: 14px">Combine Table 8 with…</p>
+          <div class="g3"><div class="tb">Table 2</div><div class="tb">Table 4</div><div class="tb">Table 5</div><div class="tb">Table 6</div><div class="tb" id="dComb-7">Table 7</div></div>`,
+        dFree1: freeMain('dFree1', 1),
+        dUnav: `<h5>Table 1</h5><p class="dd">Free</p>${back}<p class="lbl" style="margin-top: 14px">Mark table unavailable</p>
+          <div class="inp" id="dUnav-inp" style="flex: none"><span class="ph" id="dUnav-ph">Reason (optional), e.g. broken, reserved</span>
+            <span class="typed">${'Broken'.split('').map((c, i) => `<span id="ch${i}">${c}</span>`).join('')}<i class="caret" id="caret"></i></span></div>
+          <div class="ab prim" id="dUnav-ok" style="margin-top: 12px">${ic('Ban')}Unavailable</div>`,
+      };
+      document.getElementById('dialogs').innerHTML = Object.entries(dialogs)
+        .map(([id, html]) => `<div class="dwrap" data-layout-allow-overlap><div class="dlg" id="${id}">${html}</div></div>`)
+        .join('');
+
+      // ---------- toasts ----------
+      const toasts = {
+        toSeat: 'Table 5 · 4 guests',
+        toMove: 'Moved Table 3 → Table 7. Ask the guests to scan the QR on Table 7.',
+        toComb: 'Table 8 combined with Table 7',
+        toUnav: 'Table 1 · Unavailable',
+      };
+      document.getElementById('toasts').innerHTML = Object.entries(toasts)
+        .map(([id, txt]) => `<div class="toast" data-layout-allow-overlap id="${id}">${ic('Check')}<span>${txt}</span></div>`)
+        .join('');
+
+      // The app screen is layered on purpose (modal over board, language stacks, state layers): waive text-overlap per text node there.
+      document.querySelectorAll('#screen *, #csv *, .num *').forEach((el) => el.setAttribute('data-layout-allow-overlap', ''));
+
+      function build() {
+        const tl = gsap.timeline({ paused: true });
+        const E = 'power3.out';
+        const s2 = document.getElementById('s2');
+        const base = s2.getBoundingClientRect();
+        // Measure every tap target from its final layout before any tween moves anything.
+        const pos = {};
+        const at = (sel) => {
+          if (!pos[sel]) {
+            const r = document.querySelector(sel).getBoundingClientRect();
+            pos[sel] = { x: r.left - base.left + r.width / 2, y: r.top - base.top + r.height / 2 };
+          }
+          return pos[sel];
+        };
+        ['#l-km', '#l-zh', '#l-en', '#t5', '#dSeat-n4', '#t3', '#dBusy-move', '#dMove-7', '#t8', '#dFree8-comb', '#dComb-7', '#t1', '#dFree1-unav', '#dUnav-inp', '#dUnav-ok', '#tab-today', '#csvbtn'].forEach(at);
+        const segs = ['#l-en', '#l-km', '#l-zh'].map((s) => document.querySelector(s));
+        const sw = document.getElementById('langsw').getBoundingClientRect();
+        const segBox = segs.map((s) => { const r = s.getBoundingClientRect(); return { x: r.left - sw.left - 4, w: r.width }; });
+        const tabBox = ['orders', 'today'].map((k) => { const r = document.getElementById('tab-' + k).getBoundingClientRect(); const n = document.getElementById('nav').getBoundingClientRect(); return { x: r.left - n.left, w: r.width }; });
+
+        // ================= Scene 1: hook (0–2.9) =================
+        tl.fromTo('#h-icon', { scale: 0.4, opacity: 0, rotation: -12 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.5, ease: 'back.out(2)' }, 0.22);
+        tl.fromTo('#h-eyebrow', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: E }, 0.5);
+        tl.fromTo('#h-word', { y: 60, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: E }, 0.6);
+        tl.fromTo('#h-sub', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: E }, 1.1);
+        // beat-grid: chips in two waves on 1.37 / 1.90
+        ['#c1', '#c3', '#c5'].forEach((c, i) => tl.fromTo(c, { scale: 0.3, opacity: 0, rotation: -10 }, { scale: 1, opacity: 1, rotation: i % 2 ? 4 : -5, duration: 0.4, ease: 'back.out(2.2)' }, 1.34 + i * 0.06));
+        ['#c2', '#c4', '#c6'].forEach((c, i) => tl.fromTo(c, { scale: 0.3, opacity: 0, rotation: 10 }, { scale: 1, opacity: 1, rotation: i % 2 ? -4 : 5, duration: 0.4, ease: 'back.out(2.2)' }, 1.87 + i * 0.06));
+        tl.to(['#c1', '#c2', '#c3', '#c4', '#c5', '#c6'], { y: '-=16', duration: 1.2, ease: 'sine.inOut' }, 1.5);
+        // wipe the orange panel off to the left
+        tl.fromTo('#s1', { clipPath: 'inset(0 0% 0 0)' }, { clipPath: 'inset(0 100% 0 0)', duration: 0.42, ease: 'power3.inOut' }, 2.46);
+
+        // ================= Scene 2: the staff app =================
+        tl.fromTo('#tablet', { x: 260, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: E }, 2.5);
+        tl.fromTo('#rail-head', { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: E }, 2.56);
+        tl.fromTo('#items .item', { x: -50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, ease: E, stagger: 0.06 }, 2.66);
+
+        // Rail: highlight the active update, tick the finished ones.
+        const setActive = (i, t) => {
+          if (i > 1) {
+            tl.to(`#it${i - 1} .hl`, { opacity: 0, duration: 0.25 }, t);
+            tl.to(`#it${i - 1} .on`, { opacity: 0, duration: 0.2 }, t);
+            tl.fromTo(`#it${i - 1} .ok`, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2.5)' }, t);
+          }
+          tl.fromTo(`#it${i} .hl`, { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.3, ease: E }, t);
+          tl.to(`#it${i} .on`, { opacity: 1, duration: 0.2 }, t);
+          tl.to(`#it${i} .n`, { opacity: 0, duration: 0.1 }, t);
+        };
+        [[1, 3.0], [2, 5.74], [3, 8.73], [4, 12.02], [5, 14.73], [6, 17.47]].forEach(([i, t]) => setActive(i, t)); // beat-grid
+
+        // Finger: glide to a target, press, ripple.
+        let fingerOn = false;
+        const tap = (sel, t, travel = 0.4) => {
+          const p = at(sel);
+          if (!fingerOn) {
+            tl.fromTo('#finger', { x: p.x + 60, y: p.y + 90, opacity: 0 }, { x: p.x, y: p.y, opacity: 1, duration: travel, ease: 'power2.out' }, t - travel);
+            fingerOn = true;
+          } else tl.to('#finger', { x: p.x, y: p.y, duration: travel, ease: 'power2.inOut' }, t - travel);
+          tl.to('#finger', { scale: 0.78, duration: 0.08, yoyo: true, repeat: 1, ease: 'power1.inOut' }, t - 0.04);
+          tl.fromTo('#ripple', { x: p.x, y: p.y, scale: 0.6, opacity: 0.9 }, { scale: 2.1, opacity: 0, duration: 0.45, ease: 'power2.out', immediateRender: false }, t);
+        };
+        const press = (sel, t) => tl.to(sel, { scale: 0.95, duration: 0.08, yoyo: true, repeat: 1 }, t);
+        const openDlg = (id, t, withBackdrop = true) => {
+          if (withBackdrop) tl.to('#backdrop', { opacity: 1, duration: 0.2 }, t);
+          tl.fromTo('#' + id, { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.22, ease: E }, t);
+        };
+        const closeDlg = (id, t, withBackdrop = true) => {
+          if (withBackdrop) tl.to('#backdrop', { opacity: 0, duration: 0.18 }, t);
+          tl.to('#' + id, { opacity: 0, scale: 0.97, duration: 0.14 }, t);
+        };
+        const swapDlg = (a, b, t) => { tl.to('#' + a, { opacity: 0, duration: 0.1 }, t); tl.fromTo('#' + b, { opacity: 0 }, { opacity: 1, duration: 0.14 }, t + 0.06); };
+        const tileTo = (n, from, to, t) => {
+          tl.to(`#t${n}-f${from}`, { opacity: 0, duration: 0.25 }, t);
+          tl.to(`#t${n}-f${to}`, { opacity: 1, duration: 0.25 }, t);
+          tl.to(`#t${n}-s${from}`, { opacity: 0, y: -8, duration: 0.15 }, t);
+          tl.fromTo(`#t${n}-s${to}`, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.25, ease: E }, t + 0.1);
+          tl.fromTo(`#t${n}`, { scale: 1 }, { scale: 1.07, duration: 0.14, yoyo: true, repeat: 1, ease: 'power1.inOut' }, t);
+        };
+        const toast = (id, t, hold) => {
+          tl.fromTo('#' + id, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: E }, t);
+          tl.to('#' + id, { y: 20, opacity: 0, duration: 0.25 }, t + hold);
+        };
+
+        // --- 1. Languages: EN → ខ្មែរ (3.55) → 中文 (4.64) → EN (5.46)  // beat-grid, every other beat
+        const langs = ['en', 'km', 'zh'];
+        tl.set('#knob', { x: segBox[0].x, width: segBox[0].w }, 0);
+        tl.set('#l-en', { color: '#292524' }, 0);
+        tl.set('.tab .tabon', { opacity: 0 }, 0);
+        tl.set('#tab-orders .tabon', { opacity: 1 }, 0);
+        tl.set('#uline', { x: tabBox[0].x + 10, width: tabBox[0].w - 20 }, 0);
+        const flip = (from, to, t) => {
+          tap(`#l-${langs[to]}`, t, from === 0 ? 0.45 : 0.35);
+          tl.to('#knob', { x: segBox[to].x, width: segBox[to].w, duration: 0.22, ease: 'power2.inOut' }, t);
+          tl.set(`#l-${langs[from]}`, { color: "#57534e" }, t + 0.1);
+          tl.set(`#l-${langs[to]}`, { color: '#292524' }, t + 0.1);
+          tl.to(`#screen .L-${langs[from]}`, { opacity: 0, duration: 0.12 }, t + 0.02);
+          tl.to(`#screen .L-${langs[to]}`, { opacity: 1, duration: 0.2 }, t + 0.12);
+        };
+        flip(0, 1, 3.55);
+        flip(1, 2, 4.64);
+        flip(2, 0, 5.46);
+
+        // --- 2. Seat guests: Table 5 → 4 people
+        tap('#t5', 6.02, 0.4);
+        openDlg('dSeat', 6.1);
+        tap('#dSeat-n4', 7.35, 0.5);
+        press('#dSeat-n4', 7.35);
+        tl.to('#dSeat-n4', { backgroundColor: '#f1ede7', duration: 0.08 }, 7.35);
+        closeDlg('dSeat', 7.48);
+        tileTo(5, 0, 1, 7.6);
+        tl.fromTo('#t5-p1', { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2.5)' }, 7.66);
+        toast('toSeat', 7.66, 1.2);
+
+        // --- 3. Move: Table 3 → Table 7
+        tap('#t3', 8.95, 0.45);
+        openDlg('dBusy', 9.05);
+        tap('#dBusy-move', 9.95, 0.4);
+        press('#dBusy-move', 9.95);
+        swapDlg('dBusy', 'dMove', 10.02);
+        tap('#dMove-7', 10.93, 0.4);
+        press('#dMove-7', 10.93);
+        closeDlg('dMove', 11.02);
+        tileTo(3, 0, 1, 11.12);
+        tl.to('#t3-p0', { opacity: 0, duration: 0.2 }, 11.12);
+        tileTo(7, 0, 1, 11.28);
+        tl.fromTo('#t7-p1', { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2.5)' }, 11.34);
+        toast('toMove', 11.2, 1.55);
+
+        // --- 4. Combine: Table 8 with Table 7
+        tap('#t8', 12.3, 0.45);
+        openDlg('dFree8', 12.4);
+        tap('#dFree8-comb', 13.2, 0.45);
+        press('#dFree8-comb', 13.2);
+        swapDlg('dFree8', 'dComb', 13.27);
+        tap('#dComb-7', 14.0, 0.35);
+        press('#dComb-7', 14.0);
+        closeDlg('dComb', 14.08);
+        tileTo(8, 0, 1, 14.18);
+        toast('toComb', 14.2, 1.0);
+
+        // --- 5. Mark Table 1 unavailable: "Broken"
+        tap('#t1', 14.98, 0.45);
+        openDlg('dFree1', 15.08);
+        tap('#dFree1-unav', 15.85, 0.45);
+        swapDlg('dFree1', 'dUnav', 15.92);
+        tl.set('#dUnav-inp', { className: 'inp focus' }, 16.0);
+        tl.set('#caret', { opacity: 1 }, 16.0);
+        tl.set('#dUnav-ph', { opacity: 0 }, 16.12);
+        [16.12, 16.2, 16.28, 16.36, 16.44, 16.52].forEach((t, i) => tl.set('#ch' + i, { opacity: 1 }, t));
+        tap('#dUnav-ok', 16.85, 0.4);
+        press('#dUnav-ok', 16.85);
+        closeDlg('dUnav', 16.94);
+        tileTo(1, 0, 1, 17.04);
+        toast('toUnav', 17.04, 0.95);
+
+        // --- 6. Today tab: Guests + CSV
+        tap('#tab-today', 17.66, 0.45);
+        tl.to('#tab-orders .tabon', { opacity: 0, duration: 0.15 }, 17.68);
+        tl.to('#tab-today .tabon', { opacity: 1, duration: 0.15 }, 17.68);
+        tl.to('#uline', { x: tabBox[1].x + 10, width: tabBox[1].w - 20, duration: 0.25, ease: 'power2.inOut' }, 17.66);
+        tl.to('#board', { opacity: 0, y: 10, duration: 0.18 }, 17.7);
+        tl.fromTo('#report', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.3, ease: E }, 17.8);
+        tl.to('#finger', { opacity: 0, duration: 0.2 }, 18.0);
+        const count = (sel, to, t, d, money) => {
+          const o = { v: 0 };
+          const el = document.querySelector(sel);
+          tl.to(o, { v: to, duration: d, ease: 'power2.out', onUpdate: () => (el.textContent = money ? '$' + o.v.toFixed(2) : String(Math.round(o.v))) }, t);
+        };
+        count('#v-guests', 23, 17.85, 0.7); // beat-locked: lands 18.55
+        count('#v-sales', 147.2, 17.85, 0.7, true);
+        count('#v-profit', 61.8, 17.85, 0.7, true);
+        count('#v-orders', 19, 17.85, 0.7);
+        count('#v-items', 42, 17.85, 0.7);
+        tl.fromTo('#g-ring', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 18.5);
+        tl.fromTo('#st-guests', { scale: 1 }, { scale: 1.06, duration: 0.16, yoyo: true, repeat: 1, ease: 'power1.inOut' }, 18.55);
+        tap('#csvbtn', 19.3, 0.5);
+        press('#csvbtn', 19.3);
+        tl.fromTo('#csv', { y: 120, opacity: 0, rotation: 2 }, { y: 0, opacity: 1, rotation: -1.5, duration: 0.45, ease: 'back.out(1.3)' }, 19.42);
+        tl.to('#finger', { opacity: 0, duration: 0.2 }, 19.7);
+
+        // ================= Scene 3: outro (20.74–24) =================
+        tl.fromTo('#s3', { clipPath: 'circle(0% at 50% 50%)' }, { clipPath: 'circle(75% at 50% 50%)', duration: 0.5, ease: 'power2.out' }, 20.74); // beat-locked: 20.74
+        tl.fromTo('#o-logo', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.8)' }, 20.84);
+        tl.fromTo('#o-pill', { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: E }, 21.28);
+        tl.fromTo('#o-sub', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: E }, 21.83);
+
+        window.__timelines['main'] = tl;
+      }
+      document.fonts.ready.then(build);
+    </script>
+  </body>
+</html>

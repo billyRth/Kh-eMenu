@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="km">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>KhMenu · Your menu speaks 3 languages</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2'); font-weight: 800; }
+      @font-face { font-family: 'Kantumruy Pro'; src: url('assets/fonts/kantumruy-pro-khmer-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Microsoft YaHei'; src: local('Microsoft YaHei'), local('Microsoft YaHei UI'); font-weight: 400 900; }
+
+      :root {
+        --orange: #c2410c; --flame: #ea580c; --amber: #fdba74; --deep: #7c2d12;
+        --cream: #faf8f5; --sand: #f3eee6; --ink: #1c1917; --muted: #78716c; --line: #e7e2da;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+      body { color: var(--cream); font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', 'Microsoft YaHei', sans-serif; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+      .scene { position: absolute; inset: 0; }
+      .wrap { position: absolute; inset: 0; overflow: hidden; }
+      /* every key element lives inside y 250..1570 */
+      .safe { position: absolute; left: 66px; right: 66px; top: 250px; bottom: 350px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      .km { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; line-height: 1.5; }
+      .zh { font-family: 'Microsoft YaHei', sans-serif; font-weight: 700; line-height: 1.35; }
+      .en { font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+
+      /* ============ S1 · hook: the paper menu nobody can read ============ */
+      #s1 .wrap { background: radial-gradient(ellipse at 50% 30%, #44403c 0%, #292524 45%, #1c1917 100%); }
+      #s1 .safe { justify-content: flex-start; }
+      /* paper menu, Khmer-only, held at an angle */
+      #paper { position: relative; width: 600px; height: 690px; background: linear-gradient(170deg, #fffdf8 0%, #f4ecdd 100%); border-radius: 10px; padding: 46px 42px; box-shadow: 0 50px 90px rgb(0 0 0 / 0.55); transform: rotate(-4deg); color: #3f3a33; text-align: left; }
+      #paper .ph { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 40px; color: var(--orange); border-bottom: 5px solid #e2d6bf; padding-bottom: 18px; margin-bottom: 26px; letter-spacing: 0.02em; }
+      #paper .prow { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; padding: 17px 0; border-bottom: 2px dashed #e2d6bf; }
+      #paper .prow span { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 34px; line-height: 1.55; }
+      #paper .prow b { font-weight: 800; font-size: 30px; color: #57534e; }
+      #stain { position: absolute; right: 58px; bottom: 44px; width: 130px; height: 130px; border-radius: 50%; background: radial-gradient(circle, rgb(146 100 44 / 0.22), rgb(146 100 44 / 0.05) 70%, transparent 72%); }
+      #finger { position: absolute; left: 372px; top: 392px; font-size: 150px; line-height: 1; filter: drop-shadow(0 18px 26px rgb(0 0 0 / 0.5)); transform-origin: 20% 80%; }
+
+      .qbub { position: absolute; padding: 20px 38px 26px; border-radius: 34px; box-shadow: 0 26px 50px rgb(0 0 0 / 0.45); white-space: nowrap; }
+      .qbub.a { left: 86px; top: 1010px; background: var(--orange); color: #fff; }
+      .qbub.b { right: 86px; top: 1180px; background: var(--cream); color: var(--ink); }
+      .qbub.c { left: 132px; top: 1352px; background: #fed7aa; color: #7c2d12; }
+      .qbub .t { font-size: 62px; }
+      #s1-strap { position: absolute; left: 66px; right: 66px; top: 1500px; text-align: center; }
+      #s1-strap .en { font-size: 44px; color: var(--amber); letter-spacing: 0.02em; }
+
+      /* ============ S2 · turn: one dish, three languages ============ */
+      #s2 .wrap { background: linear-gradient(180deg, var(--cream) 0%, var(--sand) 55%, #f0e2d2 100%); color: var(--ink); }
+      #s2-top { position: absolute; left: 66px; right: 66px; top: 262px; text-align: center; }
+      #s2-top .km { font-size: 62px; color: var(--ink); }
+      #s2-top .km b { color: var(--orange); font-weight: 700; }
+      #s2-top .en { font-size: 40px; font-weight: 700; color: var(--muted); letter-spacing: 0.01em; margin-top: 6px; }
+
+      #card { position: absolute; left: 76px; top: 424px; width: 928px; background: #fff; border-radius: 52px; padding: 34px; box-shadow: 0 46px 90px rgb(41 37 36 / 0.22), 0 0 0 3px var(--line); }
+      #chips { display: flex; gap: 16px; margin-bottom: 30px; }
+      .chip { flex: 1; height: 96px; border-radius: 26px; background: var(--sand); border: 4px solid var(--line); display: grid; place-items: center; font-size: 42px; font-weight: 800; color: var(--muted); }
+      .chip .km, .chip .zh { font-size: 42px; line-height: 1; }
+      #dish { display: flex; gap: 34px; align-items: flex-start; }
+      #photo { position: relative; width: 340px; height: 340px; border-radius: 40px; flex: none; overflow: hidden; background: radial-gradient(circle at 32% 26%, #fde5cd 0%, #f6cba4 45%, #e9a874 100%); display: grid; place-items: center; box-shadow: inset 0 0 0 4px rgb(255 255 255 / 0.6); }
+      #photo .food { font-size: 198px; line-height: 1; filter: drop-shadow(0 12px 18px rgb(124 45 18 / 0.28)); }
+      #photo .plate { position: absolute; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgb(255 255 255 / 0.85) 0%, rgb(255 255 255 / 0.5) 62%, transparent 66%); }
+      #dtext { flex: 1; min-width: 0; padding-top: 6px; }
+      .slot { position: relative; }
+      .slot > div { position: absolute; left: 0; top: 0; width: 100%; }
+      #nameslot { height: 96px; }
+      #nameslot > div { font-size: 62px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.35; white-space: nowrap; }
+      #nameslot .km, #nameslot .zh { font-size: 58px; }
+      #descslot { height: 136px; margin-top: 6px; }
+      #descslot > div { font-size: 33px; font-weight: 600; color: #57534e; line-height: 1.45; }
+      #descslot .km { font-size: 30px; font-weight: 700; line-height: 1.6; }
+      #descslot .zh { font-size: 33px; font-weight: 400; line-height: 1.5; }
+      #priceslot { height: 84px; margin-top: 14px; }
+      #priceslot > div { display: flex; align-items: center; gap: 18px; }
+      #priceslot .usd { font-size: 56px; font-weight: 800; color: var(--ink); }
+      #priceslot .khr { font-size: 36px; font-weight: 800; color: var(--orange); background: #fff1e8; border-radius: 16px; padding: 10px 22px; }
+      .rows { margin-top: 30px; border-top: 4px solid var(--line); }
+      .row { display: flex; align-items: center; gap: 26px; padding: 24px 0 22px; }
+      .row + .row { border-top: 3px solid #f1ece4; }
+      .th { width: 118px; height: 118px; border-radius: 30px; flex: none; display: grid; place-items: center; font-size: 68px; background: radial-gradient(circle at 32% 26%, #fde5cd 0%, #f6cba4 50%, #edb489 100%); }
+      .rt { flex: 1; min-width: 0; }
+      .rn { height: 60px; }
+      .rn > div { font-size: 44px; font-weight: 800; letter-spacing: -0.02em; line-height: 60px; white-space: nowrap; }
+      .rn .km, .rn .zh { font-size: 40px; }
+      .rp { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+      .rp b { font-size: 44px; font-weight: 800; }
+      .rp i { font-style: normal; font-size: 27px; font-weight: 800; color: var(--orange); background: #fff1e8; border-radius: 13px; padding: 7px 16px; }
+      #tap { position: absolute; top: 108px; font-size: 96px; line-height: 1; filter: drop-shadow(0 12px 18px rgb(0 0 0 / 0.35)); pointer-events: none; }
+      #s2-foot { position: absolute; left: 66px; right: 66px; top: 1396px; text-align: center; }
+      #s2-foot .en { font-size: 46px; color: var(--orange); }
+      #s2-foot .km { font-size: 38px; color: var(--muted); margin-top: 8px; }
+
+      /* ============ S3 · beat: no more pointing ============ */
+      #s3 .wrap { background: linear-gradient(160deg, var(--flame) 0%, var(--orange) 48%, var(--deep) 100%); }
+      .strike { position: relative; display: inline-block; padding: 0 12px; }
+      .strike i { position: absolute; left: 0; top: 52%; height: 9px; width: 100%; background: #fff; border-radius: 9px; transform-origin: 0 50%; }
+      #s3-a { font-size: 96px; color: #fff; }
+      #s3-b { font-size: 96px; color: #fff; margin-top: 18px; }
+      #s3-km { font-size: 74px; color: var(--amber); margin-top: 48px; }
+      #s3-rule { width: 240px; height: 10px; border-radius: 10px; background: rgb(255 255 255 / 0.5); margin: 52px 0; }
+      #s3-c { font-size: 66px; color: #fff; max-width: 900px; }
+      #s3-zh { font-size: 58px; color: var(--amber); margin-top: 16px; }
+
+      /* ============ S4 · close ============ */
+      #s4 .wrap { background: radial-gradient(ellipse at 50% 42%, #fff 0%, var(--cream) 52%, #f4e3d3 100%); color: var(--ink); }
+      #s4-bell { width: 230px; height: 230px; filter: drop-shadow(0 26px 44px rgb(124 45 18 / 0.3)); transform-origin: 50% 90%; }
+      .ring { position: absolute; left: 50%; top: 50%; width: 230px; height: 230px; margin: -115px 0 0 -115px; border-radius: 50%; border: 8px solid var(--orange); opacity: 0; }
+      #bellbox { position: relative; width: 230px; height: 230px; }
+      #s4-word { font-size: 156px; font-weight: 800; letter-spacing: -0.045em; margin-top: 34px; color: var(--ink); line-height: 1.05; }
+      #s4-word b { color: var(--orange); font-weight: 800; }
+      #s4-langs { display: flex; gap: 20px; margin-top: 24px; }
+      #s4-langs span { font-size: 44px; font-weight: 800; color: var(--orange); background: #fff1e8; border-radius: 999px; padding: 12px 34px; }
+      #s4-tag { font-size: 44px; font-weight: 700; color: var(--muted); margin-top: 32px; line-height: 1.5; }
+      #s4-tag .km { color: var(--ink); font-size: 42px; }
+      #s4-cta { margin-top: 56px; display: flex; flex-direction: column; align-items: center; padding: 26px 58px 30px; border-radius: 40px; background: var(--orange); color: #fff; box-shadow: 0 24px 50px rgb(194 65 12 / 0.35); }
+      #s4-cta .en { font-size: 54px; }
+      #s4-cta .km { font-size: 40px; line-height: 1.45; opacity: 0.95; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="13.4">
+
+      <!-- ============ S1 · HOOK (0 – 3.4) ============ -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="3.4" data-track-index="0">
+        <div class="wrap" id="s1-wrap">
+          <div class="safe">
+            <div id="paper">
+              <div class="ph">ម៉ឺនុយ · MENU</div>
+              <div class="prow"><span>អាម៉ុកត្រី</span><b>$6.50</b></div>
+              <div class="prow"><span>ឡុកឡាក់សាច់គោ</span><b>$6.00</b></div>
+              <div class="prow"><span>សម្លរម្ជូរយួន</span><b>$4.50</b></div>
+              <div class="prow"><span>គុយទាវសាច់គោ</span><b>$3.50</b></div>
+              <div class="prow"><span>កាហ្វេទឹកកកខ្មែរ</span><b>$1.50</b></div>
+              <div id="stain"></div>
+            </div>
+            <div id="finger" data-layout-allow-overlap data-layout-allow-occlusion>👆</div>
+          </div>
+          <div class="qbub a" id="q1"><div class="t km">នេះជាអ្វី?</div></div>
+          <div class="qbub b" id="q2"><div class="t zh">这是什么？</div></div>
+          <div class="qbub c" id="q3"><div class="t en">What is this?</div></div>
+          <div id="s1-strap"><div class="en">Your guests can't read your menu.</div></div>
+        </div>
+      </section>
+
+      <!-- ============ S2 · TURN (3.1 – 8.6) ============ -->
+      <section id="s2" class="scene clip" data-start="3.1" data-duration="5.5" data-track-index="1">
+        <div class="wrap" id="s2-wrap">
+          <div id="s2-top">
+            <div class="km">ម៉ឺនុយតែមួយ · <b>៣ ភាសា</b></div>
+            <div class="en">One menu · ខ្មែរ · English · 中文</div>
+          </div>
+
+          <div id="card">
+            <div id="chips">
+              <div class="chip" id="ch-km"><span class="km">ខ្មែរ</span></div>
+              <div class="chip" id="ch-en">English</div>
+              <div class="chip" id="ch-zh"><span class="zh">中文</span></div>
+            </div>
+            <div id="dish">
+              <div id="photo"><div class="plate"></div><div class="food">🍛</div></div>
+              <div id="dtext">
+                <div class="slot" id="nameslot">
+                  <div class="km" id="n-km">អាម៉ុកត្រី</div>
+                  <div class="en" id="n-en">Fish Amok</div>
+                  <div class="zh" id="n-zh">鱼肉阿莫克</div>
+                </div>
+                <div class="slot" id="descslot">
+                  <div class="km" id="d-km">ត្រីចំហុយក្នុងខ្ទិះដូង<br />និងគ្រឿងខ្មែរ</div>
+                  <div id="d-en">Steamed fish in coconut curry<br />with fresh Khmer herbs</div>
+                  <div class="zh" id="d-zh">椰香咖喃蒸鱼<br />搭配柬式香草</div>
+                </div>
+                <div class="slot" id="priceslot">
+                  <div id="p-km"><span class="usd">$6.50</span><span class="khr">26,000៛</span></div>
+                  <div id="p-en"><span class="usd">$6.50</span><span class="khr">26,000៛</span></div>
+                  <div id="p-zh"><span class="usd">$6.50</span><span class="khr">26,000៛</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="rows">
+              <div class="row">
+                <div class="th">🥩</div>
+                <div class="rt"><div class="slot rn">
+                  <div class="km" id="n2-km">ឡុកឡាក់សាច់គោ</div>
+                  <div class="en" id="n2-en">Beef Lok Lak</div>
+                  <div class="zh" id="n2-zh">柬式炒牛肉</div>
+                </div></div>
+                <div class="rp"><b>$6.00</b><i>24,000៛</i></div>
+              </div>
+              <div class="row">
+                <div class="th">🧋</div>
+                <div class="rt"><div class="slot rn">
+                  <div class="km" id="n3-km">កាហ្វេទឹកកកខ្មែរ</div>
+                  <div class="en" id="n3-en">Iced Khmer Coffee</div>
+                  <div class="zh" id="n3-zh">柬式冰咖啡</div>
+                </div></div>
+                <div class="rp"><b>$1.50</b><i>6,000៛</i></div>
+              </div>
+            </div>
+            <div id="tap" data-layout-allow-overlap data-layout-allow-occlusion>👆</div>
+          </div>
+
+          <div id="s2-foot">
+            <div class="en">Same dish. Their language.</div>
+            <div class="km">ម្ហូបតែមួយ · ភាសារបស់ភ្ញៀវ</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ S3 · BEAT (8.3 – 10.9) ============ -->
+      <section id="s3" class="scene clip" data-start="8.3" data-duration="2.6" data-track-index="2">
+        <div class="wrap" id="s3-wrap">
+          <div class="safe">
+            <div id="s3-a" class="en"><span class="strike">No more pointing<i id="st1"></i></span></div>
+            <div id="s3-b" class="en"><span class="strike">No more explaining<i id="st2"></i></span></div>
+            <div id="s3-km" class="km">អត់ចង្អុល · អត់ពន្យល់</div>
+            <div id="s3-rule"></div>
+            <div id="s3-c" class="en">Guests order exactly<br />what they want.</div>
+            <div id="s3-zh" class="zh">客人点到真正想吃的菜</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ S4 · CLOSE (10.6 – 13.4) ============ -->
+      <section id="s4" class="scene clip" data-start="10.6" data-duration="2.8" data-track-index="3">
+        <div class="wrap" id="s4-wrap">
+          <div class="safe">
+            <div id="bellbox">
+              <div class="ring" id="r1" data-layout-allow-overflow></div><div class="ring" id="r2" data-layout-allow-overflow></div>
+              <svg id="s4-bell" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#c2410c"/><g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"><path d="M150 400h212"/><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff"/><path d="M256 190v-24"/><circle cx="256" cy="150" r="16" fill="#fff" stroke="none"/></g></svg>
+            </div>
+            <div id="s4-word"><b>Kh</b>Menu</div>
+            <div id="s4-langs"><span class="km">ខ្មែរ</span><span>EN</span><span class="zh">中文</span></div>
+            <div id="s4-tag"><span class="km">App កូនខ្មែរ</span> · Made in Phnom Penh</div>
+            <div id="s4-cta"><span class="en">Message us to try it</span><span class="km">ផ្ញើសារមកយើង ដើម្បីសាកល្បង</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ audio ============ -->
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-9-by-ende-dot-app.mp3" data-start="0" data-duration="13.4" data-track-index="10" data-volume="0.72"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.4},{"t":0.5,"v":0.72},{"t":12.3,"v":0.72},{"t":13.4,"v":0}]}]}'></audio>
+      <audio id="sfx-q1" src="assets/sfx/drop_002.ogg" data-start="0.30" data-duration="0.22" data-track-index="11" data-volume="0.55"></audio>
+      <audio id="sfx-q2" src="assets/sfx/drop_002.ogg" data-start="0.95" data-duration="0.22" data-track-index="12" data-volume="0.55"></audio>
+      <audio id="sfx-q3" src="assets/sfx/drop_002.ogg" data-start="1.60" data-duration="0.22" data-track-index="13" data-volume="0.55"></audio>
+      <audio id="sfx-s2" src="assets/sfx/card-slide-1.ogg" data-start="3.15" data-duration="0.6" data-track-index="14" data-volume="0.45"></audio>
+      <audio id="sfx-l1" src="assets/sfx/switch_002.ogg" data-start="4.90" data-duration="0.5" data-track-index="15" data-volume="0.5"></audio>
+      <audio id="sfx-l2" src="assets/sfx/switch_002.ogg" data-start="6.35" data-duration="0.5" data-track-index="16" data-volume="0.5"></audio>
+      <audio id="sfx-s3" src="assets/sfx/impactSoft_medium_002.ogg" data-start="8.32" data-duration="0.14" data-track-index="17" data-volume="0.8"></audio>
+      <audio id="sfx-bell" src="assets/sfx/impactBell_heavy_003.ogg" data-start="10.72" data-duration="0.65" data-track-index="18" data-volume="0.55"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const E = 'power3.out';
+      const up = (sel, t, d = 0.45, y = 44) =>
+        tl.fromTo(sel, { y, opacity: 0 }, { y: 0, opacity: 1, duration: d, ease: E, immediateRender: false }, t);
+      const pop = (sel, t, d = 0.4) =>
+        tl.fromTo(sel, { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: d, ease: 'back.out(2)', immediateRender: false }, t);
+      const iris = (sel, t, d = 0.55) =>
+        tl.fromTo(sel, { clipPath: 'circle(0% at 50% 45%)' }, { clipPath: 'circle(78% at 50% 45%)', duration: d, ease: 'power2.inOut', immediateRender: false }, t);
+
+      /* ---------- S1 hook (0 – 3.4) ----------
+         Poster frame (t=0) already shows the unreadable paper menu, the tapping
+         finger and the first question bubble, so frame 0 stops a scroll on its own. */
+      /* Frame 0 IS the poster: paper, finger and all three questions are already
+         on screen, so the scroll-stopper needs no build-in. Motion carries it. */
+      tl.fromTo('#paper', { rotation: -4 }, { rotation: -1.5, duration: 3.4, ease: 'sine.inOut' }, 0);
+      tl.to('#finger', { keyframes: [
+        { y: -26, rotation: -6, duration: 0.2, ease: 'power2.out' },
+        { y: 0, rotation: 0, duration: 0.16, ease: 'power2.in' },
+        { y: -20, rotation: -5, duration: 0.18, ease: 'power2.out' },
+        { y: 0, rotation: 0, duration: 0.16, ease: 'power2.in' },
+      ] }, 0.08);
+      tl.to('#finger', { keyframes: [
+        { y: -22, x: 34, duration: 0.24, ease: 'power2.out' },
+        { y: 0, x: 40, duration: 0.18, ease: 'power2.in' },
+        { y: -18, x: -30, duration: 0.26, ease: 'power2.out' },
+        { y: 0, x: -34, duration: 0.18, ease: 'power2.in' },
+        { x: 0, y: 0, duration: 0.3, ease: 'power2.inOut' },
+      ] }, 1.5);
+      // each question kicks once, in turn — reads as three people asking at once
+      [['#q1', 0.25, -2.5], ['#q2', 0.55, 2.5], ['#q3', 0.85, -2.5]].forEach(([sel, t, rot]) => {
+        tl.fromTo(sel, { scale: 1, rotation: 0 }, { scale: 1.09, rotation: rot, duration: 0.16, ease: 'power2.out', immediateRender: false }, t);
+        tl.to(sel, { scale: 1, rotation: 0, duration: 0.34, ease: 'elastic.out(1, 0.5)' }, t + 0.16);
+      });
+      tl.to(['#q1', '#q2', '#q3'], { rotation: 1.6, duration: 0.5, yoyo: true, repeat: 2, ease: 'sine.inOut', stagger: 0.09 }, 1.9);
+      tl.fromTo('#s1-strap', { scale: 1 }, { scale: 1.05, duration: 0.24, yoyo: true, repeat: 1, ease: 'sine.inOut', immediateRender: false }, 2.3);
+
+      /* ---------- S2 turn (3.1 – 8.6) ---------- */
+      tl.set(['#s2-top', '#card', '#s2-foot'], { opacity: 0 }, 3.1);
+      iris('#s2-wrap', 3.1);
+      up('#s2-top', 3.35, 0.45, 34);
+      tl.fromTo('#card', { y: 260, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: E, immediateRender: false }, 3.2);
+
+      // three language states; each settles for ~1.3s before the next flip
+      const OFF = { background: '#f3eee6', borderColor: '#e7e2da', color: '#78716c' };
+      const ON = { background: '#c2410c', borderColor: '#c2410c', color: '#ffffff' };
+      const SLOTS = ['#n-', '#d-', '#p-', '#n2-', '#n3-'];
+      const CHIP = { km: '#ch-km', en: '#ch-en', zh: '#ch-zh' };
+      const LANGS = ['km', 'en', 'zh'];
+      
+      // baseline: everything hidden, Khmer shown, Khmer chip active
+      LANGS.forEach((L) => {
+        SLOTS.forEach((s) => tl.set(s + L, { opacity: L === 'km' ? 1 : 0, y: 0 }, 3.1));
+        tl.set(CHIP[L], L === 'km' ? ON : OFF, 3.1);
+      });
+
+      const flip = (t, from, to) => {
+        SLOTS.forEach((s, i) => {
+          tl.to(s + from, { opacity: 0, y: -18, duration: 0.16, ease: 'power2.in' }, t + i * 0.03);
+          tl.fromTo(s + to, { opacity: 0, y: 22 }, { opacity: 1, y: 0, duration: 0.3, ease: E, immediateRender: false }, t + 0.14 + i * 0.05);
+        });
+        tl.to(CHIP[from], { ...OFF, duration: 0.18 }, t);
+        tl.to(CHIP[to], { ...ON, duration: 0.18 }, t);
+        tl.fromTo(CHIP[to], { scale: 1 }, { scale: 1.06, duration: 0.14, yoyo: true, repeat: 1, ease: 'sine.inOut', immediateRender: false }, t);
+        tl.fromTo('#photo .food', { scale: 1 }, { scale: 1.1, duration: 0.18, yoyo: true, repeat: 1, ease: 'sine.inOut', immediateRender: false }, t);
+      };
+
+      // the finger taps the chip that is about to light up
+      const CHIP_X = { km: 200, en: 452, zh: 704 };
+      tl.set('#tap', { opacity: 0, left: CHIP_X.km }, 3.1);
+      const tap = (t, L) => {
+        tl.set('#tap', { left: CHIP_X[L] }, t - 0.3);
+        tl.fromTo('#tap', { opacity: 0, y: 40, scale: 1.15 }, { opacity: 1, y: 0, scale: 1, duration: 0.22, ease: E, immediateRender: false }, t - 0.3);
+        tl.to('#tap', { y: -16, duration: 0.14, ease: 'power2.out' }, t + 0.02);
+        tl.to('#tap', { opacity: 0, duration: 0.18, ease: 'power2.in' }, t + 0.2);
+      };
+      tap(4.9, 'en');
+      flip(4.9, 'km', 'en');
+      tap(6.35, 'zh');
+      flip(6.35, 'en', 'zh');
+      up('#s2-foot', 7.35, 0.42, 34);
+      tl.to('#card', { y: -12, duration: 1.1, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 7.2);
+
+      /* ---------- S3 beat (8.3 – 10.9) ---------- */
+      tl.set(['#s3-a', '#s3-b', '#s3-km', '#s3-c', '#s3-zh'], { opacity: 0 }, 8.3);
+      tl.set(['#st1', '#st2', '#s3-rule'], { scaleX: 0 }, 8.3);
+      iris('#s3-wrap', 8.3, 0.5);
+      up('#s3-a', 8.42, 0.34, 34);
+      tl.fromTo('#st1', { scaleX: 0 }, { scaleX: 1, duration: 0.22, ease: 'power2.out', immediateRender: false }, 8.72);
+      up('#s3-b', 8.78, 0.34, 34);
+      tl.fromTo('#st2', { scaleX: 0 }, { scaleX: 1, duration: 0.22, ease: 'power2.out', immediateRender: false }, 9.08);
+      up('#s3-km', 9.2, 0.34, 30);
+      tl.fromTo('#s3-rule', { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: E, immediateRender: false }, 9.42);
+      up('#s3-c', 9.6, 0.38, 34);
+      up('#s3-zh', 9.95, 0.34, 28);
+
+      /* ---------- S4 close (10.6 – 13.4) ---------- */
+      tl.set(['#s4-bell', '#s4-word', '#s4-langs', '#s4-tag', '#s4-cta'], { opacity: 0 }, 10.6);
+      tl.set(['#r1', '#r2'], { opacity: 0 }, 10.6);
+      iris('#s4-wrap', 10.6, 0.5);
+      pop('#s4-bell', 10.68, 0.38);
+      tl.to('#s4-bell', { keyframes: [
+        { rotation: 8, duration: 0.1 }, { rotation: -6, duration: 0.12 },
+        { rotation: 3, duration: 0.12 }, { rotation: 0, duration: 0.14 },
+      ] }, 10.8);
+      ['#r1', '#r2'].forEach((id, i) =>
+        tl.fromTo(id, { scale: 1, opacity: 0.65 }, { scale: 2.5 + i * 0.5, opacity: 0, duration: 1.2, ease: 'power2.out', immediateRender: false }, 10.78 + i * 0.16));
+      up('#s4-word', 11.0, 0.4, 40);
+      up('#s4-langs', 11.3, 0.36, 30);
+      up('#s4-tag', 11.6, 0.36, 28);
+      pop('#s4-cta', 11.92, 0.4);
+      tl.to('#s4-cta', { scale: 1.04, duration: 0.26, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 12.5);
+
+      window.__timelines['main'] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>

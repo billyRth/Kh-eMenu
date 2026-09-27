@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="km">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>KhMenu — paper menu vs KhMenu</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2'); font-weight: 800; }
+      @font-face { font-family: 'Kantumruy Pro'; src: url('assets/fonts/kantumruy-pro-khmer-700-normal.woff2') format('woff2'); font-weight: 700; }
+
+      :root { --orange: #c2410c; --flame: #ea580c; --deep: #7c2d12; --cream: #faf8f5; --sand: #f3eee6; --ink: #292524; --muted: #78716c; --line: #e7e2da; --paper: #e6ded0; --red: #b91c1c; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--cream); }
+      body { color: var(--ink); font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', sans-serif; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--cream); }
+      .scene { position: absolute; inset: 0; }
+      .wrap { position: absolute; inset: 0; overflow: hidden; }
+      .km { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; line-height: 1.5; }
+      .en { font-weight: 800; letter-spacing: -0.03em; line-height: 1.12; }
+      /* header band: inside the 250–1570 safe window */
+      .head { position: absolute; left: 60px; right: 60px; top: 268px; text-align: center; }
+      .head .km { font-size: 96px; }
+      .head .en { font-size: 48px; font-weight: 700; color: var(--muted); margin-top: 4px; }
+
+      /* ---------- S1 · the paper menu ---------- */
+      #s1 .wrap { background:
+        radial-gradient(circle at 24% 30%, rgb(160 130 70 / 0.16) 0%, transparent 22%),
+        radial-gradient(circle at 78% 66%, rgb(160 130 70 / 0.13) 0%, transparent 20%),
+        radial-gradient(ellipse at 50% 42%, #efe8db 0%, var(--paper) 58%, #cdc2ad 100%); }
+      #s1 .head .km { color: #57534e; }
+      .sheet { position: absolute; left: 92px; top: 536px; width: 896px; padding: 40px 46px 34px; border-radius: 6px;
+        background: linear-gradient(170deg, #fbf7ec 0%, #f4ecda 62%, #e9dfc8 100%);
+        box-shadow: 0 46px 80px rgb(60 45 20 / 0.32), 0 0 0 2px rgb(120 100 60 / 0.16);
+        transform: rotate(-2deg); }
+      .sheet::after { content: ''; position: absolute; inset: 0; border-radius: 6px; pointer-events: none;
+        background: radial-gradient(circle at 82% 14%, rgb(150 120 60 / 0.22) 0%, transparent 16%),
+                    radial-gradient(circle at 16% 80%, rgb(150 120 60 / 0.18) 0%, transparent 14%); }
+      .sheet .sh1 { font-size: 40px; font-weight: 800; letter-spacing: 0.22em; text-transform: uppercase; color: #7a7266; text-align: center; }
+      .sheet .sh2 { font-size: 62px; font-weight: 800; letter-spacing: -0.02em; text-align: center; color: #44403c; margin-top: 4px; }
+      .sheet .rule { height: 5px; background: repeating-linear-gradient(90deg, #b8ab8e 0 18px, transparent 18px 30px); margin: 24px 0 8px; }
+      .row { position: relative; display: flex; align-items: center; gap: 22px; padding: 22px 4px; border-bottom: 3px dotted #c9bda0; }
+      .row:last-child { border-bottom: 0; }
+      .row .t { flex: 1; min-width: 0; }
+      .row .k { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 44px; line-height: 1.4; color: #3f3a33; }
+      .row .e { font-size: 30px; font-weight: 700; color: #8a8072; letter-spacing: -0.01em; }
+      .row .p { font-size: 46px; font-weight: 800; color: #44403c; white-space: nowrap; }
+      .strike { position: absolute; height: 9px; border-radius: 6px; background: var(--red); transform-origin: 0 50%; box-shadow: 0 2px 0 rgb(185 28 28 / 0.35); }
+      #st1 { right: 8px; top: 64px; width: 200px; transform: rotate(-7deg); }
+      #st2 { right: 8px; top: 58px; width: 200px; transform: rotate(6deg); }
+      .hand { position: absolute; font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; color: var(--red); white-space: nowrap; }
+      #stamp { position: absolute; left: 148px; top: 810px; padding: 22px 40px 26px; border: 12px solid var(--red); border-radius: 22px;
+        color: var(--red); text-align: center; transform: rotate(-11deg); background: rgb(255 255 255 / 0.12); box-shadow: 0 18px 40px rgb(120 20 20 / 0.2); }
+      #stamp .km { font-size: 72px; line-height: 1.35; }
+      #stamp .en { font-size: 46px; letter-spacing: 0.22em; margin-top: 2px; }
+      #waiter { position: absolute; left: 92px; right: 92px; top: 1436px; display: flex; align-items: center; gap: 26px;
+        padding: 22px 34px; border-radius: 30px; background: #1c1917; color: #fff; box-shadow: 0 24px 46px rgb(30 25 20 / 0.34); }
+      #waiter .ic { font-size: 62px; line-height: 1; }
+      #waiter .km { font-size: 46px; color: #fdba74; }
+      #waiter .en { font-size: 34px; font-weight: 700; }
+
+      /* ---------- S2 · split · paper vs phone ---------- */
+      #s2 .wrap { background: linear-gradient(180deg, var(--cream) 0%, var(--sand) 100%); }
+      #s2 .head .km { color: var(--orange); }
+      #oldstrip { position: absolute; left: 0; top: 0; width: 372px; height: 1920px; overflow: hidden;
+        background: linear-gradient(170deg, #ddd8cf 0%, #c9c3b8 100%); filter: grayscale(1); }
+      #oldstrip .mini { position: absolute; left: -60px; top: 470px; width: 420px; padding: 30px 32px;
+        background: #efeae0; border-radius: 6px; transform: rotate(-4deg); box-shadow: 0 20px 40px rgb(0 0 0 / 0.2); }
+      #oldstrip .mini .l { height: 22px; border-radius: 6px; background: #bdb6a8; margin-bottom: 26px; }
+      #oldstrip .mini .l:nth-child(2) { width: 70%; }
+      #oldstrip .mini .l:nth-child(4) { width: 82%; }
+      #oldstrip .mini .l:nth-child(5) { width: 58%; }
+      #bigx { position: absolute; left: 96px; top: 560px; width: 180px; height: 180px; }
+      #bigx i { position: absolute; left: 0; top: 84px; width: 180px; height: 22px; border-radius: 12px; background: #7f1d1d; display: block; transform-origin: 50% 50%; }
+      #oldlab { position: absolute; left: 0; width: 372px; top: 1330px; text-align: center; color: #57534e; }
+      #oldlab .km { font-size: 44px; }
+      #oldlab .en { font-size: 30px; font-weight: 700; color: #6b6660; }
+      #divider { position: absolute; left: 372px; top: 0; width: 12px; height: 1920px; background: var(--orange); }
+      #vs { position: absolute; left: 292px; top: 620px; width: 172px; height: 172px; border-radius: 50%; background: var(--orange); color: #fff;
+        display: grid; place-items: center; font-size: 68px; font-weight: 800; letter-spacing: 0.02em; box-shadow: 0 20px 44px rgb(194 65 12 / 0.4); border: 8px solid var(--cream); }
+
+      .phone { position: absolute; left: 466px; top: 560px; width: 546px; height: 830px; border-radius: 74px; background: #1c1917; padding: 15px; box-shadow: 0 50px 96px rgb(41 37 36 / 0.32); }
+      .screen { position: relative; width: 100%; height: 100%; border-radius: 60px; overflow: hidden; background: var(--cream); }
+      .island { position: absolute; top: 16px; left: 50%; margin-left: -62px; width: 124px; height: 34px; border-radius: 18px; background: #1c1917; z-index: 5; }
+      .cover { height: 150px; background: radial-gradient(circle at 20% 20%, rgb(255 255 255 / 0.25), transparent 50%), var(--orange); }
+      .rcard { margin: -64px 20px 0; background: #fff; border-radius: 26px; padding: 18px 20px; box-shadow: 0 10px 28px rgb(0 0 0 / 0.08); display: flex; gap: 14px; align-items: center; }
+      .rlogo { width: 60px; height: 60px; border-radius: 17px; background: var(--orange); color: #fff; font-weight: 800; font-size: 30px; display: grid; place-items: center; flex: none; }
+      .rname { font-size: 29px; font-weight: 800; }
+      .rtag { font-size: 20px; color: var(--muted); font-weight: 500; }
+      .items { margin: 20px 20px 0; background: #fff; border: 2px solid #eee8df; border-radius: 26px; }
+      .item { position: relative; display: flex; gap: 16px; padding: 18px; align-items: center; border-bottom: 2px solid #eee8df; }
+      .item:last-child { border-bottom: 0; }
+      .thumb { width: 104px; height: 104px; border-radius: 22px; display: grid; place-items: center; font-size: 56px; flex: none;
+        background: linear-gradient(135deg, #fde3cf, #f8c9a8); }
+      .item .t { flex: 1; min-width: 0; }
+      .item .nk { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 27px; line-height: 1.35; }
+      .item .ne { font-size: 24px; font-weight: 700; color: var(--muted); }
+      .plus { width: 58px; height: 58px; border-radius: 50%; background: #fff1e8; color: var(--orange); display: grid; place-items: center; font-size: 36px; font-weight: 800; flex: none; }
+      .item.on .plus { background: var(--orange); color: #fff; }
+      .ripple { position: absolute; right: 20px; top: 50%; width: 58px; height: 58px; margin-top: -29px; border-radius: 50%; border: 6px solid var(--orange); opacity: 0; }
+      #sendbtn { position: absolute; left: 20px; right: 20px; bottom: 26px; border-radius: 28px; background: var(--orange); color: #fff; text-align: center; padding: 18px 10px 20px; box-shadow: 0 16px 32px rgb(194 65 12 / 0.34); }
+      #sendbtn .km { font-size: 32px; }
+      #sendbtn .en { font-size: 26px; font-weight: 700; opacity: 0.92; }
+      #pills { position: absolute; left: 404px; right: 56px; top: 1418px; height: 132px; border-radius: 28px; overflow: hidden; background: #1c1917; box-shadow: 0 20px 40px rgb(30 25 20 / 0.34); }
+      .pill { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #1c1917; color: #fff; }
+      .pill .km { font-size: 38px; color: #fdba74; }
+      .pill .en { font-size: 28px; font-weight: 700; }
+
+      /* ---------- S3 · it lands on the staff phone ---------- */
+      #s3 .wrap { background: linear-gradient(165deg, var(--flame) 0%, var(--orange) 46%, var(--deep) 100%); color: #fff; }
+      #s3 .head .km { color: #fff; }
+      #s3 .head .en { color: #fed7aa; }
+      #note { position: absolute; left: 96px; top: 640px; right: 96px; background: var(--cream); color: var(--ink); border-radius: 44px; padding: 34px 38px 38px;
+        box-shadow: 0 40px 80px rgb(60 20 0 / 0.36); }
+      #note .nh { display: flex; align-items: center; gap: 22px; }
+      #note .bellic { width: 96px; height: 96px; flex: none; }
+      #note .nt .km { font-size: 52px; color: var(--orange); }
+      #note .nt .en { font-size: 36px; font-weight: 700; color: var(--muted); }
+      #note .lines { margin-top: 26px; border-top: 3px solid var(--line); padding-top: 22px; }
+      #note .ln { display: flex; justify-content: space-between; gap: 20px; font-size: 38px; font-weight: 700; padding: 10px 0; }
+      #note .ln span.k { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; }
+      #note .ln b { color: var(--orange); }
+      #ok { margin-top: 26px; border-radius: 28px; background: #166534; color: #fff; text-align: center; padding: 18px 10px 22px; }
+      #ok .km { font-size: 40px; }
+      #ok .en { font-size: 30px; font-weight: 700; opacity: 0.9; }
+      #s3lab { position: absolute; left: 80px; right: 80px; top: 1330px; text-align: center; color: #fff; }
+      #s3lab .km { font-size: 56px; }
+      #s3lab .en { font-size: 40px; font-weight: 700; color: #fed7aa; margin-top: 4px; }
+
+      /* ---------- S4 · logo + CTA ---------- */
+      #s4 .wrap { background: radial-gradient(ellipse at 50% 42%, #fff 0%, var(--cream) 55%, #f6e7d8 100%); }
+      #s4 .safe { position: absolute; left: 70px; right: 70px; top: 300px; bottom: 380px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      .bellbox { position: relative; width: 236px; height: 236px; }
+      .ring { position: absolute; left: 50%; top: 50%; width: 236px; height: 236px; margin: -118px 0 0 -118px; border-radius: 50%; border: 8px solid var(--orange); opacity: 0; }
+      #s4-bell { width: 236px; height: 236px; filter: drop-shadow(0 26px 44px rgb(124 45 18 / 0.28)); transform-origin: 50% 90%; }
+      #s4-word { font-size: 168px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; margin-top: 40px; color: #1c1917; }
+      #s4-word b { color: var(--orange); font-weight: 800; }
+      #s4-tag { font-size: 46px; font-weight: 700; color: var(--muted); margin-top: 12px; line-height: 1.5; }
+      #s4-tag .km { color: var(--ink); }
+      #s4-cta { margin-top: 62px; display: flex; flex-direction: column; align-items: center; padding: 26px 56px 30px; border-radius: 40px; background: var(--orange); color: #fff; box-shadow: 0 24px 50px rgb(194 65 12 / 0.35); }
+      #s4-cta .en { font-size: 54px; }
+      #s4-cta .km { font-size: 42px; line-height: 1.45; opacity: 0.95; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="13.64">
+
+      <!-- S1 · the paper menu (frame 0 is the poster: sheet + header already settled) -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="4.62" data-track-index="0">
+        <div class="wrap" id="s1-wrap">
+          <div class="head">
+            <div class="km">ម៉ឺនុយក្រដាស</div>
+            <div class="en">The paper menu</div>
+          </div>
+
+          <div class="sheet" id="sheet">
+            <div class="sh1">Sabay Kitchen</div>
+            <div class="sh2">MENU · ម៉ឺនុយ</div>
+            <div class="rule"></div>
+            <div class="row">
+              <div class="t"><div class="k" data-layout-allow-overlap data-layout-allow-occlusion>អាម៉ុកត្រី</div><div class="e" data-layout-allow-overlap data-layout-allow-occlusion>Fish Amok</div></div>
+              <div class="p" data-layout-allow-overlap data-layout-allow-occlusion>$6.50</div>
+              <div class="strike" id="st1" data-layout-allow-occlusion></div>
+            </div>
+            <div class="row">
+              <div class="t"><div class="k" data-layout-allow-overlap data-layout-allow-occlusion>ឡុកឡាក់សាច់គោ</div><div class="e" data-layout-allow-overlap data-layout-allow-occlusion>Beef Lok Lak</div></div>
+              <div class="p" data-layout-allow-overlap data-layout-allow-occlusion>$6.00</div>
+            </div>
+            <div class="row">
+              <div class="t"><div class="k" data-layout-allow-overlap data-layout-allow-occlusion>គុយទាវ</div><div class="e" data-layout-allow-overlap data-layout-allow-occlusion>Kuy Teav</div></div>
+              <div class="p" data-layout-allow-overlap data-layout-allow-occlusion>$3.50</div>
+              <div class="strike" id="st2" data-layout-allow-occlusion></div>
+            </div>
+            <div class="row">
+              <div class="t"><div class="k" data-layout-allow-overlap data-layout-allow-occlusion>កាហ្វេទឹកកក</div><div class="e" data-layout-allow-overlap data-layout-allow-occlusion>Iced Coffee</div></div>
+              <div class="p" data-layout-allow-overlap data-layout-allow-occlusion>$1.50</div>
+            </div>
+          </div>
+
+          <div id="stamp" data-layout-allow-overlap data-layout-allow-occlusion>
+            <div class="km" data-layout-allow-overlap data-layout-allow-occlusion>អស់ហើយថ្ងៃនេះ</div>
+            <div class="en" data-layout-allow-overlap data-layout-allow-occlusion>SOLD OUT</div>
+          </div>
+
+          <div id="waiter">
+            <div class="ic">🏃</div>
+            <div><div class="km">កំពុងហៅអ្នករត់តុ</div><div class="en">Calling the waiter… again</div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S2 · split: paper vs the phone -->
+      <section id="s2" class="scene clip" data-start="4.365" data-duration="4.62" data-track-index="1">
+        <div class="wrap" id="s2-wrap">
+          <div id="oldstrip">
+            <div class="mini" data-layout-allow-overflow>
+              <div class="l"></div><div class="l"></div><div class="l"></div><div class="l"></div><div class="l"></div>
+            </div>
+            <div id="bigx"><i id="x1"></i><i id="x2"></i></div>
+          </div>
+          <div id="oldlab"><div class="km">ក្រដាស</div><div class="en">Paper</div></div>
+          <div id="divider"></div>
+
+          <div class="head">
+            <div class="km">កុម្ម៉ង់ពីទូរស័ព្ទ</div>
+            <div class="en">Order from the phone</div>
+          </div>
+
+          <div class="phone" id="phone">
+            <div class="screen">
+              <div class="island"></div>
+              <div class="cover"></div>
+              <div class="rcard">
+                <div class="rlogo">S</div>
+                <div><div class="rname">Sabay Kitchen</div><div class="rtag">តុ ៤ · Table 4</div></div>
+              </div>
+              <div class="items">
+                <div class="item" id="it1">
+                  <div class="thumb">🐟</div>
+                  <div class="t"><div class="nk">អាម៉ុកត្រី</div><div class="ne">Fish Amok</div></div>
+                  <div class="plus">+</div>
+                  <div class="ripple" id="rp1"></div>
+                </div>
+                <div class="item" id="it2">
+                  <div class="thumb">🥩</div>
+                  <div class="t"><div class="nk">ឡុកឡាក់សាច់គោ</div><div class="ne">Beef Lok Lak</div></div>
+                  <div class="plus">+</div>
+                  <div class="ripple" id="rp2"></div>
+                </div>
+                <div class="item" id="it3">
+                  <div class="thumb">🧋</div>
+                  <div class="t"><div class="nk">កាហ្វេទឹកកក</div><div class="ne">Iced Coffee</div></div>
+                  <div class="plus">+</div>
+                </div>
+              </div>
+              <div id="sendbtn"><div class="km">ផ្ញើទៅផ្ទះបាយ</div><div class="en">Send to kitchen</div></div>
+            </div>
+          </div>
+
+          <div id="pills">
+            <div class="pill" id="p1"><div class="km">រូបភាពម្ហូបពិត</div><div class="en">Real photos</div></div>
+            <div class="pill" id="p2"><div class="km">ចុច ដើម្បីកុម្ម៉ង់</div><div class="en">Tap to order</div></div>
+          </div>
+          <div id="vs">VS</div>
+        </div>
+      </section>
+
+      <!-- S3 · the order lands on the staff phone -->
+      <section id="s3" class="scene clip" data-start="8.73" data-duration="2.43" data-track-index="2">
+        <div class="wrap" id="s3-wrap">
+          <div class="head">
+            <div class="km">កុម្ម៉ង់ថ្មី · តុ ៤</div>
+            <div class="en">New order · Table 4</div>
+          </div>
+          <div id="note">
+            <div class="nh">
+              <svg class="bellic" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#c2410c"/><g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"><path d="M150 400h212"/><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff"/><path d="M256 190v-24"/><circle cx="256" cy="150" r="16" fill="#fff" stroke="none"/></g></svg>
+              <div class="nt"><div class="km">កុម្ម៉ង់ថ្មី</div><div class="en">Sabay Kitchen · Table 4</div></div>
+            </div>
+            <div class="lines">
+              <div class="ln"><span class="k">អាម៉ុកត្រី</span><b>× 1</b></div>
+              <div class="ln"><span class="k">ឡុកឡាក់សាច់គោ</span><b>× 1</b></div>
+            </div>
+            <div id="ok"><div class="km">បានផ្ញើទៅផ្ទះបាយ</div><div class="en">Sent to the kitchen</div></div>
+          </div>
+          <div id="s3lab">
+            <div class="km">ចូលទូរស័ព្ទបុគ្គលិកភ្លាមៗ</div>
+            <div class="en">Straight to your staff's phone</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S4 · logo + CTA -->
+      <section id="s4" class="scene clip" data-start="10.913" data-duration="2.728" data-track-index="3">
+        <div class="wrap" id="s4-wrap">
+          <div class="safe">
+            <div class="bellbox">
+              <div class="ring" id="r4a" data-layout-allow-overflow></div><div class="ring" id="r4b" data-layout-allow-overflow></div>
+              <svg id="s4-bell" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#c2410c"/><g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"><path d="M150 400h212"/><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff"/><path d="M256 190v-24"/><circle cx="256" cy="150" r="16" fill="#fff" stroke="none"/></g></svg>
+            </div>
+            <div id="s4-word"><b>Kh</b>Menu</div>
+            <div id="s4-tag"><span class="km">App កូនខ្មែរ</span> · Made in Phnom Penh</div>
+            <div id="s4-cta"><span class="en">Message us to try it</span><span class="km">ផ្ញើសារមកយើង ដើម្បីសាកល្បង</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Audio -->
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3" data-start="0" data-duration="13.64" data-track-index="10" data-volume="0.62"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.5},{"t":4.365,"v":0.5},{"t":4.7,"v":0.78},{"t":12.4,"v":0.78},{"t":13.64,"v":0}]}]}'></audio>
+      <audio id="sfx-stamp" src="assets/sfx/drop_003.ogg" data-start="0.08" data-duration="0.19" data-track-index="11" data-volume="0.85"></audio>
+      <audio id="sfx-ink1" src="assets/sfx/impactSoft_medium_002.ogg" data-start="1.637" data-duration="0.135" data-track-index="12" data-volume="0.5"></audio>
+      <audio id="sfx-ink2" src="assets/sfx/impactSoft_medium_002.ogg" data-start="1.91" data-duration="0.135" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="sfx-err" src="assets/sfx/error_005.ogg" data-start="2.728" data-duration="0.5" data-track-index="14" data-volume="0.4"></audio>
+      <audio id="sfx-wipe" src="assets/sfx/card-slide-1.ogg" data-start="4.365" data-duration="0.6" data-track-index="15" data-volume="0.5"></audio>
+      <audio id="sfx-tap1" src="assets/sfx/bong_001.ogg" data-start="5.457" data-duration="0.12" data-track-index="16" data-volume="0.55"></audio>
+      <audio id="sfx-tap2" src="assets/sfx/bong_001.ogg" data-start="6.002" data-duration="0.12" data-track-index="17" data-volume="0.55"></audio>
+      <audio id="sfx-send" src="assets/sfx/impactSoft_medium_001.ogg" data-start="7.639" data-duration="0.18" data-track-index="18" data-volume="0.6"></audio>
+      <audio id="sfx-chime" src="assets/sfx/chime.ogg" data-start="8.79" data-duration="0.75" data-track-index="19" data-volume="0.6"></audio>
+      <audio id="sfx-bell" src="assets/sfx/impactBell_heavy_003.ogg" data-start="11.0" data-duration="0.65" data-track-index="20" data-volume="0.55"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const E = 'power3.out';
+      const B = 60 / 109.96; // 0.54566s per beat
+      const b = (n) => n * B;
+      const up = (sel, t, d = 0.45, y = 46) => tl.fromTo(sel, { y, opacity: 0 }, { y: 0, opacity: 1, duration: d, ease: E }, t);
+      const iris = (sel, t, d = 0.5) => tl.fromTo(sel, { clipPath: 'circle(0% at 50% 45%)' }, { clipPath: 'circle(78% at 50% 45%)', duration: d, ease: 'power2.inOut' }, t);
+      const rings = (ids, t) => ids.forEach((id, i) => tl.fromTo(id, { scale: 1, opacity: 0.7 }, { scale: 2.6 + i * 0.5, opacity: 0, duration: 1.2, ease: 'power2.out', immediateRender: false }, t + i * 0.15));
+
+      /* ---- S1 (0 – 4.365): frame 0 is already composed; the stamp is the hook ---- */
+      tl.fromTo('#stamp', { scale: 2.6, rotation: -26, opacity: 0 }, { scale: 1, rotation: -11, opacity: 1, duration: 0.24, ease: 'power4.in' }, 0.08);
+      tl.to('#stamp', { keyframes: [{ scale: 1.06, duration: 0.07 }, { scale: 1, duration: 0.18, ease: 'back.out(3)' }] }, 0.32);
+      // frame shake on the smash
+      tl.to('#s1-wrap', { keyframes: [
+        { x: 16, y: -12, rotation: 0.5, duration: 0.06 },
+        { x: -13, y: 9, rotation: -0.4, duration: 0.06 },
+        { x: 8, y: -5, rotation: 0.2, duration: 0.06 },
+        { x: 0, y: 0, rotation: 0, duration: 0.09 }
+      ] }, 0.32);
+      tl.fromTo('#sheet', { scale: 1.015 }, { scale: 1, duration: 0.5, ease: 'power2.out' }, 0.32);
+      // red ink strikes the prices, on the beat
+      tl.fromTo('#st1', { scaleX: 0 }, { scaleX: 1, duration: 0.16, ease: 'power2.in' }, b(3));
+      tl.fromTo('#st2', { scaleX: 0 }, { scaleX: 1, duration: 0.16, ease: 'power2.in' }, b(3.5));
+      // and the waiter is still running
+      tl.fromTo('#waiter', { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.5)' }, b(5));
+      tl.to('#waiter .ic', { keyframes: [{ x: 14, duration: 0.22 }, { x: 0, duration: 0.22 }], repeat: 2, ease: 'sine.inOut' }, b(5.3));
+
+      /* ---- S2 (4.365 – 8.73): diagonal wipe to the split, then taps ---- */
+      tl.fromTo('#s2-wrap', { clipPath: 'polygon(0 0, 0 0, 0 100%, 0 100%)' },
+        { clipPath: 'polygon(0 0, 130% 0, 130% 100%, 0 100%)', duration: 0.42, ease: 'power2.inOut' }, b(8));
+      up('#s2 .head', b(8) + 0.18, 0.4, 34);
+      tl.fromTo('#phone', { y: 460, rotation: 3 }, { y: 0, rotation: 0, duration: 0.6, ease: E }, b(8) + 0.1);
+      tl.fromTo('#bigx i', { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: E, stagger: 0.1 }, b(8) + 0.3);
+      tl.set('#x1', { rotation: 45 }, 0).set('#x2', { rotation: -45 }, 0);
+      tl.fromTo('#vs', { scale: 0, rotation: -40 }, { scale: 1, rotation: 0, duration: 0.42, ease: 'back.out(2.2)' }, b(8) + 0.34);
+      tl.fromTo('#p1', { x: 700 }, { x: 0, duration: 0.36, ease: 'power3.out' }, b(9));
+      tl.to('#p1', { x: -700, duration: 0.3, ease: 'power2.in' }, b(11));
+      // tap 1
+      tl.fromTo('#rp1', { scale: 0.4, opacity: 0.9 }, { scale: 2.4, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, b(10));
+      tl.to('#it1', { backgroundColor: '#fff7f0', duration: 0.12 }, b(10));
+      tl.to('#it1 .plus', { backgroundColor: '#c2410c', color: '#ffffff', scale: 1.15, duration: 0.14, ease: 'back.out(3)' }, b(10));
+      tl.to('#it1 .plus', { scale: 1, duration: 0.2 }, b(10) + 0.14);
+      // tap 2
+      tl.fromTo('#rp2', { scale: 0.4, opacity: 0.9 }, { scale: 2.4, opacity: 0, duration: 0.5, ease: 'power2.out', immediateRender: false }, b(11));
+      tl.to('#it2', { backgroundColor: '#fff7f0', duration: 0.12 }, b(11));
+      tl.to('#it2 .plus', { backgroundColor: '#c2410c', color: '#ffffff', scale: 1.15, duration: 0.14, ease: 'back.out(3)' }, b(11));
+      tl.to('#it2 .plus', { scale: 1, duration: 0.2 }, b(11) + 0.14);
+      tl.fromTo('#p2', { x: 700 }, { x: 0, duration: 0.36, ease: 'power3.out' }, b(11) + 0.14);
+      // send
+      tl.to('#sendbtn', { keyframes: [{ scale: 0.94, duration: 0.1 }, { scale: 1, duration: 0.22, ease: 'back.out(3)' }] }, b(14));
+      tl.to('#sendbtn', { backgroundColor: '#9a3412', duration: 0.1, yoyo: true, repeat: 1 }, b(14));
+
+      /* ---- S3 (8.73 – 10.913): it lands on the staff phone ---- */
+      iris('#s3-wrap', b(16), 0.42);
+      up('#s3 .head', b(16) + 0.1, 0.4, 34);
+      tl.fromTo('#note', { y: -180, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.52, ease: 'back.out(1.5)' }, b(16) + 0.1);
+      tl.to('#note .bellic', { keyframes: [{ rotation: 12, duration: 0.09 }, { rotation: -9, duration: 0.11 }, { rotation: 5, duration: 0.11 }, { rotation: 0, duration: 0.13 }] }, b(16) + 0.5);
+      up('#s3lab', b(17.2), 0.4, 34);
+      tl.fromTo('#ok', { clipPath: 'inset(0% 0% 100% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.3, ease: 'power2.out' }, b(18));
+
+      /* ---- S4 (10.913 – 13.641): logo + CTA ---- */
+      iris('#s4-wrap', b(20), 0.4);
+      tl.fromTo('#s4-bell', { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.36, ease: 'back.out(2)' }, b(20) + 0.05);
+      tl.to('#s4-bell', { keyframes: [{ rotation: 7, duration: 0.1 }, { rotation: -5, duration: 0.12 }, { rotation: 3, duration: 0.12 }, { rotation: 0, duration: 0.14 }] }, b(20) + 0.16);
+      rings(['#r4a', '#r4b'], b(20) + 0.14);
+      up('#s4-word', b(20.7), 0.4, 40);
+      up('#s4-tag', b(21.4), 0.38, 30);
+      tl.fromTo('#s4-cta', { scale: 0.82, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2)' }, b(22));
+      tl.to('#s4-cta', { scale: 1.04, duration: 0.25, yoyo: true, repeat: 3, ease: 'sine.inOut' }, b(23));
+
+      tl.seek(0);
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

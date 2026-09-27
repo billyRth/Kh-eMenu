@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="km">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>KhMenu · Scan and order in 10 seconds</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2'); font-weight: 800; }
+      @font-face { font-family: 'Kantumruy Pro'; src: url('assets/fonts/kantumruy-pro-khmer-700-normal.woff2') format('woff2'); font-weight: 700; }
+
+      :root { --orange: #c2410c; --flame: #ea580c; --deep: #7c2d12; --cream: #faf8f5; --sand: #f3eee6; --ink: #292524; --muted: #78716c; --line: #e7e2da; --green: #047857; --green5: #10b981; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #1c1917; }
+      body { color: var(--ink); font-family: 'Plus Jakarta Sans', sans-serif; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #1c1917; }
+      .scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .wrap { position: absolute; inset: 0; overflow: hidden; }
+      .km { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; line-height: 1.5; }
+      .en { font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; }
+
+      /* ============ S1 · the continuous "screen recording" ============ */
+      #s1 .wrap { background: radial-gradient(ellipse at 50% 22%, #57534e 0%, #33302c 45%, #1c1917 100%); }
+
+      /* step counter row · y 250–342 */
+      #steps { position: absolute; left: 56px; right: 56px; top: 250px; height: 92px; display: flex; gap: 14px; }
+      .step { position: relative; flex: 1; border-radius: 26px; background: rgb(255 255 255 / 0.10); border: 3px solid rgb(255 255 255 / 0.16); display: flex; align-items: center; justify-content: center; gap: 14px; color: rgb(250 248 245 / 0.78); overflow: hidden; }
+      .step .on { position: absolute; inset: 0; border-radius: 23px; background: var(--orange); opacity: 0; }
+      .step .lbl { position: relative; display: flex; align-items: center; gap: 12px; }
+      .step .n { width: 46px; height: 46px; border-radius: 50%; background: rgb(255 255 255 / 0.26); display: grid; place-items: center; font-size: 26px; font-weight: 800; }
+      .step .kmw { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 30px; line-height: 1.5; }
+      .step .enw { font-size: 28px; font-weight: 800; opacity: 0.92; }
+      .step.lit { color: #fff; }
+
+      /* countdown · y 366–466 */
+      #cdwrap { position: absolute; left: 0; right: 0; top: 366px; display: grid; justify-items: center; }
+      #cd { grid-area: 1 / 1; height: 100px; display: flex; align-items: center; gap: 20px; padding: 0 40px; border-radius: 30px; background: rgb(28 25 23 / 0.55); border: 3px solid rgb(255 255 255 / 0.18); color: #fff; }
+      #cd .num { font-size: 62px; font-weight: 800; letter-spacing: -0.02em; min-width: 92px; text-align: right; font-variant-numeric: tabular-nums; color: #fdba74; }
+      #cd .sec { font-size: 34px; font-weight: 700; opacity: 0.8; }
+      #cd .kmsec { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 30px; line-height: 1.5; opacity: 0.8; }
+      #cd-done { grid-area: 1 / 1; height: 100px; display: flex; align-items: center; gap: 18px; padding: 0 44px; border-radius: 30px; background: var(--green); color: #fff; opacity: 0; }
+      #cd-done svg { width: 44px; height: 44px; }
+      #cd-done .t { font-size: 46px; font-weight: 800; }
+
+      /* phone screen card · y 500–1400 */
+      #card { position: absolute; left: 90px; top: 500px; width: 900px; height: 900px; border-radius: 54px; background: var(--cream); overflow: hidden; box-shadow: 0 50px 100px rgb(0 0 0 / 0.45), 0 0 0 5px rgb(250 248 245 / 0.14); }
+      #card-glow { position: absolute; inset: -14px; border-radius: 68px; border: 6px solid var(--flame); opacity: 0; }
+
+      .hdr { position: relative; height: 128px; background: #fff; border-bottom: 2px solid var(--line); display: flex; align-items: center; gap: 20px; padding: 0 30px; }
+      .rlogo { width: 72px; height: 72px; border-radius: 22px; background: var(--orange); color: #fff; font-weight: 800; font-size: 36px; display: grid; place-items: center; flex: none; }
+      .rname { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; }
+      .rtag { font-size: 24px; font-weight: 700; color: var(--muted); }
+      .rtag .km { font-size: 23px; }
+      .langs { margin-left: auto; display: flex; gap: 8px; }
+      .lchip { height: 52px; padding: 0 20px; border-radius: 14px; background: var(--sand); display: grid; place-items: center; font-size: 24px; font-weight: 800; color: var(--muted); }
+      .lchip.on { background: var(--orange); color: #fff; }
+      .lchip .km { font-size: 23px; line-height: 1; }
+
+      #list-wrap { position: absolute; left: 0; right: 0; top: 130px; bottom: 0; }
+      .list { position: absolute; inset: 0; padding: 22px 26px; display: flex; flex-direction: column; gap: 16px; }
+      .row { position: relative; display: flex; gap: 20px; align-items: center; background: #fff; border: 2px solid #ece5db; border-radius: 28px; padding: 12px 20px; }
+      .row .hl { position: absolute; inset: -3px; border-radius: 33px; box-shadow: 0 0 0 4px var(--flame); opacity: 0; }
+      .thumb { position: relative; width: 112px; height: 112px; border-radius: 24px; background: linear-gradient(140deg, #fde9d8, #f7cdb0); display: grid; place-items: center; font-size: 62px; flex: none; overflow: visible; }
+      .rt { flex: 1; min-width: 0; }
+      .rt .n1 { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.2; }
+      .rt .n2 { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 27px; line-height: 1.5; color: var(--muted); }
+      .rt .pr { margin-top: 6px; display: flex; align-items: center; gap: 12px; }
+      .rt .pr b { font-size: 29px; font-weight: 800; }
+      .rt .pr i { font-style: normal; font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 22px; line-height: 1.5; color: var(--orange); background: #fff1e8; border-radius: 12px; padding: 2px 16px; }
+
+      .pill { position: relative; flex: none; height: 68px; border-radius: 24px; background: #fff; border: 3px solid var(--line); display: flex; align-items: center; overflow: hidden; }
+      .pill .plus { width: 72px; height: 100%; display: grid; place-items: center; font-size: 42px; font-weight: 800; color: var(--orange); }
+      .pill .qtybox { position: relative; width: 0; overflow: hidden; display: flex; align-items: center; }
+      .pill .minus { width: 62px; text-align: center; font-size: 40px; font-weight: 800; color: var(--orange); }
+      .pill .q { width: 54px; text-align: center; font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+      /* tap ripple */
+      .tap { position: absolute; width: 120px; height: 120px; margin: -60px 0 0 -60px; border-radius: 50%; background: rgb(194 65 12 / 0.28); border: 5px solid var(--orange); opacity: 0; pointer-events: none; }
+
+      /* cart bar inside the card */
+      #cart { position: absolute; left: 26px; right: 26px; bottom: 26px; height: 108px; border-radius: 30px; background: var(--ink); color: #fff; display: flex; align-items: center; padding: 0 30px; gap: 18px; opacity: 0; box-shadow: 0 16px 36px rgb(0 0 0 / 0.28); }
+      #cart .bag { width: 56px; height: 56px; border-radius: 18px; background: rgb(255 255 255 / 0.16); display: grid; place-items: center; font-size: 30px; font-weight: 800; }
+      #cart .ct { font-size: 30px; font-weight: 800; }
+      #cart .ct .km { font-size: 28px; }
+      #cart .tot { margin-left: auto; font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; }
+      #cart .tot i { font-style: normal; font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 25px; line-height: 1.5; opacity: 0.75; margin-left: 12px; }
+
+      /* send button inside the card */
+      #send { position: absolute; left: 26px; right: 26px; bottom: 150px; height: 116px; border-radius: 32px; background: var(--orange); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; box-shadow: 0 18px 40px rgb(194 65 12 / 0.45); }
+      #send .km { font-size: 42px; }
+      #send .en { font-size: 26px; font-weight: 700; opacity: 0.9; letter-spacing: 0; }
+
+      /* option sheet inside the card */
+      #sheet { position: absolute; inset: 0; background: #fff; padding: 26px 30px; }
+      #sheet .grab { width: 120px; height: 10px; border-radius: 6px; background: var(--line); margin: 0 auto 20px; }
+      #sheet .sh-head { display: flex; align-items: center; gap: 22px; margin-top: 8px; }
+      #sheet .sh-head .thumb { width: 104px; height: 104px; font-size: 58px; }
+      #sheet .sh-t { font-size: 40px; font-weight: 800; letter-spacing: -0.02em; }
+      #sheet .sh-sub { margin-top: 2px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 28px; line-height: 1.5; color: var(--muted); }
+      #sheet .sh-sub .lat { font-family: 'Plus Jakarta Sans', sans-serif; }
+      #save { position: absolute; left: 30px; right: 30px; bottom: 30px; height: 124px; border-radius: 32px; background: var(--orange); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 18px 40px rgb(194 65 12 / 0.4); }
+      #save .tap { left: 50%; top: 62px; }
+      #save .km { font-size: 42px; }
+      #save .en { font-size: 26px; font-weight: 700; opacity: 0.92; letter-spacing: 0; }
+      #sheet .sh-t .km { font-size: 29px; color: var(--muted); font-weight: 700; }
+      .opts { margin-top: 34px; display: flex; flex-direction: column; gap: 20px; }
+      .opt .tap { left: 130px; top: 52px; }
+      .opt { position: relative; height: 104px; border-radius: 24px; border: 3px solid var(--line); background: #fff; display: flex; align-items: center; gap: 20px; padding: 0 26px; }
+      .opt .box { width: 46px; height: 46px; border-radius: 14px; border: 4px solid var(--line); flex: none; display: grid; place-items: center; }
+      .opt .box svg { width: 28px; height: 28px; opacity: 0; }
+      .opt .ok { position: absolute; inset: -3px; border-radius: 27px; box-shadow: 0 0 0 4px var(--orange); background: rgb(255 241 232 / 0.85); opacity: 0; }
+      .opt .ot { position: relative; font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 32px; line-height: 1.5; }
+      .opt .oe { position: relative; margin-left: auto; font-size: 27px; font-weight: 700; color: var(--muted); }
+
+      /* confirmation overlay inside the card */
+      #confirm { position: absolute; inset: 0; background: linear-gradient(170deg, #ecfdf5 0%, #d1fae5 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; opacity: 0; }
+      #confirm .tick { width: 190px; height: 190px; border-radius: 50%; background: var(--green); display: grid; place-items: center; box-shadow: 0 24px 50px rgb(4 120 87 / 0.35); }
+      #confirm .tick svg { width: 110px; height: 110px; }
+      #confirm .c1 { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 52px; line-height: 1.5; color: #065f46; }
+      #confirm .c2 { font-size: 40px; font-weight: 800; color: var(--green); }
+      #confirm .c3 { margin-top: 6px; padding: 16px 38px; border-radius: 26px; background: #fff; font-size: 40px; font-weight: 800; color: var(--ink); box-shadow: 0 12px 30px rgb(4 120 87 / 0.18); }
+
+      /* staff phone card */
+      #staff { position: absolute; left: 150px; top: 1236px; width: 780px; border-radius: 40px; background: #fff; padding: 28px 32px; display: flex; gap: 24px; align-items: center; box-shadow: 0 40px 90px rgb(0 0 0 / 0.5), 0 0 0 4px rgb(255 255 255 / 0.2); opacity: 0; }
+      #staff .ic { width: 88px; height: 88px; border-radius: 26px; background: var(--orange); display: grid; place-items: center; flex: none; }
+      #staff .ic svg { width: 52px; height: 52px; }
+      #staff .st1 { font-size: 26px; font-weight: 800; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+      #staff .st2 { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 36px; line-height: 1.5; }
+      #staff .st3 { font-size: 32px; font-weight: 800; color: var(--orange); }
+
+      /* QR tent (hook) */
+      #tent { position: absolute; left: 50%; top: 560px; margin-left: -260px; width: 520px; background: #fff; border-radius: 44px; padding: 34px 34px 38px; box-shadow: 0 50px 90px rgb(0 0 0 / 0.5); display: flex; flex-direction: column; align-items: center; gap: 14px; transform: rotate(-5deg); }
+      #tent .t1 { font-size: 30px; font-weight: 800; color: var(--muted); }
+      #tent .qr { position: relative; width: 330px; height: 330px; padding: 18px; }
+      #tent .qr img { width: 100%; height: 100%; display: block; }
+      #tent .t2 { font-size: 52px; font-weight: 800; letter-spacing: -0.02em; }
+      #tent .t3 { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 34px; line-height: 1.5; color: var(--orange); }
+      .br { position: absolute; width: 64px; height: 64px; border: 10px solid var(--flame); }
+      .br.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 22px; }
+      .br.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 22px; }
+      .br.bl { bottom: 0; left: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 22px; }
+      .br.bb { bottom: 0; right: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 22px; }
+      #scanline { position: absolute; left: 18px; right: 18px; top: 18px; height: 8px; border-radius: 6px; background: var(--flame); box-shadow: 0 0 34px 10px rgb(234 88 12 / 0.6); }
+
+      /* hook layer */
+      #hook { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, #44403c 0%, #292524 50%, #1c1917 100%); }
+      #hook-title { position: absolute; left: 60px; right: 60px; top: 250px; text-align: center; }
+      #hook-title .km { font-size: 80px; color: #fff; }
+      #hook-title .km b { color: #fdba74; font-weight: 700; }
+      #hook-title .en { font-size: 58px; color: #fed7aa; margin-top: 10px; }
+      #hook-sub { position: absolute; left: 60px; right: 60px; top: 1430px; text-align: center; }
+      #hook-sub .km { font-size: 52px; color: #fff; }
+      #hook-sub .en { font-size: 40px; color: rgb(255 255 255 / 0.7); margin-top: 6px; font-weight: 700; }
+
+      /* label block · y 1430–1560 */
+      #labels { position: absolute; left: 60px; right: 60px; top: 1430px; height: 140px; }
+      .lab { position: absolute; left: 0; right: 0; top: 0; text-align: center; opacity: 0; }
+      .lab .km { font-size: 52px; color: #fff; }
+      .lab .km b { color: #fdba74; font-weight: 700; }
+      .lab .en { font-size: 38px; font-weight: 700; color: rgb(255 255 255 / 0.72); margin-top: 6px; letter-spacing: -0.01em; }
+
+      /* ============ S2 · end card ============ */
+      #s2 .wrap { background: radial-gradient(ellipse at 50% 38%, #fff 0%, var(--cream) 55%, #f6e7d8 100%); }
+      #s2 .safe { position: absolute; left: 70px; right: 70px; top: 250px; bottom: 350px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      .bellbox { position: relative; width: 260px; height: 260px; }
+      #e-bell { width: 260px; height: 260px; filter: drop-shadow(0 26px 44px rgb(124 45 18 / 0.28)); transform-origin: 50% 90%; }
+      .ring { position: absolute; left: 50%; top: 50%; width: 260px; height: 260px; margin: -130px 0 0 -130px; border-radius: 50%; border: 8px solid var(--orange); opacity: 0; }
+      #e-word { font-size: 164px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; margin-top: 44px; color: #1c1917; }
+      #e-word b { color: var(--orange); font-weight: 800; }
+      #e-tag { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 54px; line-height: 1.5; color: var(--ink); margin-top: 14px; }
+      #e-cta { margin-top: 64px; display: flex; flex-direction: column; align-items: center; padding: 26px 58px 30px; border-radius: 40px; background: var(--orange); color: #fff; box-shadow: 0 24px 50px rgb(194 65 12 / 0.35); }
+      #e-cta .km { font-size: 44px; }
+      #e-cta .en { font-size: 48px; margin-top: 4px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="12">
+      <!-- S1 · one continuous diner-POV take: scan → tap → done -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="10.7" data-track-index="0">
+        <div class="wrap">
+          <!-- step counter -->
+          <div id="steps">
+            <div class="step" id="st1"><div class="on"></div><div class="lbl"><span class="n">1</span><span class="kmw">ស្កេន</span><span class="enw">Scan</span></div></div>
+            <div class="step" id="st2"><div class="on"></div><div class="lbl"><span class="n">2</span><span class="kmw">ចុច</span><span class="enw">Tap</span></div></div>
+            <div class="step" id="st3"><div class="on"></div><div class="lbl"><span class="n">3</span><span class="kmw">រួចរាល់</span><span class="enw">Done</span></div></div>
+          </div>
+
+          <!-- countdown -->
+          <div id="cdwrap">
+          <div id="cd"><span class="num" id="cd-num">10</span><span class="sec">s</span><span class="kmsec">វិនាទី</span></div>
+          <div id="cd-done">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+            <span class="t">10s</span>
+          </div>
+          </div>
+
+          <!-- the phone screen -->
+          <div id="card">
+            <div class="hdr" id="hdr">
+              <div class="rlogo">S</div>
+              <div>
+                <div class="rname">Sabay Kitchen</div>
+                <div class="rtag"><span class="km">តុ ២</span> · Table 2</div>
+              </div>
+              <div class="langs">
+                <div class="lchip on"><span class="km">ខ្មែរ</span></div>
+                <div class="lchip">EN</div>
+              </div>
+            </div>
+
+            <div id="list-wrap">
+            <div class="list">
+              <div class="row" id="r1">
+                <div class="hl"></div>
+                <div class="thumb">🐟</div>
+                <div class="rt">
+                  <div class="n1">Fish Amok</div>
+                  <div class="n2">អាម៉ុកត្រី</div>
+                  <div class="pr"><b>$6.50</b><i>៛26,000</i></div>
+                </div>
+                <div class="pill" id="p1">
+                  <div class="qtybox" id="qb1"><span class="minus">−</span><span class="q" id="q1">1</span></div>
+                  <div class="plus">+</div>
+                </div>
+                <div class="tap" id="tap1"></div>
+                <div class="tap" id="tap2"></div>
+              </div>
+
+              <div class="row" id="r2">
+                <div class="hl"></div>
+                <div class="thumb">🧋</div>
+                <div class="rt">
+                  <div class="n1">Iced Coffee</div>
+                  <div class="n2">កាហ្វេទឹកកក</div>
+                  <div class="pr"><b>$1.50</b><i>៛6,000</i></div>
+                </div>
+                <div class="pill" id="p2">
+                  <div class="qtybox" id="qb2"><span class="minus">−</span><span class="q" id="q2">1</span></div>
+                  <div class="plus">+</div>
+                </div>
+                <div class="tap" id="tap3"></div>
+              </div>
+
+              <div class="row" id="r3">
+                <div class="hl"></div>
+                <div class="thumb">🍜</div>
+                <div class="rt">
+                  <div class="n1">Kuy Teav</div>
+                  <div class="n2">គុយទាវ</div>
+                  <div class="pr"><b>$3.50</b><i>៛14,000</i></div>
+                </div>
+                <div class="pill"><div class="qtybox"></div><div class="plus">+</div></div>
+              </div>
+            </div>
+            </div>
+
+            <!-- send button -->
+            <div id="send">
+              <span class="km">ផ្ញើទៅផ្ទះបាយ</span>
+              <span class="en">Send to the kitchen</span>
+            </div>
+
+            <!-- cart bar -->
+            <div id="cart">
+              <div class="bag" id="cart-n">1</div>
+              <div class="ct"><span class="km">មើលការកុម្ម៉ង់</span> · View order</div>
+              <div class="tot"><span id="tot">$0.00</span><i id="totr">៛0</i></div>
+            </div>
+
+            <!-- option sheet -->
+            <div id="sheet">
+              <div class="grab"></div>
+              <div class="sh-head">
+                <div class="thumb">🧋</div>
+                <div>
+                  <div class="sh-t">Iced Coffee</div>
+                  <div class="sh-sub km">កាហ្វេទឹកកក · <span class="lat">Options</span></div>
+                </div>
+              </div>
+              <div class="opts">
+                <div class="opt" id="o1"><div class="tap" id="tap4"></div>
+                  <div class="ok"></div>
+                  <div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg></div>
+                  <div class="ot">ស្ករតិច</div><div class="oe">Less sugar</div>
+                </div>
+                <div class="opt" id="o2"><div class="tap" id="tap5"></div>
+                  <div class="ok"></div>
+                  <div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#c2410c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg></div>
+                  <div class="ot">ទឹកកកតិច</div><div class="oe">Less ice</div>
+                </div>
+              </div>
+              <div id="save">
+                <span class="km">បន្ថែមទៅកន្ត្រក</span>
+                <span class="en">Add to order</span>
+                <div class="tap" id="tap6"></div>
+              </div>
+            </div>
+
+            <!-- confirmation -->
+            <div id="confirm">
+              <div class="tick" id="tick"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5" /></svg></div>
+              <div class="c1">ការកុម្ម៉ង់បានផ្ញើ</div>
+              <div class="c2">Order sent</div>
+              <div class="c3">Order #24 · Table 2</div>
+            </div>
+
+            <div id="card-glow"></div>
+          </div>
+
+          <!-- staff phone notification -->
+          <div id="staff">
+            <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18h16" /><path d="M6 16a6 6 0 0 1 12 0z" fill="#fff" /><path d="M12 8V6" /></svg></div>
+            <div>
+              <div class="st1">Staff app</div>
+              <div class="st2">ការកុម្ម៉ង់ថ្មី</div>
+              <div class="st3">Order #24 · Table 2 · 3 items</div>
+            </div>
+          </div>
+
+          <!-- rolling labels -->
+          <div id="labels">
+            <div class="lab" id="l1"><div class="km">ម៉ឺនុយបើកភ្លាម</div><div class="en">The menu opens — Khmer, $ and <span class="km">៛</span></div></div>
+            <div class="lab" id="l2"><div class="km">ចុច <b>+</b> លើអាម៉ុកត្រី</div><div class="en">Tap + on Fish Amok</div></div>
+            <div class="lab" id="l3"><div class="km">ជ្រើសរើសជម្រើស</div><div class="en">Pick sugar or ice</div></div>
+            <div class="lab" id="l4"><div class="km">សរុបឡើងភ្លាមៗ</div><div class="en">The total adds up live</div></div>
+            <div class="lab" id="l5"><div class="km">ផ្ញើទៅផ្ទះបាយ</div><div class="en">Sent straight to the kitchen</div></div>
+            <div class="lab" id="l6"><div class="km">ផ្ទះបាយឃើញភ្លាម</div><div class="en">Staff see it the same second</div></div>
+          </div>
+
+          <!-- hook layer (frame 0) -->
+          <div id="hook">
+            <div id="hook-title">
+              <div class="km">ស្កេន → កុម្ម៉ង់ ក្នុង <b>១០ វិនាទី</b></div>
+              <div class="en">SCAN → ORDER IN 10 SECONDS</div>
+            </div>
+            <div id="tent">
+              <div class="t1">Sabay Kitchen</div>
+              <div class="qr">
+                <img src="assets/qr.svg" alt="" />
+                <div class="br tl"></div><div class="br tr"></div><div class="br bl"></div><div class="br bb"></div>
+                <div id="scanline"></div>
+              </div>
+              <div class="t2">Table 2</div>
+              <div class="t3">ស្កេន ដើម្បីកុម្ម៉ង់</div>
+            </div>
+            <div id="hook-sub">
+              <div class="km">គ្មានកម្មវិធីទេ · គ្មានរង់ចាំទេ</div>
+              <div class="en">No app to install · no waiting</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S2 · logo close -->
+      <section id="s2" class="scene clip" data-start="10.5" data-duration="1.5" data-track-index="1">
+        <div class="wrap" id="s2-wrap">
+          <div class="safe">
+            <div class="bellbox">
+              <div class="ring" id="r5a"></div><div class="ring" id="r5b"></div>
+              <svg id="e-bell" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#c2410c" /><g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"><path d="M150 400h212" /><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff" /><path d="M256 190v-24" /><circle cx="256" cy="150" r="16" fill="#fff" stroke="none" /></g></svg>
+            </div>
+            <div id="e-word"><b>Kh</b>Menu</div>
+            <div id="e-tag">App កូនខ្មែរ</div>
+            <div id="e-cta">
+              <span class="km">សាកល្បងម៉ឺនុយ demo</span>
+              <span class="en">Try the demo menu</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Audio -->
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-9-by-ende-dot-app.mp3" data-start="0" data-duration="12" data-track-index="10" data-volume="0.72"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.72},{"t":10.9,"v":0.72},{"t":12,"v":0}]}]}'></audio>
+      <audio id="sfx-scan" src="assets/sfx/impactBell_heavy_000.ogg" data-start="0.22" data-duration="1.4" data-track-index="11" data-volume="0.55"></audio>
+      <audio id="sfx-open" src="assets/sfx/card-slide-1.ogg" data-start="1.05" data-duration="0.6" data-track-index="12" data-volume="0.45"></audio>
+      <audio id="sfx-t1" src="assets/sfx/drop_002.ogg" data-start="3.35" data-duration="0.2" data-track-index="13" data-volume="0.65"></audio>
+      <audio id="sfx-t2" src="assets/sfx/drop_002.ogg" data-start="3.8" data-duration="0.2" data-track-index="14" data-volume="0.65"></audio>
+      <audio id="sfx-t3" src="assets/sfx/drop_002.ogg" data-start="4.3" data-duration="0.2" data-track-index="15" data-volume="0.65"></audio>
+      <audio id="sfx-sheet" src="assets/sfx/card-slide-1.ogg" data-start="5.25" data-duration="0.6" data-track-index="16" data-volume="0.4"></audio>
+      <audio id="sfx-o1" src="assets/sfx/switch_002.ogg" data-start="5.85" data-duration="0.5" data-track-index="17" data-volume="0.5"></audio>
+      <audio id="sfx-save" src="assets/sfx/drop_002.ogg" data-start="6.72" data-duration="0.19" data-track-index="23" data-volume="0.6"></audio>
+      <audio id="sfx-o2" src="assets/sfx/switch_002.ogg" data-start="6.35" data-duration="0.5" data-track-index="18" data-volume="0.5"></audio>
+      <audio id="sfx-send" src="assets/sfx/impactSoft_medium_002.ogg" data-start="8.1" data-duration="0.2" data-track-index="19" data-volume="0.8"></audio>
+      <audio id="sfx-ok" src="assets/sfx/impactBell_heavy_003.ogg" data-start="8.45" data-duration="1.2" data-track-index="20" data-volume="0.6"></audio>
+      <audio id="sfx-ping" src="assets/sfx/drop_002.ogg" data-start="9.3" data-duration="0.19" data-track-index="21" data-volume="0.6"></audio>
+      <audio id="sfx-end" src="assets/sfx/impactBell_heavy_000.ogg" data-start="10.6" data-duration="1.4" data-track-index="22" data-volume="0.5"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const E = 'power3.out';
+
+      tl.set('#sheet', { y: 940, opacity: 0 });
+
+      // scrub-safe counters: a real tween drives the text, so it unwinds on seek
+      const fmtUsd = (v) => '$' + v.toFixed(2);
+      const fmtRiel = (v) => '៛' + String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      const fmtInt = (v) => String(Math.round(v));
+      const counter = (sel, from, to, t, fmt, dur, ease) => {
+        const o = { v: from };
+        const el = document.querySelector(sel);
+        tl.fromTo(o, { v: from }, {
+          v: to, duration: dur || 0.3, ease: ease || 'power2.out', immediateRender: false,
+          onUpdate: () => { el.textContent = fmt(o.v); },
+        }, t);
+      };
+
+      // ---- reusable helpers -------------------------------------------------
+      const label = (sel, t, hold) => {
+        tl.fromTo(sel, { y: 34, opacity: 0 }, { y: 0, opacity: 1, duration: 0.32, ease: E }, t);
+        tl.to(sel, { y: -24, opacity: 0, duration: 0.26, ease: 'power2.in' }, t + hold);
+      };
+      const tap = (sel, t) => {
+        tl.fromTo(sel, { scale: 0.3, opacity: 1 }, { scale: 1.6, opacity: 0, duration: 0.42, ease: 'power2.out', immediateRender: false }, t);
+      };
+      const litStep = (sel, t) => {
+        tl.to(sel + ' .on', { opacity: 1, duration: 0.22, ease: E }, t);
+        tl.to(sel, { color: '#ffffff', borderColor: 'rgba(255,255,255,0.35)', duration: 0.22 }, t);
+        tl.fromTo(sel, { scale: 1 }, { scale: 1.06, duration: 0.16, yoyo: true, repeat: 1, ease: 'sine.inOut', immediateRender: false }, t);
+      };
+      const flashRow = (sel, t) => {
+        tl.fromTo(sel + ' .hl', { opacity: 0 }, { opacity: 1, duration: 0.14, ease: E, immediateRender: false }, t);
+        tl.to(sel + ' .hl', { opacity: 0, duration: 0.5, ease: 'power2.in' }, t + 0.2);
+      };
+
+      // ---- 0.00–1.05 · HOOK: QR tent on the table, scan locks on ------------
+      tl.fromTo('#scanline', { y: 0 }, { y: 282, duration: 0.62, ease: 'power1.inOut' }, 0.05);
+      tl.to('#scanline', { opacity: 0, duration: 0.14 }, 0.67);
+      tl.fromTo('.br', { scale: 1.35, opacity: 0.25 }, { scale: 1, opacity: 1, duration: 0.24, ease: 'back.out(2.4)', immediateRender: false }, 0.62);
+      tl.fromTo('#tent', { scale: 1, rotation: -5 }, { scale: 1.06, rotation: -2, duration: 0.3, ease: 'back.out(2)', immediateRender: false }, 0.62);
+      tl.to('#hook-title', { scale: 1.035, duration: 0.85, ease: 'sine.inOut' }, 0);
+      // hook whips away, the phone screen takes over
+      tl.to('#hook', { yPercent: -100, duration: 0.42, ease: 'power3.inOut' }, 1.05);
+      tl.to('#tent', { scale: 0.86, opacity: 0, duration: 0.3, ease: 'power2.in' }, 1.05);
+
+      // ---- screen recording opens ------------------------------------------
+      tl.fromTo('#card', { y: 90, scale: 0.94, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: 0.5, ease: E }, 1.1);
+      tl.fromTo('#steps .step', { y: -40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.38, ease: E, stagger: 0.07 }, 1.2);
+      tl.fromTo('#cd', { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.34, ease: E }, 1.4);
+      litStep('#st1', 1.28);
+      tl.fromTo('.row', { y: 46, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: E, stagger: 0.09 }, 1.35);
+      label('#l1', 1.5, 1.35);
+
+      // countdown 10 → 0, one tick per 0.95s, landing on 0 at 10.5
+      counter('#cd-num', 10, 0, 1.0, (v) => fmtInt(Math.ceil(v - 0.001)), 9.5, 'none');
+      for (let i = 1; i <= 10; i++) tl.fromTo('#cd-num', { scale: 1.2 }, { scale: 1, duration: 0.3, ease: 'power2.out', immediateRender: false }, 1.0 + i * 0.95);
+
+      // ---- 3.2–5.0 · STEP 2: tap + on Fish Amok ---------------------------
+      litStep('#st2', 3.2);
+      label('#l2', 3.15, 1.4);
+      // tap 1 → qty pill opens at 1
+      tap('#tap1', 3.35);
+      flashRow('#r1', 3.35);
+      tl.fromTo('#qb1', { width: 0 }, { width: 116, duration: 0.26, ease: 'back.out(1.7)' }, 3.4);
+      tl.fromTo('#p1', { scale: 1 }, { scale: 1.1, duration: 0.14, yoyo: true, repeat: 1, ease: 'sine.inOut', immediateRender: false }, 3.36);
+      tl.fromTo('#cart', { y: 130, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: E }, 3.45);
+      counter('#tot', 0, 6.5, 3.45, fmtUsd, 0.34);
+      counter('#totr', 0, 26000, 3.45, fmtRiel, 0.34);
+      // tap 2 → qty 2
+      tap('#tap2', 3.8);
+      counter('#q1', 1, 2, 3.86, fmtInt, 0.12);
+      tl.fromTo('#q1', { scale: 1.5, y: -14 }, { scale: 1, y: 0, duration: 0.3, ease: 'back.out(2.4)', immediateRender: false }, 3.86);
+      counter('#cart-n', 1, 2, 3.86, fmtInt, 0.12);
+      counter('#tot', 6.5, 13, 3.86, fmtUsd, 0.3);
+      counter('#totr', 26000, 52000, 3.86, fmtRiel, 0.3);
+      tl.fromTo('#cart .tot', { scale: 1.16 }, { scale: 1, duration: 0.3, ease: 'back.out(2)', immediateRender: false }, 3.86);
+      // tap 3 → iced coffee
+      tap('#tap3', 4.3);
+      flashRow('#r2', 4.3);
+      tl.fromTo('#qb2', { width: 0 }, { width: 116, duration: 0.26, ease: 'back.out(1.7)' }, 4.35);
+      tl.fromTo('#p2', { scale: 1 }, { scale: 1.1, duration: 0.14, yoyo: true, repeat: 1, ease: 'sine.inOut', immediateRender: false }, 4.31);
+      counter('#cart-n', 2, 3, 4.4, fmtInt, 0.12);
+      counter('#tot', 13, 14.5, 4.4, fmtUsd, 0.3);
+      counter('#totr', 52000, 58000, 4.4, fmtRiel, 0.3);
+      tl.fromTo('#cart .tot', { scale: 1.16 }, { scale: 1, duration: 0.3, ease: 'back.out(2)', immediateRender: false }, 4.4);
+
+      // ---- 5.2–6.9 · options sheet ----------------------------------------
+      label('#l3', 5.15, 1.4);
+      tl.to('#sheet', { opacity: 1, duration: 0.08, ease: 'none' }, 5.25);
+      tl.to('#sheet', { y: 0, duration: 0.4, ease: E }, 5.25);
+      // the option dialog is opaque and covers the whole card: park what is behind it
+      tl.to(['#hdr', '#list-wrap', '#cart'], { opacity: 0, duration: 0.08, ease: 'none' }, 5.6);
+      tl.to(['#hdr', '#list-wrap', '#cart'], { opacity: 1, duration: 0.08, ease: 'none' }, 7.06);
+      tap('#tap4', 5.85);
+      tl.to('#o1 .ok', { opacity: 1, duration: 0.18, ease: E }, 5.9);
+      tl.to('#o1 .box svg', { opacity: 1, duration: 0.18, ease: E }, 5.9);
+      tl.fromTo('#o1', { scale: 1 }, { scale: 1.03, duration: 0.14, yoyo: true, repeat: 1, ease: 'sine.inOut', immediateRender: false }, 5.9);
+      tap('#tap5', 6.35);
+      tl.to('#o2 .ok', { opacity: 1, duration: 0.18, ease: E }, 6.4);
+      tl.to('#o2 .box svg', { opacity: 1, duration: 0.18, ease: E }, 6.4);
+      tl.fromTo('#o2', { scale: 1 }, { scale: 1.03, duration: 0.14, yoyo: true, repeat: 1, ease: 'sine.inOut', immediateRender: false }, 6.4);
+      tap('#tap6', 6.72);
+      tl.to('#save', { scale: 0.95, duration: 0.1, ease: 'power2.in' }, 6.74);
+      tl.to('#save', { scale: 1, duration: 0.14, ease: 'back.out(3)' }, 6.84);
+      tl.to('#sheet', { y: 940, duration: 0.36, ease: 'power2.in' }, 6.95);
+      tl.to('#sheet', { opacity: 0, duration: 0.08, ease: 'none' }, 7.28);
+
+      // ---- 7.1–8.4 · total settles, send button ---------------------------
+      label('#l4', 7.05, 1.25);
+      tl.fromTo('#cart', { scale: 1 }, { scale: 1.04, duration: 0.2, yoyo: true, repeat: 1, ease: 'sine.inOut', immediateRender: false }, 7.15);
+      tl.fromTo('#send', { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 0.36, ease: E }, 7.5);
+      tl.fromTo('#send', { scale: 1 }, { scale: 1.035, duration: 0.3, yoyo: true, repeat: 1, ease: 'sine.inOut', immediateRender: false }, 7.6);
+      // press
+      tl.to('#send', { scale: 0.94, duration: 0.11, ease: 'power2.in' }, 8.05);
+      tl.to('#send', { scale: 1, duration: 0.16, ease: 'back.out(3)' }, 8.16);
+
+      // ---- 8.45–10.4 · confirmation + staff phone -------------------------
+      litStep('#st3', 8.45);
+      label('#l5', 8.5, 0.68);
+      tl.fromTo('#confirm', { opacity: 0, clipPath: 'circle(0% at 50% 62%)' }, { opacity: 1, clipPath: 'circle(95% at 50% 62%)', duration: 0.44, ease: 'power2.inOut' }, 8.45);
+      tl.fromTo('#tick', { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2.2)' }, 8.6);
+      tl.fromTo('#confirm .c1', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: E }, 8.85);
+      tl.fromTo('#confirm .c2', { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: E }, 8.98);
+      tl.fromTo('#confirm .c3', { scale: 0.86, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.34, ease: 'back.out(2)' }, 9.12);
+      tl.to(['#hdr', '#list-wrap', '#cart', '#send'], { opacity: 0, duration: 0.1, ease: 'none' }, 8.85);
+      tl.fromTo('#card-glow', { opacity: 0 }, { opacity: 0.9, duration: 0.2, ease: E }, 8.5);
+      tl.to('#card-glow', { opacity: 0, duration: 0.7, ease: 'power2.in' }, 8.8);
+      // staff notification
+      label('#l6', 9.52, 0.78);
+      tl.fromTo('#staff', { x: 200, y: 40, opacity: 0 }, { x: 0, y: 0, opacity: 1, duration: 0.42, ease: 'back.out(1.5)' }, 9.35);
+      tl.fromTo('#staff .ic', { scale: 1 }, { scale: 1.14, duration: 0.16, yoyo: true, repeat: 3, ease: 'sine.inOut', immediateRender: false }, 9.55);
+      // countdown lands on 0 → 10s done badge
+      tl.to('#cd', { opacity: 0, duration: 0.2, ease: 'power2.in' }, 10.42);
+      tl.fromTo('#cd-done', { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: 'back.out(2.4)' }, 10.45);
+
+      // ---- 10.5–12.0 · logo close ----------------------------------------
+      tl.fromTo('#s2-wrap', { clipPath: 'circle(0% at 50% 45%)' }, { clipPath: 'circle(80% at 50% 45%)', duration: 0.5, ease: 'power2.inOut' }, 10.5);
+      tl.fromTo('#e-bell', { scale: 0.55, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.36, ease: 'back.out(2.2)' }, 10.58);
+      tl.to('#e-bell', { keyframes: [{ rotation: 7, duration: 0.1 }, { rotation: -5, duration: 0.12 }, { rotation: 3, duration: 0.12 }, { rotation: 0, duration: 0.14 }] }, 10.7);
+      ['#r5a', '#r5b'].forEach((id, i) =>
+        tl.fromTo(id, { scale: 1, opacity: 0.65 }, { scale: 2.3 + i * 0.5, opacity: 0, duration: 1.1, ease: 'power2.out', immediateRender: false }, 10.68 + i * 0.16)
+      );
+      tl.fromTo('#e-word', { y: 46, opacity: 0 }, { y: 0, opacity: 1, duration: 0.38, ease: E }, 10.78);
+      tl.fromTo('#e-tag', { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.34, ease: E }, 10.96);
+      tl.fromTo('#e-cta', { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.36, ease: 'back.out(2)' }, 11.14);
+      tl.to('#e-cta', { scale: 1.04, duration: 0.24, yoyo: true, repeat: 1, ease: 'sine.inOut' }, 11.5);
+
+      tl.seek(0);
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

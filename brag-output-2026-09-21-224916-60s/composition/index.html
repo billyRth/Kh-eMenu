@@ -1,0 +1,1141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>KhMenu Staff update 60s</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2'); font-weight: 800; }
+      @font-face { font-family: 'Kantumruy Pro'; src: url('assets/fonts/kantumruy-pro-khmer-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Microsoft YaHei'; src: local('Microsoft YaHei'), local('Microsoft YaHei UI'); font-weight: 400 800; }
+
+      :root { --orange: #c2410c; --deep: #7c2d12; --bg: #faf8f5; --page: #f3efe9; --ink: #292524; --muted: #57534e; --line: #e7e2da; --sec: #f1ede7;
+              --em5: #10b981; --em50: #ecfdf5; --em6: #047857; --em7: #065f46; --am4: #fbbf24; --am50: #fffbeb; --am7: #92400e; }
+      * { box-sizing: border-box; margin: 0; }
+      body { background: var(--page); color: var(--ink); font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', 'Microsoft YaHei', sans-serif; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: var(--page); }
+      .scene { position: absolute; inset: 0; overflow: hidden; }
+      svg { display: block; flex-shrink: 0; }
+      .km { font-family: 'Kantumruy Pro', sans-serif; }
+      .zh { font-family: 'Microsoft YaHei', sans-serif; }
+
+      /* ---------- orange scenes ---------- */
+      .orange { background: radial-gradient(ellipse at 50% 40%, #ea580c 0%, var(--orange) 50%, var(--deep) 110%); color: #fff; }
+      .center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 26px; }
+      .icon-big { width: 150px; height: 150px; border-radius: 40px; box-shadow: 0 0 0 5px rgb(255 255 255 / 0.9), 0 28px 60px rgb(0 0 0 / 0.28); }
+      .icon-big img { width: 100%; height: 100%; display: block; border-radius: 40px; }
+      .eyebrow { font-size: 44px; font-weight: 700; opacity: 0.92; line-height: 1.1; }
+      .wordmark { font-size: 132px; font-weight: 800; letter-spacing: -0.045em; line-height: 1; }
+      .hook-sub { font-size: 40px; font-weight: 700; padding: 12px 34px; border-radius: 999px; background: rgb(255 255 255 / 0.16); border: 2px solid rgb(255 255 255 / 0.4); }
+      .chip { position: absolute; display: flex; align-items: center; gap: 10px; padding: 16px 26px; border-radius: 22px; background: #fff; color: var(--ink); font-size: 32px; font-weight: 800; box-shadow: 0 18px 40px rgb(0 0 0 / 0.25); white-space: nowrap; }
+      .chip.km { font-weight: 700; line-height: 1.5; padding: 10px 26px; }
+      .chip svg { width: 32px; height: 32px; color: var(--muted); }
+      .chip.grey { background: #ece8e2; color: #57534e; }
+      .chip.green { color: var(--em7); }
+      .chip.green svg { color: var(--em6); }
+
+      /* ---------- rail ---------- */
+      #rail { position: absolute; left: 64px; top: 70px; width: 560px; }
+      .upd { display: inline-flex; align-items: center; gap: 10px; padding: 8px 18px; border-radius: 999px; background: var(--orange); color: #fff; font-size: 20px; font-weight: 800; letter-spacing: 0.08em; }
+      .rail-title { font-size: 50px; font-weight: 800; letter-spacing: -0.035em; line-height: 1.08; margin-top: 18px; }
+      .rail-title em { font-style: normal; color: var(--orange); }
+      .items { margin-top: 30px; display: flex; flex-direction: column; gap: 10px; }
+      .item { position: relative; display: flex; gap: 20px; align-items: flex-start; padding: 16px 20px; border-radius: 24px; }
+      .item .hl { position: absolute; inset: 0; border-radius: 24px; background: #fff; box-shadow: 0 0 0 3px var(--orange), 0 18px 36px rgb(124 45 18 / 0.14); opacity: 0; }
+      .num { position: relative; width: 50px; height: 50px; flex-shrink: 0; border-radius: 50%; background: #e4ddd3; color: #57534e; font-size: 24px; font-weight: 800; display: grid; place-items: center; }
+      .num .n, .num .ok, .num .on { position: absolute; inset: 0; border-radius: 50%; display: grid; place-items: center; }
+      .num .on { background: var(--orange); color: #fff; opacity: 0; }
+      .num .ok { background: var(--em6); color: #fff; opacity: 0; }
+      .num .ok svg { width: 26px; height: 26px; stroke-width: 3; }
+      .itxt { position: relative; }
+      .ititle { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.5; }
+      .ititle .km, .ititle .zh { font-weight: 700; }
+      .isub { font-size: 20px; font-weight: 500; color: #57534e; line-height: 1.3; }
+
+      /* ---------- tablet ---------- */
+      #tablet { position: absolute; left: 676px; top: 70px; width: 1196px; height: 940px; border-radius: 46px; background: #1c1917; padding: 16px; box-shadow: 0 40px 90px rgb(41 37 36 / 0.3); }
+      #screen { position: relative; width: 100%; height: 100%; border-radius: 32px; overflow: hidden; background: #f6f3ee; }
+      .hdr { height: 84px; background: #fff; display: flex; align-items: center; gap: 16px; padding: 0 26px; }
+      .rlogo { width: 48px; height: 48px; border-radius: 14px; background: var(--orange); color: #fff; font-weight: 800; font-size: 24px; display: grid; place-items: center; }
+      .rname { font-size: 22px; font-weight: 700; line-height: 1.2; }
+      .rsub { font-size: 16px; color: var(--muted); }
+      .obtn { display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 16px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font-size: 17px; font-weight: 600; white-space: nowrap; }
+      .obtn svg { width: 18px; height: 18px; }
+      .langsw { position: relative; display: flex; border-radius: 999px; background: var(--sec); padding: 4px; }
+      .langsw .knob { position: absolute; top: 4px; left: 4px; height: 38px; border-radius: 999px; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.14); }
+      .langsw span { position: relative; height: 38px; display: grid; place-items: center; padding: 0 14px; font-size: 17px; font-weight: 700; color: var(--muted); }
+      .langsw span.km { line-height: 1; }
+      .nav { position: relative; height: 58px; background: #fff; border-bottom: 1.5px solid var(--line); display: flex; gap: 4px; padding: 0 18px; }
+      .tab { position: relative; display: flex; align-items: center; gap: 9px; padding: 0 16px; font-size: 18px; font-weight: 700; color: var(--muted); }
+      .tab svg { width: 19px; height: 19px; }
+      .tab .tabon { position: absolute; inset: 0; display: flex; align-items: center; gap: 9px; padding: 0 16px; color: var(--ink); opacity: 0; }
+      .uline { position: absolute; bottom: -1.5px; height: 3px; background: var(--orange); border-radius: 2px; }
+      .main { position: absolute; left: 0; right: 0; top: 142px; bottom: 0; padding: 20px 24px; }
+      .liverow { display: flex; align-items: center; gap: 14px; height: 40px; }
+      .live { display: inline-flex; align-items: center; gap: 9px; height: 34px; padding: 0 14px; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; font-size: 15px; font-weight: 800; color: var(--em7); }
+      .live i { width: 10px; height: 10px; border-radius: 50%; background: var(--em5); box-shadow: 0 0 0 4px rgb(16 185 129 / 0.2); }
+      .note { display: flex; align-items: center; gap: 8px; font-size: 15px; color: var(--muted); }
+      .note svg { width: 17px; height: 17px; }
+      .sect { margin-top: 16px; border-radius: 28px; background: rgb(255 255 255 / 0.6); box-shadow: 0 0 0 1.5px rgb(41 37 36 / 0.05); padding: 14px; }
+      .sect h3 { display: flex; align-items: center; gap: 10px; padding: 0 4px 12px; font-size: 20px; font-weight: 800; }
+      .sect h3 svg { width: 19px; height: 19px; color: var(--muted); }
+      .sect h3 .hint { margin-left: auto; font-size: 15px; font-weight: 600; color: var(--muted); }
+      .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+      .tile { position: relative; height: 96px; padding: 13px 16px; }
+      .tile .fr { position: absolute; inset: 0; border-radius: 20px; border: 2.5px solid; opacity: 0; }
+      .fr.free { border-style: dashed; border-color: #d9d2c8; background: transparent; }
+      .fr.busy { border-color: rgb(194 65 12 / 0.4); background: #fff; }
+      .fr.calling { border-color: var(--am4); background: var(--am50); }
+      .fr.wants { border-color: var(--em5); background: var(--em50); }
+      .fr.joined { border-color: rgb(194 65 12 / 0.25); background: #fbf1ea; }
+      .fr.off { border-color: var(--line); background: #ece8e2; }
+      .tile .fr.s0 { opacity: 1; }
+      .trow { position: relative; display: flex; align-items: center; font-size: 20px; font-weight: 800; height: 32px; }
+      .party { position: absolute; right: 0; top: 0; height: 32px; display: flex; align-items: center; gap: 5px; font-size: 17px; font-weight: 700; color: var(--muted); }
+      .party svg { width: 17px; height: 17px; }
+      .st { position: relative; height: 34px; margin-top: 4px; }
+      .st > div { position: absolute; left: 0; top: 0; font-size: 18px; font-weight: 700; line-height: 34px; white-space: nowrap; opacity: 0; }
+      .st > div.s0 { opacity: 1; }
+      .c-muted { color: var(--muted); } .c-ink { color: var(--ink); } .c-am { color: var(--am7); } .c-em { color: var(--em7); } .c-off { color: #57534e; }
+      .cols { margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+      .col { border-radius: 26px; background: rgb(255 255 255 / 0.6); box-shadow: 0 0 0 1.5px rgb(41 37 36 / 0.05); padding: 14px; height: 386px; overflow: hidden; }
+      .col h4 { display: flex; align-items: center; gap: 9px; font-size: 19px; font-weight: 800; padding: 2px 4px 12px; height: 46px; }
+      .col h4 svg { width: 19px; height: 19px; }
+      .col h4 .cnt { margin-left: auto; font-size: 14px; font-weight: 700; background: var(--sec); padding: 0 11px; border-radius: 999px; line-height: 24px; }
+      .card { border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.06), 0 0 0 1.5px rgb(41 37 36 / 0.05); overflow: hidden; }
+      .card .cb { padding: 14px 16px; }
+      .onum { display: flex; align-items: center; gap: 9px; }
+      .onum b { font-size: 22px; font-weight: 800; }
+      .badge { font-size: 14px; font-weight: 700; background: var(--ink); color: #fff; padding: 3px 10px; border-radius: 8px; }
+      .ago { margin-left: auto; font-size: 14px; color: var(--muted); }
+      .li { display: flex; align-items: center; gap: 9px; font-size: 17px; margin-top: 10px; font-weight: 500; }
+      .li i { font-style: normal; min-width: 26px; text-align: center; border-radius: 7px; background: var(--sec); font-weight: 800; font-size: 15px; line-height: 24px; }
+      .cf { display: flex; align-items: center; gap: 10px; border-top: 1.5px solid var(--line); background: #faf7f3; padding: 11px 16px; }
+      .cf b { font-size: 17px; }
+      .pbtn { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 11px; background: var(--orange); color: #fff; font-size: 15px; font-weight: 700; white-space: nowrap; }
+      .pbtn svg { width: 16px; height: 16px; }
+      .pbtn.em { background: var(--em6); }
+      .bill-t { font-size: 19px; font-weight: 800; display: flex; align-items: center; gap: 9px; }
+      .wbadge { font-size: 13px; font-weight: 700; background: #d1fae5; color: #065f46; padding: 3px 9px; border-radius: 8px; }
+      .bill-s { font-size: 14px; color: var(--muted); margin-top: 3px; }
+      .bill-amt { font-size: 22px; font-weight: 800; }
+      .fullbtn { margin-top: 10px; height: 40px; border-radius: 11px; background: var(--em6); color: #fff; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; }
+      .fullbtn svg { width: 17px; height: 17px; }
+      /* translatable stack */
+      .tr { display: inline-grid; }
+      .tr > span { grid-area: 1 / 1; white-space: nowrap; }
+      .tr > .L-km { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; opacity: 0; }
+      .tr > .L-zh { font-family: 'Microsoft YaHei', sans-serif; font-weight: 700; opacity: 0; }
+
+      /* ---------- dialog ---------- */
+      #backdrop { position: absolute; inset: 0; background: rgb(28 25 23 / 0.14); opacity: 0; }
+      .dwrap { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; }
+      .dlg { width: 580px; border-radius: 22px; background: #fff; padding: 30px; box-shadow: 0 30px 70px rgb(0 0 0 / 0.25), 0 0 0 1.5px rgb(41 37 36 / 0.06); opacity: 0; }
+      .dlg h5 { font-size: 32px; font-weight: 800; letter-spacing: -0.02em; }
+      .dlg .dd { font-size: 19px; color: var(--muted); margin-top: 4px; }
+      .dlg .lbl { font-size: 21px; font-weight: 800; margin: 22px 0 10px; }
+      .back { display: inline-flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; margin-top: 16px; }
+      .back svg { width: 19px; height: 19px; }
+      .g4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+      .g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+      .nb { height: 68px; border-radius: 14px; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 30px; font-weight: 800; background: #fff; }
+      .tb { height: 58px; border-radius: 14px; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 20px; font-weight: 700; background: #fff; }
+      .morerow { display: flex; gap: 10px; margin-top: 10px; }
+      .inp { flex: 1; height: 58px; border-radius: 14px; border: 1.5px solid var(--line); display: flex; align-items: center; padding: 0 18px; font-size: 20px; color: var(--muted); position: relative; }
+      .inp.focus { border-color: #a8a29e; box-shadow: 0 0 0 4px rgb(168 162 158 / 0.3); }
+      .chk { width: 64px; height: 58px; border-radius: 14px; background: #e3a88e; color: #fff; display: grid; place-items: center; }
+      .chk svg { width: 22px; height: 22px; }
+      .ab { height: 60px; border-radius: 14px; border: 1.5px solid var(--line); display: flex; align-items: center; gap: 12px; padding: 0 18px; font-size: 20px; font-weight: 600; background: #fff; margin-top: 10px; }
+      .ab svg { width: 21px; height: 21px; }
+      .ab.ghost { border-color: transparent; color: var(--muted); }
+      .ab.green { background: var(--em6); border-color: var(--em6); color: #fff; font-weight: 800; }
+      .ab.prim { background: var(--orange); border-color: var(--orange); color: #fff; font-weight: 800; justify-content: center; }
+      .typed { position: absolute; left: 18px; top: 0; line-height: 58px; color: var(--ink); font-size: 20px; display: flex; }
+      .typed span { opacity: 0; }
+      .ph { transition: none; }
+      .caret { width: 2px; height: 26px; background: var(--ink); margin-left: 2px; align-self: center; opacity: 0; }
+
+      /* ---------- toast ---------- */
+      .toast { position: absolute; right: 26px; bottom: 26px; max-width: 520px; display: flex; align-items: flex-start; gap: 12px; padding: 16px 20px; border-radius: 14px; background: #fff; box-shadow: 0 12px 34px rgb(0 0 0 / 0.16), 0 0 0 1.5px rgb(41 37 36 / 0.06); font-size: 18px; font-weight: 600; line-height: 1.35; opacity: 0; }
+      .toast svg { width: 22px; height: 22px; color: var(--em6); margin-top: 1px; }
+
+      /* ---------- report ---------- */
+      #report { position: absolute; left: 0; right: 0; top: 142px; bottom: 0; padding: 22px 24px; opacity: 0; }
+      .rtop { display: flex; align-items: center; gap: 12px; }
+      .rtop h2 { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+      .rtop p { font-size: 16px; color: var(--muted); margin-top: 2px; }
+      .ibtn { width: 42px; height: 42px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; display: grid; place-items: center; }
+      .ibtn svg { width: 19px; height: 19px; }
+      .ibtn.dis { opacity: 0.5; }
+      .stats { margin-top: 20px; display: grid; grid-template-columns: 1.35fr 1fr 1fr 1fr 1fr; gap: 12px; }
+      .stat { position: relative; border-radius: 26px; background: #fff; box-shadow: 0 0 0 1.5px rgb(41 37 36 / 0.05); padding: 18px; height: 178px; }
+      .stat .sl { display: flex; align-items: center; gap: 8px; font-size: 16px; color: var(--muted); font-weight: 600; }
+      .stat .sl svg { width: 18px; height: 18px; }
+      .stat .sv { font-size: 40px; font-weight: 800; letter-spacing: -0.03em; margin-top: 10px; font-variant-numeric: tabular-nums; }
+      .stat .ss { font-size: 15px; color: var(--muted); margin-top: 4px; line-height: 1.35; }
+      .stat .up { display: flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 700; color: var(--em7); margin-top: 6px; }
+      .stat .up svg { width: 15px; height: 15px; }
+      #g-ring { position: absolute; inset: 0; border-radius: 26px; box-shadow: 0 0 0 3px var(--orange), 0 14px 34px rgb(194 65 12 / 0.22); opacity: 0; }
+      .newtag { position: absolute; right: 14px; top: 14px; font-size: 13px; font-weight: 800; color: #fff; background: var(--orange); padding: 3px 10px; border-radius: 999px; letter-spacing: 0.04em; }
+      .groups { margin-top: 14px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+      .grp { display: flex; align-items: center; gap: 12px; border-radius: 20px; background: #fff; box-shadow: 0 0 0 1.5px rgb(41 37 36 / 0.05); padding: 14px; }
+      .grp .gi { width: 44px; height: 44px; border-radius: 13px; background: rgb(194 65 12 / 0.1); color: var(--orange); display: grid; place-items: center; }
+      .grp .gi svg { width: 22px; height: 22px; }
+      .grp p { font-size: 14px; color: var(--muted); }
+      .grp b { font-size: 19px; font-weight: 800; }
+      .grp b span { font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 6px; }
+      .best { margin-top: 14px; border-radius: 26px; background: #fff; box-shadow: 0 0 0 1.5px rgb(41 37 36 / 0.05); padding: 20px 22px; }
+      .best h6 { font-size: 19px; font-weight: 800; }
+      .best .bs { font-size: 14px; color: var(--muted); }
+      .bar { margin-top: 12px; }
+      .bar .bt { display: flex; justify-content: space-between; font-size: 16px; font-weight: 600; }
+      .bar .bt span { color: var(--muted); font-weight: 500; }
+      .bar .bb { display: flex; align-items: center; gap: 9px; margin-top: 5px; }
+      .bar .bb i { display: block; height: 13px; border-radius: 0 4px 4px 0; background: var(--orange); }
+      .bar .bb b { font-size: 14px; }
+      #csv { position: absolute; left: 1150px; top: 520px; width: 700px; border-radius: 20px; background: #fff; box-shadow: 0 36px 80px rgb(0 0 0 / 0.3), 0 0 0 1.5px rgb(41 37 36 / 0.08); overflow: hidden; opacity: 0; }
+      .csvh { display: flex; align-items: center; gap: 12px; padding: 16px 20px; background: #f0fdf4; border-bottom: 1.5px solid #d1fae5; font-size: 19px; font-weight: 800; color: #065f46; }
+      .csvh svg { width: 26px; height: 26px; color: var(--em6); }
+      .csvt { width: 100%; border-collapse: collapse; font-size: 16px; }
+      .csvt th { text-align: left; font-weight: 800; background: #f6f3ee; padding: 9px 12px; border-bottom: 1.5px solid var(--line); }
+      .csvt td { padding: 9px 12px; border-bottom: 1px solid #efeae3; font-weight: 500; }
+      .csvt td.r, .csvt th.r { text-align: right; }
+
+      /* ---------- finger ---------- */
+      #finger { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgb(41 37 36 / 0.32); border: 4px solid #fff; box-shadow: 0 8px 22px rgb(0 0 0 / 0.3); opacity: 0; }
+      #ripple { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; border: 4px solid var(--orange); opacity: 0; }
+
+      /* ---------- outro ---------- */
+      .out-row { display: flex; align-items: center; gap: 40px; }
+      .out-pill { font-size: 46px; font-weight: 800; padding: 16px 44px; border-radius: 999px; background: #fff; color: var(--orange); }
+      .out-sub { font-size: 40px; font-weight: 700; line-height: 1.6; }
+
+      /* ================= 60s additions ================= */
+      .stk { display: inline-grid; }
+      .stk > * { grid-area: 1 / 1; white-space: nowrap; }
+      .slot { position: relative; }
+      .slot > * { position: absolute; left: 0; right: 0; top: 0; }
+      .empty { font-size: 16px; color: var(--muted); padding: 2px 6px; }
+      .ghost { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+      .ghost svg { width: 15px; height: 15px; }
+      .cf .pbtn { margin-left: 8px; }
+      .bcard { border-radius: 20px; background: #fff; box-shadow: 0 1px 3px rgb(0 0 0 / 0.06), 0 0 0 1.5px rgb(41 37 36 / 0.05); }
+      .bcard .cb { padding: 14px 16px; }
+      .bcard.req { box-shadow: 0 0 0 2.5px var(--em5); }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .chips span { font-size: 14px; background: var(--sec); padding: 3px 11px; border-radius: 999px; }
+      #bill7ring { position: absolute; inset: -4px; border-radius: 24px; box-shadow: 0 0 0 3px var(--orange); opacity: 0; }
+
+      /* caption column (story scenes) */
+      #cap { position: absolute; left: 64px; top: 0; width: 570px; height: 1080px; }
+      .capb { position: absolute; left: 0; top: 250px; width: 570px; opacity: 0; }
+      .capsub { font-size: 26px; font-weight: 500; color: #57534e; line-height: 1.4; margin-top: 22px; }
+      .capb .items { margin-top: 26px; }
+      .newtag2 { display: inline-block; vertical-align: middle; font-size: 14px; font-weight: 800; color: #fff; background: var(--orange); padding: 2px 9px; border-radius: 999px; margin-left: 8px; letter-spacing: 0.04em; }
+
+      /* table tent */
+      #tent { position: absolute; left: 750px; top: 290px; width: 330px; height: 500px; border-radius: 26px; background: #fff; overflow: hidden; box-shadow: 0 40px 70px rgb(41 37 36 / 0.22), 0 0 0 1.5px rgb(41 37 36 / 0.06); text-align: center; }
+      #tent .band { height: 70px; background: var(--orange); color: #fff; font-size: 22px; font-weight: 800; display: grid; place-items: center; }
+      #tent .tt { font-size: 44px; font-weight: 800; letter-spacing: -0.03em; margin-top: 18px; }
+      #tent img { width: 210px; height: 210px; display: block; margin: 14px auto 0; }
+      #tent .ts { font-size: 21px; font-weight: 700; margin-top: 16px; }
+      #tent .tk { font-size: 15px; color: var(--muted); margin-top: 6px; }
+
+      /* diner phone */
+      #dphone { position: absolute; left: 1200px; top: 70px; width: 470px; height: 940px; border-radius: 66px; background: #1c1917; padding: 14px; box-shadow: 0 40px 90px rgb(41 37 36 / 0.3); }
+      .dscreen { position: relative; width: 100%; height: 100%; border-radius: 54px; overflow: hidden; background: var(--bg); }
+      .island { position: absolute; top: 14px; left: 50%; margin-left: -60px; width: 120px; height: 34px; border-radius: 20px; background: #1c1917; z-index: 9; }
+      #cam { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, #4a3f38 0%, #1c1714 75%); }
+      #camqr { position: absolute; left: 91px; top: 250px; width: 260px; height: 260px; background: #fff; border-radius: 14px; padding: 18px; }
+      #camqr img { width: 100%; height: 100%; display: block; }
+      #brk { position: absolute; left: 71px; top: 230px; width: 300px; height: 300px; }
+      #brk i { position: absolute; width: 60px; height: 60px; border: 6px solid #fff; }
+      #brk i:nth-child(1) { left: 0; top: 0; border-right: 0; border-bottom: 0; border-radius: 18px 0 0 0; }
+      #brk i:nth-child(2) { right: 0; top: 0; border-left: 0; border-bottom: 0; border-radius: 0 18px 0 0; }
+      #brk i:nth-child(3) { left: 0; bottom: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 18px; }
+      #brk i:nth-child(4) { right: 0; bottom: 0; border-left: 0; border-top: 0; border-radius: 0 0 18px 0; }
+      #detect { position: absolute; left: 40px; right: 40px; top: 600px; display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 18px; background: #fff; font-size: 18px; font-weight: 700; opacity: 0; }
+      #detect .di { width: 40px; height: 40px; border-radius: 12px; background: var(--orange); color: #fff; display: grid; place-items: center; }
+      #detect .di svg { width: 21px; height: 21px; }
+      #detect small { display: block; font-size: 14px; font-weight: 500; color: var(--muted); }
+      #dmenu { position: absolute; inset: 0; background: var(--bg); opacity: 0; }
+      .dcover { height: 150px; background: var(--orange) radial-gradient(circle at 20% 20%, rgb(255 255 255 / 0.22), transparent 45%); position: relative; }
+      .dlang { position: absolute; top: 58px; right: 16px; display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 999px; background: rgb(0 0 0 / 0.35); }
+      .dlang svg { width: 17px; height: 17px; color: rgb(255 255 255 / 0.85); margin: 0 6px; }
+      .dlang span { padding: 4px 12px; border-radius: 999px; font-size: 15px; font-weight: 700; color: #fff; }
+      .dlang span.on { background: #fff; color: #111; }
+      .dcard { position: relative; margin: -64px 16px 0; border-radius: 26px; background: #fff; padding: 16px; box-shadow: 0 10px 24px rgb(0 0 0 / 0.06), 0 0 0 1.5px var(--line); }
+      .dcard .row1 { display: flex; align-items: center; gap: 14px; }
+      .dcard .dl { width: 60px; height: 60px; border-radius: 18px; background: var(--orange); color: #fff; font-size: 26px; font-weight: 800; display: grid; place-items: center; box-shadow: 0 0 0 4px #fff; }
+      .dcard .dn { font-size: 23px; font-weight: 800; letter-spacing: -0.02em; }
+      .dtab { margin-top: 12px; display: flex; align-items: center; gap: 12px; border-radius: 18px; background: #fbf1ea; padding: 10px 14px; }
+      .dtab .ti { width: 38px; height: 38px; border-radius: 12px; background: var(--orange); color: #fff; display: grid; place-items: center; }
+      .dtab .ti svg { width: 19px; height: 19px; }
+      .dtab b { display: block; font-size: 16px; }
+      .dtab span { display: block; font-size: 14px; color: var(--muted); line-height: 1.6; }
+      .dsearch { margin: 14px 16px 0; height: 46px; border-radius: 999px; background: #fff; box-shadow: 0 0 0 1.5px var(--line); display: flex; align-items: center; gap: 10px; padding: 0 16px; font-size: 16px; color: var(--muted); }
+      .dsearch svg { width: 18px; height: 18px; }
+      .dchips { margin: 10px 16px 0; display: flex; gap: 8px; }
+      .dchips span { padding: 3px 14px; border-radius: 999px; background: #fff; box-shadow: 0 0 0 1.5px var(--line); font-size: 15px; font-weight: 700; line-height: 1.7; }
+      .dchips span.on { background: var(--orange); color: #fff; box-shadow: none; }
+      .dh { font-size: 20px; font-weight: 700; margin: 12px 16px 8px; line-height: 1.5; }
+      .dlist { margin: 0 16px; border-radius: 20px; background: #fff; box-shadow: 0 0 0 1.5px var(--line); }
+      .drow { display: flex; gap: 14px; padding: 13px 14px; }
+      .drow + .drow { border-top: 1.5px solid var(--line); }
+      .dtxt { flex: 1; min-width: 0; }
+      .dtxt h3 { font-size: 19px; font-weight: 700; line-height: 1.5; }
+      .dtxt .en { font-size: 13px; color: var(--muted); }
+      .dtxt .dp { font-size: 17px; font-weight: 800; margin-top: 8px; }
+      .dtxt .dp i { font-style: normal; font-size: 13px; font-weight: 500; color: var(--muted); margin-left: 6px; }
+      .dthumb { position: relative; width: 92px; height: 92px; flex-shrink: 0; border-radius: 16px; background: linear-gradient(135deg, #f1ede7, #f5d9c8); display: grid; place-items: center; font-size: 46px; }
+      .pill { position: absolute; right: -8px; bottom: -8px; width: 0; height: 0; }
+      .pA, .pB { position: absolute; right: 0; bottom: 0; height: 40px; border-radius: 999px; border: 2.5px solid #fff; box-shadow: 0 4px 10px rgb(0 0 0 / 0.18); display: flex; align-items: center; }
+      .pA { width: 40px; justify-content: center; background: #fff; color: var(--orange); }
+      .pB { background: var(--orange); color: #fff; opacity: 0; }
+      .pA svg, .pB svg { width: 19px; height: 19px; stroke-width: 3; }
+      .pB .mi, .pB .pl { width: 34px; height: 35px; display: grid; place-items: center; }
+      .pB .pn { min-width: 16px; text-align: center; font-size: 16px; font-weight: 800; }
+      .dbar { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 16px 20px; background: linear-gradient(to top, var(--bg) 70%, rgb(250 248 245 / 0)); display: flex; gap: 10px; }
+      .dbill { height: 58px; border-radius: 18px; background: #fff; box-shadow: 0 8px 18px rgb(0 0 0 / 0.08), 0 0 0 1.5px var(--line); display: flex; align-items: center; gap: 8px; padding: 0 16px; font-size: 16px; font-weight: 700; }
+      .dbill svg { width: 20px; height: 20px; }
+      .dmain { position: relative; flex: 1; height: 58px; }
+      .dmain > div { position: absolute; inset: 0; border-radius: 18px; display: flex; align-items: center; gap: 12px; padding: 0 16px; font-size: 16px; font-weight: 800; }
+      .dmain .off { background: #fff; color: var(--muted); box-shadow: 0 0 0 1.5px var(--line); }
+      .dmain .onb { background: var(--orange); color: #fff; box-shadow: 0 10px 22px rgb(194 65 12 / 0.3); opacity: 0; }
+      .dmain svg { width: 21px; height: 21px; }
+      .bag { position: relative; }
+      .bag .bc { position: absolute; right: -10px; top: -9px; width: 19px; height: 19px; border-radius: 50%; background: #fff; color: var(--orange); font-size: 11px; font-weight: 800; display: grid; place-items: center; }
+      .dmain .tot { margin-left: auto; }
+      #dback { position: absolute; inset: 0; background: rgb(0 0 0 / 0.35); opacity: 0; }
+      #dsheet { position: absolute; left: 0; right: 0; bottom: 0; height: 640px; border-radius: 30px 30px 0 0; background: #fff; padding: 14px 22px 22px; opacity: 0; }
+      #dsheet .grab { width: 50px; height: 5px; border-radius: 3px; background: #ddd6cc; margin: 0 auto 14px; }
+      #dsheet h5 { font-size: 23px; font-weight: 700; line-height: 1.5; }
+      #dsheet .sd { font-size: 14px; color: var(--muted); line-height: 1.6; }
+      .sln { display: flex; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1.5px solid var(--line); }
+      .sln .st2 { width: 58px; height: 58px; border-radius: 14px; background: linear-gradient(135deg, #f1ede7, #f5d9c8); display: grid; place-items: center; font-size: 30px; }
+      .sln .sn { flex: 1; font-size: 17px; font-weight: 700; line-height: 1.5; }
+      .sln .sn b { display: block; font-size: 15px; font-weight: 800; }
+      .qs { display: flex; align-items: center; gap: 4px; border-radius: 999px; box-shadow: 0 0 0 1.5px var(--line); padding: 3px; }
+      .qs i { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: var(--ink); }
+      .qs i svg { width: 16px; height: 16px; stroke-width: 2.5; }
+      .qs b { min-width: 16px; text-align: center; font-size: 16px; }
+      .sfoot { position: absolute; left: 22px; right: 22px; bottom: 22px; }
+      .sfoot .tr2 { display: flex; align-items: baseline; justify-content: space-between; font-size: 17px; color: var(--muted); line-height: 1.6; }
+      .sfoot .tr2 b { font-size: 24px; color: var(--ink); font-weight: 800; }
+      .sfoot .tr2 b i { font-style: normal; font-size: 16px; font-weight: 500; color: var(--muted); margin-left: 6px; }
+      .sbtn { margin-top: 12px; height: 58px; border-radius: 16px; background: var(--orange); color: #fff; font-size: 19px; font-weight: 700; display: grid; place-items: center; }
+      .snote { margin-top: 10px; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.6; }
+      #dtoast { position: absolute; left: 16px; right: 16px; bottom: 104px; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: #fff; box-shadow: 0 12px 30px rgb(0 0 0 / 0.18), 0 0 0 1.5px rgb(41 37 36 / 0.06); font-size: 16px; font-weight: 700; line-height: 1.6; opacity: 0; }
+      #dtoast svg { width: 22px; height: 22px; color: var(--em6); }
+
+      /* staff phones */
+      .sphone { position: absolute; top: 120px; width: 440px; height: 900px; border-radius: 62px; background: #1c1917; padding: 12px; box-shadow: 0 40px 80px rgb(41 37 36 / 0.28); opacity: 0; }
+      .sscreen { position: relative; width: 100%; height: 100%; border-radius: 52px; overflow: hidden; background: #f6f3ee; }
+      .shdr { height: 118px; background: #fff; display: flex; align-items: flex-end; gap: 12px; padding: 0 20px 14px; }
+      .shdr .rlogo { width: 42px; height: 42px; font-size: 20px; border-radius: 12px; }
+      .shdr .rname { font-size: 19px; }
+      .shdr .rsub { font-size: 14px; }
+      .shdr .live { margin-bottom: 4px; }
+      .snav { height: 48px; background: #fff; border-bottom: 1.5px solid var(--line); display: flex; gap: 4px; padding: 0 12px; }
+      .snav span { display: flex; align-items: center; gap: 7px; padding: 0 12px; font-size: 16px; font-weight: 700; color: var(--muted); }
+      .snav span.on { color: var(--ink); box-shadow: inset 0 -3px 0 var(--orange); }
+      .snav svg { width: 17px; height: 17px; }
+      .smain { padding: 12px; display: flex; flex-direction: column; gap: 12px; }
+      .scol { height: auto; padding: 12px; }
+      .sphone .li { margin-top: 7px; }
+      .sphone .cb { padding: 12px 14px; }
+      .sphone .cf { padding: 9px 14px; }
+      .plabel { position: absolute; top: 56px; width: 440px; text-align: center; opacity: 0; }
+      .plabel span { display: inline-flex; align-items: center; gap: 9px; padding: 8px 18px; border-radius: 999px; background: #fff; font-size: 20px; font-weight: 800; box-shadow: 0 0 0 1.5px var(--line); }
+      .plabel svg { width: 20px; height: 20px; color: var(--orange); }
+      .toast.warn { left: 16px; right: 16px; bottom: 18px; max-width: none; font-size: 16px; }
+      .toast.warn svg { color: #d97706; }
+      .toast.staff svg { color: var(--ink); }
+      .syncring { position: absolute; inset: 0; border-radius: 52px; box-shadow: inset 0 0 0 4px var(--em5); opacity: 0; }
+      #finger2, #ripple2 { position: absolute; left: 0; top: 0; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; opacity: 0; }
+      #finger2 { background: rgb(41 37 36 / 0.32); border: 4px solid #fff; box-shadow: 0 8px 22px rgb(0 0 0 / 0.3); }
+      #ripple2 { border: 4px solid var(--orange); }
+      .bellwave { position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; border: 3px solid #2563eb; opacity: 0; }
+      #gcall { position: absolute; left: 24px; top: 300px; display: flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 16px; background: #fff; box-shadow: 0 0 0 2.5px var(--orange), 0 16px 34px rgb(124 45 18 / 0.2); font-size: 19px; font-weight: 700; opacity: 0; }
+      #gcall b { color: var(--orange); font-weight: 800; }
+      #rail, #tablet, #c24, #c26, #p1-empty, #p2-empty, #p1-c24p, #p2-c24p, #vB1, #vB2 { opacity: 0; }
+      .stk > *:not(:first-child) { opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="59.9">
+      <!-- ============ Scene 2: story + staff app (under the hook) ============ -->
+      <section id="s2" class="scene clip" data-start="0" data-duration="57.1" data-track-index="0">
+        <div id="cap">
+          <div class="capb" id="cap1">
+            <span class="upd">AT THE TABLE</span>
+            <h1 class="rail-title">Guests order <em>from their phone</em></h1>
+            <div class="items" id="d1items"></div>
+          </div>
+          <div class="capb" id="cap2" style="top: 330px">
+            <span class="upd">ON THE STAFF BOARD</span>
+            <h1 class="rail-title">It rings in, <em>live</em></h1>
+            <p class="capsub">A chime, a toast and a new card in <b>New</b>, the second the guest taps send.</p>
+          </div>
+          <div class="capb" id="cap3" style="top: 300px">
+            <span class="upd">TWO PHONES, ONE BOARD</span>
+            <h1 class="rail-title">Every waiter <em>stays in sync</em></h1>
+            <p class="capsub">Two taps at once? The first one counts. The other phone gets a heads-up, so nothing is cooked twice.</p>
+          </div>
+        </div>
+
+        <div id="rail">
+          <div id="rail-head">
+            <span class="upd">UPDATE</span>
+            <h1 class="rail-title">What's new in <em>KhMenu Staff</em></h1>
+          </div>
+          <div class="items" id="items"></div>
+        </div>
+
+        <!-- diner side -->
+        <div id="tent">
+          <div class="band">Sabay Kitchen</div>
+          <p class="tt">Table 2</p>
+          <img src="assets/img/qr.svg" alt="" />
+          <p class="ts">Scan to order</p>
+          <p class="tk">Powered by KhMenu</p>
+        </div>
+        <div id="dphone">
+          <div class="dscreen" id="dscreen">
+            <div class="island"></div>
+            <div id="cam">
+              <div id="camqr"><img src="assets/img/qr.svg" alt="" /></div>
+              <div id="brk"><i></i><i></i><i></i><i></i></div>
+              <div id="detect"><span class="di"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3V2"></path><path d="m15.4 17.4 3.2-2.8a2 2 0 1 1 2.8 2.9l-3.6 3.3c-.7.8-1.7 1.2-2.8 1.2h-4c-1.1 0-2.1-.4-2.8-1.2l-1.302-1.464A1 1 0 0 0 6.151 19H5"></path><path d="M2 14h12a2 2 0 0 1 0 4h-2"></path><path d="M4 10h16"></path><path d="M5 10a7 7 0 0 1 14 0"></path><path d="M5 14v6a1 1 0 0 1-1 1H2"></path></svg></span><div>Sabay Kitchen · Table 2<small>Open menu</small></div></div>
+            </div>
+            <div id="dmenu">
+              <div class="dcover"><div class="dlang"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 8 6 6"></path><path d="m4 14 6-6 2-3"></path><path d="M2 5h12"></path><path d="M7 2h1"></path><path d="m22 22-5-10-5 10"></path><path d="M14 18h6"></path></svg><span>EN</span><span class="on km">ខ្មែរ</span><span class="zh">中文</span></div></div>
+              <div class="dcard">
+                <div class="row1"><div class="dl">S</div><p class="dn">Sabay Kitchen</p></div>
+                <div class="dtab"><span class="ti"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3V2"></path><path d="m15.4 17.4 3.2-2.8a2 2 0 1 1 2.8 2.9l-3.6 3.3c-.7.8-1.7 1.2-2.8 1.2h-4c-1.1 0-2.1-.4-2.8-1.2l-1.302-1.464A1 1 0 0 0 6.151 19H5"></path><path d="M2 14h12a2 2 0 0 1 0 4h-2"></path><path d="M4 10h16"></path><path d="M5 10a7 7 0 0 1 14 0"></path><path d="M5 14v6a1 1 0 0 1-1 1H2"></path></svg></span><div><b>Table 2</b><span class="km">កុម្ម៉ង់ពីទូរស័ព្ទ · បង់ប្រាក់នៅបញ្ជរ</span></div></div>
+              </div>
+              <div class="dsearch"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21 21-4.34-4.34"></path><circle cx="11" cy="11" r="8"></circle></svg><span class="km">ស្វែងរកម្ហូប</span></div>
+              <div class="dchips"><span class="on km">ម្ហូបចម្បង</span><span class="km">ភេសជ្ជៈ</span><span class="km">បង្អែម</span></div>
+              <h2 class="dh km">ម្ហូបចម្បង</h2>
+              <div class="dlist">
+                <div class="drow">
+                  <div class="dtxt"><h3 class="km">អាម៉ុកត្រី</h3><p class="en">Fish Amok</p><p class="dp">$6.50<i>26,700៛</i></p></div>
+                  <div class="dthumb">🐟<div class="pill"><div class="pA" id="amA"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></div><div class="pB" id="amB"><span class="mi" id="amMi"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></span><span class="pn stk" id="amN"><span>1</span><span>2</span><span>3</span></span><span class="pl" id="amPl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span></div></div></div>
+                </div>
+                <div class="drow">
+                  <div class="dtxt"><h3 class="km">ឡុកឡាក់សាច់គោ</h3><p class="en">Beef Lok Lak</p><p class="dp">$7.50<i>30,800៛</i></p></div>
+                  <div class="dthumb">🥩<div class="pill"><div class="pA"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></div></div></div>
+                </div>
+              </div>
+              <h2 class="dh km">ភេសជ្ជៈ</h2>
+              <div class="dlist">
+                <div class="drow">
+                  <div class="dtxt"><h3 class="km">កាហ្វេទឹកដោះគោទឹកកក</h3><p class="en">Iced Khmer Coffee</p><p class="dp">$1.75<i>7,200៛</i></p></div>
+                  <div class="dthumb">☕<div class="pill"><div class="pA" id="coA"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></div><div class="pB" id="coB"><span class="mi"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></span><span class="pn">1</span><span class="pl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span></div></div></div>
+                </div>
+              </div>
+              <div class="dbar">
+                <div class="dbill"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17V7"></path><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"></path><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"></path></svg><span class="km">វិក្កយបត្រ</span></div>
+                <div class="dmain" id="dmain">
+                  <div class="off"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 10a4 4 0 0 1-8 0"></path><path d="M3.103 6.034h17.794"></path><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"></path></svg><span class="km">ជ្រើសម្ហូបដើម្បីកុម្ម៉ង់</span></div>
+                  <div class="onb" id="dmOn"><span class="bag"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 10a4 4 0 0 1-8 0"></path><path d="M3.103 6.034h17.794"></path><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"></path></svg><span class="bc stk" id="bagN"><span>1</span><span>2</span><span>3</span></span></span><span class="km">មើលការកុម្ម៉ង់</span><span class="tot stk" id="dTot"><span>$6.50</span><span>$13.00</span><span>$19.50</span><span>$14.75</span></span></div>
+                </div>
+              </div>
+              <div id="dback"></div>
+              <div id="dsheet">
+                <div class="grab"></div>
+                <h5 class="km">ការកុម្ម៉ង់របស់អ្នក</h5>
+                <p class="sd">Table 2 · <span class="km">ផ្ទះបាយចាប់ផ្តើមភ្លាមៗពេលអ្នកផ្ញើ</span></p>
+                <div class="sln"><div class="st2">🐟</div><p class="sn km">អាម៉ុកត្រី<b>$13.00</b></p><div class="qs"><i><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></i><b>2</b><i><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></i></div></div>
+                <div class="sln"><div class="st2">☕</div><p class="sn km">កាហ្វេទឹកដោះគោទឹកកក<b>$1.75</b></p><div class="qs"><i><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></i><b>1</b><i><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></i></div></div>
+                <div class="sfoot">
+                  <div class="tr2"><span class="km">សរុប</span><b>$14.75<i>60,500៛</i></b></div>
+                  <div class="sbtn km" id="dsend">ផ្ញើទៅផ្ទះបាយ</div>
+                  <p class="snote km">បង់ប្រាក់នៅបញ្ជរពេលញ៉ាំរួច។</p>
+                </div>
+              </div>
+              <div id="dtoast"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg><span class="km">ការកុម្ម៉ង់ #24 បានផ្ញើទៅផ្ទះបាយ!</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- two staff phones -->
+        <div class="plabel" id="lab1" style="left: 794px"><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg>Dara's phone</span></div>
+        <div class="plabel" id="lab2" style="left: 1314px"><span><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"></rect><path d="M12 18h.01"></path></svg>Vanna's phone</span></div>
+        <div id="phones"></div>
+
+        <div id="tablet">
+          <div id="screen">
+            <div class="hdr">
+              <div class="rlogo">S</div>
+              <div style="flex: 1">
+                <p class="rname">Sabay Kitchen</p>
+                <p class="rsub">KhMenu Staff</p>
+              </div>
+              <span class="obtn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg><span class="tr" data-layout-allow-overlap data-t="viewMenu"></span></span>
+              <div class="langsw" id="langsw">
+                <div class="knob" id="knob"></div>
+                <span id="l-en">EN</span><span id="l-km" class="km">ខ្មែរ</span><span id="l-zh" class="zh">中文</span>
+              </div>
+              <span class="obtn" style="border-color: transparent"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 17 5-5-5-5"></path><path d="M21 12H9"></path><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path></svg></span>
+            </div>
+            <nav class="nav" id="nav"></nav>
+
+            <div class="main" id="board">
+              <div class="liverow">
+                <span class="live"><i></i><span class="tr" data-layout-allow-overlap data-t="live"></span></span>
+                <span class="note"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"></path><path d="M16 9a5 5 0 0 1 0 6"></path><path d="M19.364 18.364a9 9 0 0 0 0-12.728"></path></svg><span class="tr" data-layout-allow-overlap data-t="note"></span></span>
+              </div>
+              <section class="sect">
+                <h3><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="3" rx="1"></rect><rect width="7" height="7" x="14" y="14" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect></svg><span class="tr" data-layout-allow-overlap data-t="tables"></span><span class="hint"><span class="tr" data-layout-allow-overlap data-t="hint"></span></span></h3>
+                <div class="grid" id="grid"></div>
+              </section>
+              <div class="cols">
+                <div class="col">
+                  <h4><span style="position: relative; color: #2563eb" id="bellNew"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"></path><path d="M22 8c0-2.3-.8-4.3-2-6"></path><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"></path><path d="M4 2C2.8 3.7 2 5.7 2 8"></path></svg><i class="bellwave" id="bw1"></i><i class="bellwave" id="bw2"></i></span><span class="tr" data-layout-allow-overlap data-t="colNew"></span><span class="cnt stk" id="cntNew"><span>0</span><span>1</span></span></h4>
+                  <div class="slot" id="slotNew" style="height: 300px"></div>
+                </div>
+                <div class="col">
+                  <h4><span style="color: #d97706"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z"></path><path d="M6 17h12"></path></svg></span><span class="tr" data-layout-allow-overlap data-t="preparing"></span><span class="cnt">1</span></h4>
+                  <div id="slotPrep"></div>
+                </div>
+                <div class="col">
+                  <h4><span style="color: #059669"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17V7"></path><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"></path><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"></path></svg></span><span class="tr" data-layout-allow-overlap data-t="openBills"></span><span class="cnt stk" id="cntBills"><span>3</span><span>4</span><span>3</span></span></h4>
+                  <div id="slotBills"></div>
+                </div>
+              </div>
+            </div>
+
+            <div id="report">
+              <div class="rtop">
+                <div style="margin-right: auto">
+                  <h2>Today</h2>
+                  <p>End-of-day report · 2026-09-21</p>
+                </div>
+                <span class="obtn" id="csvbtn" style="height: 46px; font-size: 18px"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>Download CSV</span>
+                <span class="ibtn"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></span>
+                <span class="ibtn dis"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span>
+              </div>
+              <div class="stats">
+                <div class="stat" id="st-guests">
+                  <div id="g-ring"></div>
+                  <span class="newtag">NEW</span>
+                  <div class="sl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>Guests</div>
+                  <p class="sv" id="v-guests">0</p>
+                  <p class="ss" id="g-sub">7 tables · $6.40 per guest</p>
+                </div>
+                <div class="stat">
+                  <div class="sl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17V7"></path><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"></path><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"></path></svg>Total sales</div>
+                  <p class="sv" id="v-sales">$0.00</p>
+                  <p class="ss">603,500៛</p>
+                  <p class="up"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 7h6v6"></path><path d="m22 7-8.5 8.5-5-5L2 17"></path></svg>+12% vs day before</p>
+                </div>
+                <div class="stat">
+                  <div class="sl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>Profit</div>
+                  <p class="sv" id="v-profit">$0.00</p>
+                  <p class="ss">After food costs</p>
+                </div>
+                <div class="stat">
+                  <div class="sl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 10a4 4 0 0 1-8 0"></path><path d="M3.103 6.034h17.794"></path><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z"></path></svg>Orders</div>
+                  <p class="sv" id="v-orders">0</p>
+                  <p class="ss">Avg $7.75 per order</p>
+                </div>
+                <div class="stat">
+                  <div class="sl"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg>Items sold</div>
+                  <p class="sv" id="v-items">0</p>
+                  <p class="ss">Collected $131.40</p>
+                </div>
+              </div>
+              <div class="groups">
+                <div class="grp"><div class="gi"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8"></path><path d="M5 8h14"></path><path d="M7 15a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0"></path><path d="m12 8 1-6h2"></path></svg></div><div><p>Drinks sold</p><b>21<span>$33.20</span></b></div></div>
+                <div class="grp"><div class="gi"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 21h10"></path><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"></path><path d="M11.38 12a2.4 2.4 0 0 1-.4-4.77 2.4 2.4 0 0 1 3.2-2.77 2.4 2.4 0 0 1 3.47-.63 2.4 2.4 0 0 1 3.37 3.37 2.4 2.4 0 0 1-1.1 3.7 2.51 2.51 0 0 1 .03 1.1"></path><path d="m13 12 4-4"></path><path d="M10.9 7.25A3.99 3.99 0 0 0 4 10c0 .73.2 1.41.54 2"></path></svg></div><div><p>Appetizers sold</p><b>5<span>$11.00</span></b></div></div>
+                <div class="grp"><div class="gi"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"></path><path d="M7 2v20"></path><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"></path></svg></div><div><p>Mains sold</p><b>14<span>$97.00</span></b></div></div>
+                <div class="grp"><div class="gi"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 11 4.08 10.35a1 1 0 0 0 1.84 0L17 11"></path><path d="M17 7A5 5 0 0 0 7 7"></path><path d="M17 7a2 2 0 0 1 0 4H7a2 2 0 0 1 0-4"></path></svg></div><div><p>Desserts sold</p><b>2<span>$6.00</span></b></div></div>
+              </div>
+              <div class="best">
+                <h6>Best sellers</h6>
+                <p class="bs">Portions sold</p>
+                <div class="bar"><div class="bt">Iced Khmer Coffee<span>$24.50</span></div><div class="bb"><i style="width: 85%"></i><b>14</b></div></div>
+                <div class="bar"><div class="bt">Fish Amok<span>$52.00</span></div><div class="bb"><i style="width: 49%"></i><b>8</b></div></div>
+                <div class="bar"><div class="bt">Beef Lok Lak<span>$45.00</span></div><div class="bb"><i style="width: 36%"></i><b>6</b></div></div>
+              </div>
+              <div id="gcall">$147.20 ÷ 23 guests = <b>$6.40 each</b></div>
+            </div>
+
+            <div id="backdrop"></div>
+            <div id="dialogs" data-layout-allow-overlap></div>
+            <div id="toasts" data-layout-allow-overlap></div>
+          </div>
+        </div>
+
+        <div id="csv" data-layout-allow-overlap>
+          <div class="csvh"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"></path><path d="M14 2v5a1 1 0 0 0 1 1h5"></path><path d="M8 13h2"></path><path d="M14 13h2"></path><path d="M8 17h2"></path><path d="M14 17h2"></path></svg>khmenu-demo-2026-09-21.csv</div>
+          <table class="csvt">
+            <tr><th>Time</th><th>Order #</th><th>Table</th><th>Item</th><th class="r">Qty</th><th class="r">Line total</th></tr>
+            <tr><td>12:14</td><td>24</td><td>Table 2</td><td>Fish Amok</td><td class="r">2</td><td class="r">13.00</td></tr>
+            <tr><td>12:14</td><td>24</td><td>Table 2</td><td>Iced Khmer Coffee</td><td class="r">1</td><td class="r">1.75</td></tr>
+            <tr><td>12:31</td><td>26</td><td>Table 8</td><td>Beef Lok Lak</td><td class="r">2</td><td class="r">15.00</td></tr>
+            <tr><td>12:31</td><td>26</td><td>Table 8</td><td>Iced Khmer Coffee</td><td class="r">4</td><td class="r">7.00</td></tr>
+          </table>
+        </div>
+
+        <div id="ripple"></div>
+        <div id="finger"></div>
+        <div id="ripple2"></div>
+        <div id="finger2"></div>
+      </section>
+
+      <!-- ============ Scene 1: hook ============ -->
+      <section id="s1" class="scene clip orange" data-start="0" data-duration="2.9" data-track-index="1">
+        <div class="center">
+          <div class="icon-big" id="h-icon"><img src="assets/img/khmenu-icon.svg" alt="" /></div>
+          <p class="eyebrow" id="h-eyebrow">New in</p>
+          <p class="wordmark" id="h-word">KhMenu Staff</p>
+          <p class="hook-sub" id="h-sub">6 updates for your floor team</p>
+        </div>
+        <div class="chip km" id="c1" style="left: 170px; top: 150px">ខ្មែរ</div>
+        <div class="chip zh" id="c2" style="left: 1500px; top: 170px">中文</div>
+        <div class="chip" id="c3" style="left: 230px; top: 780px"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle></svg>4 · Seated</div>
+        <div class="chip" id="c4" style="left: 1380px; top: 800px">Table 3 → Table 7</div>
+        <div class="chip grey" id="c5" style="left: 120px; top: 470px"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="M4.929 4.929 19.07 19.071"></path></svg>Broken</div>
+        <div class="chip green" id="c6" style="left: 1560px; top: 480px"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3"></path><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path></svg>CSV</div>
+      </section>
+
+      <!-- ============ Scene 3: outro ============ -->
+      <section id="s3" class="scene clip orange" data-start="56.47" data-duration="3.43" data-track-index="1">
+        <div class="center" style="gap: 40px">
+          <div class="out-row" id="o-logo">
+            <div class="icon-big" style="width: 170px; height: 170px"><img src="assets/img/khmenu-icon.svg" alt="" /></div>
+            <p class="wordmark">KhMenu Staff</p>
+          </div>
+          <p class="out-pill" id="o-pill">Update out now</p>
+          <p class="out-sub" id="o-sub"><span class="km">App កូនខ្មែរ</span> · Made in Phnom Penh</p>
+        </div>
+      </section>
+
+      <!-- ============ Audio ============ -->
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-10-by-ende-dot-app.mp3" data-start="0" data-duration="59.9" data-track-index="10" data-volume="0.8"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":1},{"t":58.3,"v":1},{"t":59.9,"v":0}]}]}'></audio>
+      <audio id="sfx-0" src="assets/sfx/drop_002.ogg" data-start="0.22" data-duration="0.19" data-track-index="11" data-volume="0.7"></audio>
+      <audio id="sfx-1" src="assets/sfx/impactSoft_medium_002.ogg" data-start="2.45" data-duration="0.135" data-track-index="12" data-volume="0.8"></audio>
+      <audio id="sfx-2" src="assets/sfx/drop_003.ogg" data-start="3.541" data-duration="0.19" data-track-index="13" data-volume="0.6"></audio>
+      <audio id="sfx-3" src="assets/sfx/select_008.ogg" data-start="5.724" data-duration="0.047" data-track-index="14" data-volume="0.75"></audio>
+      <audio id="sfx-4" src="assets/sfx/select_008.ogg" data-start="6.269" data-duration="0.047" data-track-index="15" data-volume="0.75"></audio>
+      <audio id="sfx-5" src="assets/sfx/select_008.ogg" data-start="6.815" data-duration="0.047" data-track-index="16" data-volume="0.75"></audio>
+      <audio id="sfx-6" src="assets/sfx/select_008.ogg" data-start="7.906" data-duration="0.047" data-track-index="17" data-volume="0.75"></audio>
+      <audio id="sfx-7" src="assets/sfx/select_008.ogg" data-start="8.997" data-duration="0.047" data-track-index="18" data-volume="0.75"></audio>
+      <audio id="sfx-8" src="assets/sfx/select_008.ogg" data-start="10.089" data-duration="0.047" data-track-index="19" data-volume="0.75"></audio>
+      <audio id="sfx-9" src="assets/sfx/select_008.ogg" data-start="11.726" data-duration="0.047" data-track-index="20" data-volume="0.75"></audio>
+      <audio id="sfx-10" src="assets/sfx/card-slide-1.ogg" data-start="10.139" data-duration="0.6" data-track-index="21" data-volume="0.4"></audio>
+      <audio id="sfx-11" src="assets/sfx/drop_002.ogg" data-start="12.026" data-duration="0.19" data-track-index="22" data-volume="0.5"></audio>
+      <audio id="sfx-12" src="assets/sfx/card-slide-1.ogg" data-start="13.363" data-duration="0.6" data-track-index="23" data-volume="0.35"></audio>
+      <audio id="sfx-13" src="assets/sfx/chime.ogg" data-start="14.454" data-duration="0.75" data-track-index="24" data-volume="0.55"></audio>
+      <audio id="sfx-14" src="assets/sfx/card-slide-1.ogg" data-start="18.273" data-duration="0.6" data-track-index="25" data-volume="0.35"></audio>
+      <audio id="sfx-15" src="assets/sfx/select_008.ogg" data-start="19.91" data-duration="0.047" data-track-index="26" data-volume="0.75"></audio>
+      <audio id="sfx-16" src="assets/sfx/select_008.ogg" data-start="20.09" data-duration="0.047" data-track-index="27" data-volume="0.75"></audio>
+      <audio id="sfx-17" src="assets/sfx/drop_003.ogg" data-start="20.26" data-duration="0.19" data-track-index="28" data-volume="0.5"></audio>
+      <audio id="sfx-18" src="assets/sfx/select_008.ogg" data-start="23.184" data-duration="0.047" data-track-index="29" data-volume="0.75"></audio>
+      <audio id="sfx-19" src="assets/sfx/card-slide-1.ogg" data-start="25.367" data-duration="0.6" data-track-index="30" data-volume="0.35"></audio>
+      <audio id="sfx-20" src="assets/sfx/switch_002.ogg" data-start="26.458" data-duration="0.61" data-track-index="31" data-volume="0.5"></audio>
+      <audio id="sfx-21" src="assets/sfx/switch_002.ogg" data-start="28.095" data-duration="0.61" data-track-index="32" data-volume="0.5"></audio>
+      <audio id="sfx-22" src="assets/sfx/switch_002.ogg" data-start="29.732" data-duration="0.61" data-track-index="33" data-volume="0.5"></audio>
+      <audio id="sfx-23" src="assets/sfx/select_008.ogg" data-start="30.823" data-duration="0.047" data-track-index="34" data-volume="0.75"></audio>
+      <audio id="sfx-24" src="assets/sfx/select_008.ogg" data-start="32.46" data-duration="0.047" data-track-index="35" data-volume="0.75"></audio>
+      <audio id="sfx-25" src="assets/sfx/select_008.ogg" data-start="35.189" data-duration="0.047" data-track-index="36" data-volume="0.75"></audio>
+      <audio id="sfx-26" src="assets/sfx/select_008.ogg" data-start="36.553" data-duration="0.047" data-track-index="37" data-volume="0.75"></audio>
+      <audio id="sfx-27" src="assets/sfx/select_008.ogg" data-start="37.917" data-duration="0.047" data-track-index="38" data-volume="0.75"></audio>
+      <audio id="sfx-28" src="assets/sfx/select_008.ogg" data-start="40.099" data-duration="0.047" data-track-index="39" data-volume="0.75"></audio>
+      <audio id="sfx-29" src="assets/sfx/select_008.ogg" data-start="41.464" data-duration="0.047" data-track-index="40" data-volume="0.75"></audio>
+      <audio id="sfx-30" src="assets/sfx/select_008.ogg" data-start="42.828" data-duration="0.047" data-track-index="41" data-volume="0.75"></audio>
+      <audio id="sfx-31" src="assets/sfx/select_008.ogg" data-start="46.647" data-duration="0.047" data-track-index="42" data-volume="0.75"></audio>
+      <audio id="sfx-32" src="assets/sfx/select_008.ogg" data-start="47.739" data-duration="0.047" data-track-index="43" data-volume="0.75"></audio>
+      <audio id="sfx-33" src="assets/sfx/select_008.ogg" data-start="49.376" data-duration="0.047" data-track-index="44" data-volume="0.75"></audio>
+      <audio id="sfx-34" src="assets/sfx/select_008.ogg" data-start="51.012" data-duration="0.047" data-track-index="45" data-volume="0.75"></audio>
+      <audio id="sfx-35" src="assets/sfx/select_008.ogg" data-start="54.286" data-duration="0.047" data-track-index="46" data-volume="0.75"></audio>
+      <audio id="sfx-36" src="assets/sfx/drop_002.ogg" data-start="32.624" data-duration="0.19" data-track-index="47" data-volume="0.45"></audio>
+      <audio id="sfx-37" src="assets/sfx/drop_002.ogg" data-start="38.081" data-duration="0.19" data-track-index="48" data-volume="0.45"></audio>
+      <audio id="sfx-38" src="assets/sfx/drop_002.ogg" data-start="42.991" data-duration="0.19" data-track-index="49" data-volume="0.45"></audio>
+      <audio id="sfx-39" src="assets/sfx/drop_002.ogg" data-start="49.485" data-duration="0.19" data-track-index="50" data-volume="0.45"></audio>
+      <audio id="sfx-40" src="assets/sfx/keypress-001.wav" data-start="48.189" data-duration="0.25" data-track-index="51" data-volume="0.5"></audio>
+      <audio id="sfx-41" src="assets/sfx/keypress-002.wav" data-start="48.289" data-duration="0.25" data-track-index="52" data-volume="0.5"></audio>
+      <audio id="sfx-42" src="assets/sfx/keypress-003.wav" data-start="48.389" data-duration="0.25" data-track-index="53" data-volume="0.5"></audio>
+      <audio id="sfx-43" src="assets/sfx/keypress-004.wav" data-start="48.489" data-duration="0.25" data-track-index="54" data-volume="0.5"></audio>
+      <audio id="sfx-44" src="assets/sfx/keypress-005.wav" data-start="48.589" data-duration="0.25" data-track-index="55" data-volume="0.5"></audio>
+      <audio id="sfx-45" src="assets/sfx/keypress-006.wav" data-start="48.689" data-duration="0.25" data-track-index="56" data-volume="0.5"></audio>
+      <audio id="sfx-46" src="assets/sfx/chips-stack-2.ogg" data-start="51.212" data-duration="0.172" data-track-index="57" data-volume="0.55"></audio>
+      <audio id="sfx-47" src="assets/sfx/chips-stack-2.ogg" data-start="52.104" data-duration="0.172" data-track-index="58" data-volume="0.55"></audio>
+      <audio id="sfx-48" src="assets/sfx/card-place-1.ogg" data-start="52.922" data-duration="0.689" data-track-index="59" data-volume="0.4"></audio>
+      <audio id="sfx-49" src="assets/sfx/card-slide-1.ogg" data-start="54.406" data-duration="0.6" data-track-index="60" data-volume="0.55"></audio>
+      <audio id="sfx-50" src="assets/sfx/impactBell_heavy_003.ogg" data-start="56.469" data-duration="0.653" data-track-index="61" data-volume="0.6"></audio>
+    </div>
+
+    <script>
+      const ICONS = {"Users":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\"></path><path d=\"M16 3.128a4 4 0 0 1 0 7.744\"></path><path d=\"M22 21v-2a4 4 0 0 0-3-3.87\"></path><circle cx=\"9\" cy=\"7\" r=\"4\"></circle></svg>","LayoutGrid":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"7\" height=\"7\" x=\"3\" y=\"3\" rx=\"1\"></rect><rect width=\"7\" height=\"7\" x=\"14\" y=\"3\" rx=\"1\"></rect><rect width=\"7\" height=\"7\" x=\"14\" y=\"14\" rx=\"1\"></rect><rect width=\"7\" height=\"7\" x=\"3\" y=\"14\" rx=\"1\"></rect></svg>","BellRing":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M10.268 21a2 2 0 0 0 3.464 0\"></path><path d=\"M22 8c0-2.3-.8-4.3-2-6\"></path><path d=\"M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326\"></path><path d=\"M4 2C2.8 3.7 2 5.7 2 8\"></path></svg>","ChefHat":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M17 21a1 1 0 0 0 1-1v-5.35c0-.457.316-.844.727-1.041a4 4 0 0 0-2.134-7.589 5 5 0 0 0-9.186 0 4 4 0 0 0-2.134 7.588c.411.198.727.585.727 1.041V20a1 1 0 0 0 1 1Z\"></path><path d=\"M6 17h12\"></path></svg>","Receipt":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 17V7\"></path><path d=\"M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8\"></path><path d=\"M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z\"></path></svg>","ArrowRightLeft":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m16 3 4 4-4 4\"></path><path d=\"M20 7H4\"></path><path d=\"m8 21-4-4 4-4\"></path><path d=\"M4 17h16\"></path></svg>","Combine":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M14 3a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1\"></path><path d=\"M19 3a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1\"></path><path d=\"m7 15 3 3\"></path><path d=\"m7 21 3-3H5a2 2 0 0 1-2-2v-2\"></path><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\" rx=\"1\"></rect><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\" rx=\"1\"></rect></svg>","Ban":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M4.929 4.929 19.07 19.071\"></path></svg>","Check":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M20 6 9 17l-5-5\"></path></svg>","Download":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 15V3\"></path><path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"></path><path d=\"m7 10 5 5 5-5\"></path></svg>","ChartColumn":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 3v16a2 2 0 0 0 2 2h16\"></path><path d=\"M18 17V9\"></path><path d=\"M13 17V5\"></path><path d=\"M8 17v-3\"></path></svg>","BookOpen":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 5v16\"></path><path d=\"M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z\"></path></svg>","QrCode":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"5\" height=\"5\" x=\"3\" y=\"3\" rx=\"1\"></rect><rect width=\"5\" height=\"5\" x=\"16\" y=\"3\" rx=\"1\"></rect><rect width=\"5\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"></rect><path d=\"M21 16h-3a2 2 0 0 0-2 2v3\"></path><path d=\"M21 21v.01\"></path><path d=\"M12 7v3a2 2 0 0 1-2 2H7\"></path><path d=\"M3 12h.01\"></path><path d=\"M12 3h.01\"></path><path d=\"M12 16v.01\"></path><path d=\"M16 12h1\"></path><path d=\"M21 12v.01\"></path><path d=\"M12 21v-1\"></path></svg>","Settings":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915\"></path><circle cx=\"12\" cy=\"12\" r=\"3\"></circle></svg>","Wallet":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\"></path><path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\"></path></svg>","ShoppingBag":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 10a4 4 0 0 1-8 0\"></path><path d=\"M3.103 6.034h17.794\"></path><path d=\"M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z\"></path></svg>","ArrowLeft":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m12 19-7-7 7-7\"></path><path d=\"M19 12H5\"></path></svg>","Volume2":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z\"></path><path d=\"M16 9a5 5 0 0 1 0 6\"></path><path d=\"M19.364 18.364a9 9 0 0 0 0-12.728\"></path></svg>","LogOut":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m16 17 5-5-5-5\"></path><path d=\"M21 12H9\"></path><path d=\"M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4\"></path></svg>","ChevronLeft":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m15 18-6-6 6-6\"></path></svg>","ChevronRight":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m9 18 6-6-6-6\"></path></svg>","Utensils":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2\"></path><path d=\"M7 2v20\"></path><path d=\"M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7\"></path></svg>","TrendingUp":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M16 7h6v6\"></path><path d=\"m22 7-8.5 8.5-5-5L2 17\"></path></svg>","Clock":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"10\"></circle><path d=\"M12 6v6l4 2\"></path></svg>","X":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"></path><path d=\"m6 6 12 12\"></path></svg>","FileSpreadsheet":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z\"></path><path d=\"M14 2v5a1 1 0 0 0 1 1h5\"></path><path d=\"M8 13h2\"></path><path d=\"M14 13h2\"></path><path d=\"M8 17h2\"></path><path d=\"M14 17h2\"></path></svg>","CupSoda":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m6 8 1.75 12.28a2 2 0 0 0 2 1.72h4.54a2 2 0 0 0 2-1.72L18 8\"></path><path d=\"M5 8h14\"></path><path d=\"M7 15a6.47 6.47 0 0 1 5 0 6.47 6.47 0 0 0 5 0\"></path><path d=\"m12 8 1-6h2\"></path></svg>","Salad":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M7 21h10\"></path><path d=\"M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z\"></path><path d=\"M11.38 12a2.4 2.4 0 0 1-.4-4.77 2.4 2.4 0 0 1 3.2-2.77 2.4 2.4 0 0 1 3.47-.63 2.4 2.4 0 0 1 3.37 3.37 2.4 2.4 0 0 1-1.1 3.7 2.51 2.51 0 0 1 .03 1.1\"></path><path d=\"m13 12 4-4\"></path><path d=\"M10.9 7.25A3.99 3.99 0 0 0 4 10c0 .73.2 1.41.54 2\"></path></svg>","IceCreamCone":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m7 11 4.08 10.35a1 1 0 0 0 1.84 0L17 11\"></path><path d=\"M17 7A5 5 0 0 0 7 7\"></path><path d=\"M17 7a2 2 0 0 1 0 4H7a2 2 0 0 1 0-4\"></path></svg>","ExternalLink":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M15 3h6v6\"></path><path d=\"M10 14 21 3\"></path><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"></path></svg>","HandPlatter":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M12 3V2\"></path><path d=\"m15.4 17.4 3.2-2.8a2 2 0 1 1 2.8 2.9l-3.6 3.3c-.7.8-1.7 1.2-2.8 1.2h-4c-1.1 0-2.1-.4-2.8-1.2l-1.302-1.464A1 1 0 0 0 6.151 19H5\"></path><path d=\"M2 14h12a2 2 0 0 1 0 4h-2\"></path><path d=\"M4 10h16\"></path><path d=\"M5 10a7 7 0 0 1 14 0\"></path><path d=\"M5 14v6a1 1 0 0 1-1 1H2\"></path></svg>","Languages":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m5 8 6 6\"></path><path d=\"m4 14 6-6 2-3\"></path><path d=\"M2 5h12\"></path><path d=\"M7 2h1\"></path><path d=\"m22 22-5-10-5 10\"></path><path d=\"M14 18h6\"></path></svg>","Search":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m21 21-4.34-4.34\"></path><circle cx=\"11\" cy=\"11\" r=\"8\"></circle></svg>","Plus":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"></path><path d=\"M12 5v14\"></path></svg>","Minus":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 12h14\"></path></svg>","Smartphone":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\"></rect><path d=\"M12 18h.01\"></path></svg>","TriangleAlert":"<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\"></path><path d=\"M12 9v4\"></path><path d=\"M12 17h.01\"></path></svg>"};
+      const ic = (n) => ICONS[n] || '';
+      // Music beat grid (vol-10 preset: 109.96 BPM, first beat 0.267s).
+      const B = (k) => +(0.267 + k * 0.54565).toFixed(3);
+
+      // ---------- strings (verbatim from src/lib/i18n.ts) ----------
+      const T = {
+        orders: ['Orders', 'ការកុម្ម៉ង់', '订单'], today: ['Today', 'ថ្ងៃនេះ', '今日'], menu: ['Menu', 'ម៉ឺនុយ', '菜单'],
+        tablesQr: ['Tables & QR', 'តុ & QR', '餐桌二维码'], settings: ['Settings', 'ការកំណត់', '设置'],
+        viewMenu: ['View menu', 'មើលម៉ឺនុយ', '查看菜单'], live: ['Live', 'អនឡាញ', '实时'],
+        note: ['Sound on · screen stays awake · keep this tab open', 'បើកសំឡេង · អេក្រង់មិនបិទ · សូមទុកទំព័រនេះបើក', '声音已开 · 屏幕常亮 · 请保持此页面打开'],
+        tables: ['Tables', 'តុ', '餐桌'], hint: ['Tap a table to seat, move or clear it', 'ចុចលើតុ ដើម្បីដាក់ភ្ញៀវ ប្ដូរ ឬបិទតុ', '点餐桌可入座、换桌或清台'],
+        free: ['Free', 'ទំនេរ', '空闲'], seated: ['Seated', 'មានភ្ញៀវ', '已入座'], calling: ['Calling', 'កំពុងហៅ', '呼叫中'], wants: ['Wants bill', 'សុំគិតលុយ', '要结账'],
+        colNew: ['New', 'ថ្មី', '新订单'], preparing: ['Preparing', 'កំពុងរៀបចំ', '准备中'], openBills: ['Open bills', 'វិក្កយបត្រមិនទាន់បង់', '未结账单'],
+        startCooking: ['Start cooking', 'ចាប់ផ្ដើមធ្វើ', '开始做'], served: ['Served', 'បានបម្រើ', '已上菜'], paidClose: ['Paid, close bill', 'បង់រួច បិទវិក្កយបត្រ', '已付款，结账'],
+        cancel: ['Cancel', 'លុបចោល', '取消'], nothing: ['Nothing here.', 'មិនមានទេ។', '暂无。'],
+        justNow: ['just now', 'អម្បាញ់មិញ', '刚刚'], ago9: ['9 min ago', '9 នាទីមុន', '9 分钟前'],
+        b2_31: ['2 orders · since 31 min ago', '2 កុម្ម៉ង់ · តាំងពី 31 នាទីមុន', '2 个订单 · 31 分钟前开始'],
+        b1_18: ['1 order · since 18 min ago', '1 កុម្ម៉ង់ · តាំងពី 18 នាទីមុន', '1 个订单 · 18 分钟前开始'],
+      };
+      const tr = (k) => `<span class="L-en">${T[k][0]}</span><span class="L-km">${T[k][1]}</span><span class="L-zh">${T[k][2]}</span>`;
+      const trSpan = (k) => `<span class="tr" data-layout-allow-overlap>${tr(k)}</span>`;
+      const en = (k) => T[k][0];
+      document.querySelectorAll('[data-t]').forEach((el) => (el.innerHTML = tr(el.dataset.t)));
+
+      // ---------- order + bill cards (OrdersBoard.tsx) ----------
+      const card = (id, num, table, ago, lines, total, kind, t = trSpan) => `<article class="card" id="${id}"><div class="cb">
+          <div class="onum"><b>#${num}</b><span class="badge">${table}</span><span class="ago">${t(ago)}</span></div>
+          ${lines.map(([q, n]) => `<div class="li"><i>${q}</i>${n}</div>`).join('')}</div>
+          <div class="cf"><b>${total}</b><span class="ghost">${ic('X')}${t('cancel')}</span>${kind === 'cook' ? `<span class="pbtn" id="${id}-btn">${ic('ChefHat')}${t('startCooking')}</span>` : `<span class="pbtn em" id="${id}-btn">${ic('Check')}${t('served')}</span>`}</div></article>`;
+      const bill = (id, table, sub, amt, { req, chips } = {}) => `<div class="bcard${req ? ' req' : ''}" id="${id}"><div class="cb">
+          <div style="display: flex; align-items: flex-start"><div style="flex: 1"><p class="bill-t">${table}${req ? `<span class="wbadge">${trSpan('wants')}</span>` : ''}</p><p class="bill-s">${sub}</p></div><p class="bill-amt">${amt}</p></div>
+          ${chips ? `<div class="chips">${chips.map(([n, a]) => `<span>${n} <b>${a}</b></span>`).join('')}</div>` : ''}
+          <div class="fullbtn">${ic('Check')}${trSpan('paidClose')}</div></div></div>`;
+      const L24 = [[2, 'Fish Amok'], [1, 'Iced Khmer Coffee']];
+      const L23 = [[2, 'Beef Lok Lak'], [2, 'Mango Sticky Rice']];
+      document.getElementById('slotNew').innerHTML =
+        `<p class="empty" id="newEmpty">${trSpan('nothing')}</p>` +
+        card('c24', 24, 'Table 2', 'justNow', L24, '$14.75', 'cook') +
+        card('c26', 26, '<span class="stk" id="c26tb"><span>Table 8</span><span>Table 7</span></span>', 'justNow', [[2, 'Beef Lok Lak'], [4, 'Iced Khmer Coffee']], '$22.00', 'cook');
+      document.getElementById('slotPrep').innerHTML = card('c23', 23, 'Table 6', 'ago9', L23, '$21.00', 'served');
+      document.getElementById('slotBills').innerHTML =
+        bill('bill6', 'Table 6', trSpan('b2_31'), '$31.00', { req: true }) +
+        `<div class="slot" style="height: 172px; margin-top: 10px" id="billB"><div id="bill7ring"></div>` +
+        bill('vB0', 'Table 3', trSpan('b1_18'), '$18.50') +
+        bill('vB1', 'Table 7', en('b1_18'), '$18.50') +
+        bill('vB2', 'Table 7', '2 orders · since 18 min ago', '$40.50', { chips: [['Bopha', '$18.50'], ['Sokha', '$22.00']] }) +
+        `</div>`;
+
+      // ---------- staff phones ----------
+      const plain = (k) => en(k);
+      const sphone = (p, left) => `<div class="sphone" id="${p}" style="left: ${left}px"><div class="sscreen"><div class="island"></div>
+          <div class="shdr"><div class="rlogo">S</div><div style="flex: 1"><p class="rname">Sabay Kitchen</p><p class="rsub">KhMenu Staff</p></div><span class="live"><i></i>Live</span></div>
+          <div class="snav"><span class="on">${ic('BellRing')}Orders</span><span>${ic('ChartColumn')}Today</span><span>${ic('BookOpen')}Menu</span></div>
+          <div class="smain">
+            <div class="col scol"><h4><span style="color: #2563eb">${ic('BellRing')}</span>New<span class="cnt stk" id="${p}-cn"><span>1</span><span>0</span></span></h4>
+              <div class="slot" style="height: 172px"><p class="empty" id="${p}-empty">Nothing here.</p>${card(p + '-c24', 24, 'Table 2', 'justNow', L24, '$14.75', 'cook', plain)}</div></div>
+            <div class="col scol"><h4><span style="color: #d97706">${ic('ChefHat')}</span>Preparing<span class="cnt stk" id="${p}-cp"><span>1</span><span>2</span><span>1</span></span></h4>
+              ${card(p + '-c23', 23, 'Table 6', 'ago9', L23, '$21.00', 'served', plain)}<div style="height: 10px"></div>${card(p + '-c24p', 24, 'Table 2', 'justNow', L24, '$14.75', 'served', plain)}</div>
+          </div>
+          <div class="syncring" id="${p}-sync"></div>
+          <div class="toast warn" id="${p}-warn">${ic('TriangleAlert')}<span>Order #24 was already updated on another device</span></div>
+        </div></div>`;
+      document.getElementById('phones').innerHTML = sphone('p1', 794) + sphone('p2', 1314);
+
+      // ---------- nav ----------
+      const tabs = [['orders', 'BellRing'], ['today', 'ChartColumn'], ['menu', 'BookOpen'], ['tablesQr', 'QrCode'], ['settings', 'Settings']];
+      document.getElementById('nav').innerHTML =
+        tabs.map(([k, i]) => `<div class="tab" data-layout-allow-overlap id="tab-${k}">${ic(i)}${trSpan(k)}<div class="tabon">${ic(i)}${trSpan(k)}</div></div>`).join('') + '<div class="uline" id="uline"></div>';
+
+      // ---------- step lists ----------
+      const steps = (arr, pre) => arr
+        .map(([h, s], i) => `<div class="item" id="${pre}${i + 1}"><div class="hl"></div><div class="num" data-layout-allow-overlap><span class="n">${i + 1}</span><span class="on">${i + 1}</span><span class="ok">${ic('Check')}</span></div><div class="itxt"><p class="ititle">${h}</p><p class="isub">${s}</p></div></div>`)
+        .join('');
+      document.getElementById('d1items').innerHTML = steps([
+        ['Scan the table QR', 'No app to download'],
+        ['Tap + to add<span class="newtag2">NEW</span>', 'Too many? Tap − right on the dish'],
+        ['Send it to the kitchen', 'Menu in ខ្មែរ, English or 中文'],
+      ], 'd1it');
+      document.getElementById('items').innerHTML = steps([
+        ['<span>English · </span><span class="km">ខ្មែរ</span><span> · </span><span class="zh">中文</span>', 'The whole staff app, in your team’s language'],
+        ['Seat guests', 'Tap a free table, pick how many people'],
+        ['Move tables', 'Guests switch tables, the bill follows them'],
+        ['Combine any two tables', 'Free or busy. Bills merge, guests still count'],
+        ['Block a table', 'Broken or reserved? Mark it unavailable'],
+        ['Guests today + CSV', '23 guests · 7 tables · $6.40 per guest'],
+      ], 'it');
+
+      // ---------- tables grid ----------
+      const U = (n) => `${ic('Users')}${n}`;
+      const tiles = [
+        { n: 1, fr: ['free', 'off'], st: [[trSpan('free'), 'c-muted'], ['Broken', 'c-off']] },
+        { n: 2, fr: ['busy'], st: [['$10.00', 'c-ink'], ['$24.75', 'c-ink']], party: [3] },
+        { n: 3, fr: ['busy', 'free'], st: [['$18.50', 'c-ink'], ['Free', 'c-muted']], party: [2] },
+        { n: 4, fr: ['calling'], st: [[trSpan('calling'), 'c-am']], party: [2] },
+        { n: 5, fr: ['free', 'busy'], st: [[trSpan('free'), 'c-muted'], ['Seated', 'c-ink']], party: [null, 4] },
+        { n: 6, fr: ['wants'], st: [[trSpan('wants'), 'c-em']], party: [4] },
+        { n: 7, fr: ['free', 'busy'], st: [[trSpan('free'), 'c-muted'], ['$18.50', 'c-ink'], ['$40.50', 'c-ink']], party: [null, 2] },
+        { n: 8, fr: ['busy', 'joined'], st: [[trSpan('seated'), 'c-ink'], ['$22.00', 'c-ink'], ['With Table 7', 'c-ink']], party: [3] },
+      ];
+      document.getElementById('grid').innerHTML = tiles
+        .map((t) => {
+          const frames = t.fr.map((f, i) => `<div class="fr ${f} s${i}" id="t${t.n}-f${i}"></div>`).join('');
+          const party = (t.party || []).map((p, i) => (p ? `<span class="party" id="t${t.n}-p${i}" style="opacity:${i ? 0 : 1}">${U(p)}</span>` : '')).join('');
+          const st = t.st.map(([txt, c], i) => `<div class="${c} s${i}" id="t${t.n}-s${i}">${txt}</div>`).join('');
+          return `<div class="tile" data-layout-allow-overlap id="t${t.n}">${frames}<div class="trow">Table ${t.n}${party}</div><div class="st">${st}</div></div>`;
+        })
+        .join('');
+
+      // ---------- dialogs (TableSheet.tsx) ----------
+      const picker = (id) => `<p class="lbl">How many people?</p><div class="g4">${[1, 2, 3, 4, 5, 6, 7, 8].map((k) => `<div class="nb" id="${id}-n${k}">${k}</div>`).join('')}</div>
+        <div class="morerow"><div class="inp">More</div><div class="chk">${ic('Check')}</div></div>`;
+      const freeMain = (id, n) => `<h5>Table ${n}</h5><p class="dd">Free</p>${picker(id)}
+        <div class="ab" id="${id}-comb">${ic('Combine')}Combine with another table</div>
+        <div class="ab ghost" id="${id}-unav">${ic('Ban')}Mark table unavailable</div>`;
+      const busyMain = (id, n, sub, amt) => `<h5>Table ${n}</h5><p class="dd">${sub}</p><div style="margin-top: 14px">
+          <div class="ab green">${ic('Receipt')}Paid · clear table (${amt})</div>
+          <div class="ab" id="${id}-move">${ic('ArrowRightLeft')}Move to another table</div>
+          <div class="ab" id="${id}-comb">${ic('Combine')}Combine with another table</div>
+          <div class="ab">${ic('Users')}Change number of guests</div></div>`;
+      const back = `<div class="back">${ic('ArrowLeft')}Back</div>`;
+      const opts = (id, list, pick) => `<div class="g3">${list.map((n) => `<div class="tb"${n === pick ? ` id="${id}-${n}"` : ''}>Table ${n}</div>`).join('')}</div>`;
+      const dialogs = {
+        dSeat: freeMain('dSeat', 5),
+        dBusy: busyMain('dBusy', 3, '2 guests · $18.50', '$18.50'),
+        dMove: `<h5>Table 3</h5><p class="dd">2 guests · $18.50</p>${back}<p class="lbl" style="margin-top: 14px">Move Table 3 to…</p>${opts('dMove', [1, 7], 7)}`,
+        dBusy8: busyMain('dBusy8', 8, '3 guests · $22.00', '$22.00'),
+        dComb: `<h5>Table 8</h5><p class="dd">3 guests · $22.00</p>${back}<p class="lbl" style="margin-top: 14px">Combine Table 8 with…</p>${opts('dComb', [1, 2, 3, 4, 5, 6, 7], 7)}`,
+        dFree1: freeMain('dFree1', 1),
+        dUnav: `<h5>Table 1</h5><p class="dd">Free</p>${back}<p class="lbl" style="margin-top: 14px">Mark table unavailable</p>
+          <div class="inp" id="dUnav-inp" style="flex: none"><span class="ph" id="dUnav-ph">Reason (optional), e.g. broken, reserved</span>
+            <span class="typed">${'Broken'.split('').map((c, i) => `<span id="ch${i}">${c}</span>`).join('')}<i class="caret" id="caret"></i></span></div>
+          <div class="ab prim" id="dUnav-ok" style="margin-top: 12px">${ic('Ban')}Unavailable</div>`,
+      };
+      document.getElementById('dialogs').innerHTML = Object.entries(dialogs)
+        .map(([id, html]) => `<div class="dwrap" data-layout-allow-overlap><div class="dlg" id="${id}">${html}</div></div>`)
+        .join('');
+
+      // ---------- toasts ----------
+      const toasts = {
+        toNew: ['ChefHat', 'New order #24 · Table 2', 'staff'],
+        toSeat: ['Check', 'Table 5 · 4 guests'],
+        toMove: ['Check', 'Moved Table 3 → Table 7. Ask the guests to scan the QR on Table 7.'],
+        toComb: ['Check', 'Table 8 combined with Table 7'],
+        toUnav: ['Check', 'Table 1 · Unavailable'],
+      };
+      document.getElementById('toasts').innerHTML = Object.entries(toasts)
+        .map(([id, [i, txt, cls]]) => `<div class="toast ${cls || ''}" data-layout-allow-overlap id="${id}">${ic(i)}<span>${txt}</span></div>`)
+        .join('');
+
+      // The screens are layered on purpose (modal over board, language stacks, state layers): waive text-overlap per node there.
+      document.querySelectorAll('#screen *, #csv *, .num *, #dscreen *, .sscreen *').forEach((el) => el.setAttribute('data-layout-allow-overlap', ''));
+
+      function build() {
+        const tl = gsap.timeline({ paused: true });
+        const E = 'power3.out';
+        const s2 = document.getElementById('s2');
+        const base = s2.getBoundingClientRect();
+        // Measure every tap target from its final layout before any tween moves anything.
+        const pos = {};
+        const measure = (sel) => {
+          const r = document.querySelector(sel).getBoundingClientRect();
+          pos[sel] = { x: r.left - base.left + r.width / 2, y: r.top - base.top + r.height / 2 };
+        };
+        ['#amA', '#amPl', '#amMi', '#coA', '#dmain', '#dsend', '#p1-c24-btn', '#p2-c24-btn', '#p2-c24p-btn',
+         '#l-km', '#l-zh', '#l-en', '#t5', '#dSeat-n4', '#t3', '#dBusy-move', '#dMove-7', '#t8', '#dBusy8-comb', '#dComb-7',
+         '#t1', '#dFree1-unav', '#dUnav-ok', '#tab-today', '#csvbtn'].forEach(measure);
+        const segs = ['#l-en', '#l-km', '#l-zh'].map((s) => document.querySelector(s));
+        const sw = document.getElementById('langsw').getBoundingClientRect();
+        const segBox = segs.map((s) => { const r = s.getBoundingClientRect(); return { x: r.left - sw.left - 4, w: r.width }; });
+        const navR = document.getElementById('nav').getBoundingClientRect();
+        const tabBox = ['orders', 'today'].map((k) => { const r = document.getElementById('tab-' + k).getBoundingClientRect(); return { x: r.left - navR.left, w: r.width }; });
+
+        // helpers
+        const show = (sel, i, t) => document.querySelectorAll(sel + ' > *').forEach((c, j) => tl.set(c, { opacity: j === i ? 1 : 0 }, t));
+        const up = (sel, t, d = 0.45, y = 40) => tl.fromTo(sel, { y, opacity: 0 }, { y: 0, opacity: 1, duration: d, ease: E }, t);
+        const out = (sel, t, d = 0.3, y = -20) => tl.to(sel, { y, opacity: 0, duration: d, ease: 'power2.in' }, t);
+        const fingerOn = { '': false, 2: false };
+        const tap = (sel, t, travel = 0.4, f = '') => {
+          const p = pos[sel];
+          const F = '#finger' + f, R = '#ripple' + f;
+          if (!fingerOn[f]) {
+            tl.fromTo(F, { x: p.x + 60, y: p.y + 90, opacity: 0 }, { x: p.x, y: p.y, opacity: 1, duration: travel, ease: 'power2.out', immediateRender: false }, t - travel);
+            fingerOn[f] = true;
+          } else tl.to(F, { x: p.x, y: p.y, duration: travel, ease: 'power2.inOut' }, t - travel);
+          tl.to(F, { scale: 0.78, duration: 0.08, yoyo: true, repeat: 1, ease: 'power1.inOut' }, t - 0.04);
+          tl.fromTo(R, { x: p.x, y: p.y, scale: 0.6, opacity: 0.9 }, { x: p.x, y: p.y, scale: 2.1, opacity: 0, duration: 0.45, ease: 'power2.out', immediateRender: false }, t);
+        };
+        const hideF = (t, f = '') => { tl.to('#finger' + f, { opacity: 0, duration: 0.2 }, t); fingerOn[f] = false; };
+        const press = (sel, t) => tl.to(sel, { scale: 0.95, duration: 0.08, yoyo: true, repeat: 1 }, t);
+        const openDlg = (id, t, withBackdrop = true) => {
+          if (withBackdrop) tl.to('#backdrop', { opacity: 1, duration: 0.2 }, t);
+          tl.fromTo('#' + id, { opacity: 0, scale: 0.95 }, { opacity: 1, scale: 1, duration: 0.22, ease: E }, t);
+        };
+        const closeDlg = (id, t) => { tl.to('#backdrop', { opacity: 0, duration: 0.18 }, t); tl.to('#' + id, { opacity: 0, scale: 0.97, duration: 0.14 }, t); };
+        const swapDlg = (a, b, t) => { tl.to('#' + a, { opacity: 0, duration: 0.1 }, t); tl.fromTo('#' + b, { opacity: 0 }, { opacity: 1, duration: 0.14 }, t + 0.06); };
+        const frameTo = (n, a, b, t) => { tl.to(`#t${n}-f${a}`, { opacity: 0, duration: 0.25 }, t); tl.to(`#t${n}-f${b}`, { opacity: 1, duration: 0.25 }, t); };
+        const stTo = (n, a, b, t, pop = true) => {
+          tl.to(`#t${n}-s${a}`, { opacity: 0, y: -8, duration: 0.15 }, t);
+          tl.fromTo(`#t${n}-s${b}`, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.25, ease: E }, t + 0.1);
+          if (pop) tl.fromTo(`#t${n}`, { scale: 1 }, { scale: 1.07, duration: 0.14, yoyo: true, repeat: 1, ease: 'power1.inOut' }, t);
+        };
+        const toast = (id, t, hold) => {
+          tl.fromTo('#' + id, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: E }, t);
+          tl.to('#' + id, { y: 20, opacity: 0, duration: 0.25 }, t + hold);
+        };
+        const setActive = (pre, i, t) => {
+          if (i > 1) {
+            tl.to(`#${pre}${i - 1} .hl`, { opacity: 0, duration: 0.25 }, t);
+            tl.to(`#${pre}${i - 1} .on`, { opacity: 0, duration: 0.2 }, t);
+            tl.fromTo(`#${pre}${i - 1} .ok`, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2.5)' }, t);
+          }
+          tl.fromTo(`#${pre}${i} .hl`, { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.3, ease: E }, t);
+          tl.to(`#${pre}${i} .on`, { opacity: 1, duration: 0.2 }, t);
+          tl.to(`#${pre}${i} .n`, { opacity: 0, duration: 0.1 }, t);
+        };
+
+        // Initial states for everything that starts hidden.
+        ['#amN', '#bagN', '#dTot', '#cntNew', '#cntBills', '#c26tb', '#p1-cn', '#p2-cn', '#p1-cp', '#p2-cp'].forEach((s) => show(s, 0, 0));
+        tl.set('#knob', { x: segBox[0].x, width: segBox[0].w }, 0);
+        tl.set('#l-en', { color: '#292524' }, 0);
+        tl.set('#tab-orders .tabon', { opacity: 1 }, 0);
+        tl.set('#uline', { x: tabBox[0].x + 10, width: tabBox[0].w - 20 }, 0);
+
+        // ================= Scene 1: hook (0–2.9) =================
+        tl.fromTo('#h-icon', { scale: 0.4, opacity: 0, rotation: -12 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.5, ease: 'back.out(2)' }, 0.22);
+        up('#h-eyebrow', 0.5, 0.4, 30);
+        tl.fromTo('#h-word', { y: 60, opacity: 0, scale: 0.94 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: E }, 0.6);
+        up('#h-sub', 1.1, 0.4, 30);
+        ['#c1', '#c3', '#c5'].forEach((c, i) => tl.fromTo(c, { scale: 0.3, opacity: 0, rotation: -10 }, { scale: 1, opacity: 1, rotation: i % 2 ? 4 : -5, duration: 0.4, ease: 'back.out(2.2)' }, 1.34 + i * 0.06));
+        ['#c2', '#c4', '#c6'].forEach((c, i) => tl.fromTo(c, { scale: 0.3, opacity: 0, rotation: 10 }, { scale: 1, opacity: 1, rotation: i % 2 ? -4 : 5, duration: 0.4, ease: 'back.out(2.2)' }, 1.87 + i * 0.06));
+        tl.to(['#c1', '#c2', '#c3', '#c4', '#c5', '#c6'], { y: '-=16', duration: 1.2, ease: 'sine.inOut' }, 1.5);
+        tl.fromTo('#s1', { clipPath: 'inset(0 0% 0 0)' }, { clipPath: 'inset(0 100% 0 0)', duration: 0.42, ease: 'power3.inOut' }, B(4));
+
+        // ================= Diner opener B(4)–B(24) =================
+        tl.fromTo('#tent', { x: -80, opacity: 0, rotation: -4 }, { x: 0, opacity: 1, rotation: -2, duration: 0.6, ease: E }, B(4) + 0.05);
+        tl.fromTo('#dphone', { y: 160, opacity: 0, rotation: 4 }, { y: 0, opacity: 1, rotation: 0, duration: 0.6, ease: E }, B(4) + 0.12);
+        tl.to('#cap1', { opacity: 1, duration: 0.01 }, B(4));
+        up('#cap1 .upd', B(4) + 0.1, 0.4, 20);
+        up('#cap1 .rail-title', B(4) + 0.2, 0.45, 30);
+        tl.fromTo('#d1items .item', { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: E, stagger: 0.07 }, B(5));
+        setActive('d1it', 1, B(5.5));
+        tl.fromTo('#brk', { scale: 1.25, opacity: 0.4 }, { scale: 1, opacity: 1, duration: 0.35, ease: 'back.out(2)' }, B(6) - 0.3); // beat-grid: lock on B(6)
+        tl.to('#brk i', { borderColor: '#ea580c', duration: 0.1 }, B(6));
+        up('#detect', B(6.4), 0.35, 30);
+        tl.to('#cam', { opacity: 0, duration: 0.3 }, B(8));
+        tl.fromTo('#dmenu', { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.45, ease: E }, B(8));
+        tl.to('#tent', { x: -30, opacity: 0.55, scale: 0.94, duration: 0.6, ease: 'power2.inOut' }, B(8));
+        setActive('d1it', 2, B(9.3));
+        // + + + then − : quick add / remove pill (MenuPage.tsx)
+        tap('#amA', B(10), 0.5);
+        tl.set('#amA', { opacity: 0 }, B(10) + 0.03);
+        tl.fromTo('#amB', { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.2, ease: 'back.out(2)', transformOrigin: '100% 50%' }, B(10) + 0.03);
+        tl.to('#dmOn', { opacity: 1, duration: 0.2 }, B(10) + 0.05);
+        tap('#amPl', B(11), 0.3); show('#amN', 1, B(11) + 0.03); show('#bagN', 1, B(11) + 0.03); show('#dTot', 1, B(11) + 0.03);
+        tap('#amPl', B(12), 0.3); show('#amN', 2, B(12) + 0.03); show('#bagN', 2, B(12) + 0.03); show('#dTot', 2, B(12) + 0.03);
+        tap('#amMi', B(14), 0.4); show('#amN', 1, B(14) + 0.03); show('#bagN', 1, B(14) + 0.03); show('#dTot', 1, B(14) + 0.03);
+        tl.fromTo('#amMi', { scale: 1 }, { scale: 1.3, duration: 0.1, yoyo: true, repeat: 1 }, B(14));
+        tap('#coA', B(16), 0.5);
+        tl.set('#coA', { opacity: 0 }, B(16) + 0.03);
+        tl.fromTo('#coB', { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.2, ease: 'back.out(2)', transformOrigin: '100% 50%' }, B(16) + 0.03);
+        show('#bagN', 2, B(16) + 0.03); show('#dTot', 3, B(16) + 0.03);
+        tap('#dmain', B(18), 0.5);
+        press('#dmain', B(18));
+        tl.to('#dback', { opacity: 1, duration: 0.25 }, B(18) + 0.05);
+        tl.fromTo('#dsheet', { y: 640, opacity: 1 }, { y: 0, opacity: 1, duration: 0.45, ease: E }, B(18) + 0.05);
+        setActive('d1it', 3, B(18.5));
+        tap('#dsend', B(21), 0.5);
+        press('#dsend', B(21));
+        tl.to('#dsheet', { y: 640, duration: 0.35, ease: 'power2.in' }, B(21) + 0.1);
+        tl.to('#dback', { opacity: 0, duration: 0.25 }, B(21) + 0.15);
+        tl.to(['#amB', '#coB', '#dmOn'], { opacity: 0, duration: 0.15 }, B(21) + 0.3);
+        tl.set(['#amA', '#coA'], { opacity: 1 }, B(21) + 0.3);
+        up('#dtoast', B(21) + 0.3, 0.3, 30);
+        hideF(B(22));
+
+        // ================= Staff board B(24)–B(33) =================
+        tl.to(['#dphone', '#tent'], { x: -160, opacity: 0, duration: 0.45, ease: 'power2.in' }, B(24) - 0.2);
+        tl.to('#cap1', { opacity: 0, duration: 0.3 }, B(24) - 0.2);
+        tl.fromTo('#tablet', { x: 260, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: E }, B(24));
+        tl.to('#cap2', { opacity: 1, duration: 0.01 }, B(24));
+        up('#cap2 .upd', B(24) + 0.1, 0.4, 20);
+        up('#cap2 .rail-title', B(24) + 0.2, 0.45, 30);
+        up('#cap2 .capsub', B(24) + 0.35, 0.45, 30);
+        // beat-locked: the order lands on B(26)
+        [['#bw1', 0], ['#bw2', 0.25]].forEach(([w, d]) => tl.fromTo(w, { scale: 0.6, opacity: 0.9 }, { scale: 2.6, opacity: 0, duration: 0.8, ease: 'power2.out' }, B(26) + d));
+        tl.fromTo('#bellNew', { rotation: 0 }, { rotation: 16, duration: 0.07, yoyo: true, repeat: 5, ease: 'sine.inOut' }, B(26));
+        tl.to('#newEmpty', { opacity: 0, duration: 0.15 }, B(26));
+        tl.fromTo('#c24', { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.6)' }, B(26) + 0.05);
+        show('#cntNew', 1, B(26) + 0.05);
+        stTo(2, 0, 1, B(26) + 0.2);
+        toast('toNew', B(26) + 0.05, 3.4);
+        tl.fromTo('#c24', { boxShadow: '0 0 0 0px rgb(37 99 235 / 0.5)' }, { boxShadow: '0 0 0 6px rgb(37 99 235 / 0)', duration: 0.9, ease: 'power2.out' }, B(26) + 0.4);
+
+        // ================= Two phones B(33)–B(46) =================
+        tl.to('#tablet', { x: 220, opacity: 0, duration: 0.45, ease: 'power2.in' }, B(33) - 0.25);
+        tl.to('#cap2', { opacity: 0, duration: 0.3 }, B(33) - 0.25);
+        tl.fromTo('#p1', { y: 180, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: E }, B(33));
+        tl.fromTo('#p2', { y: 180, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease: E }, B(33) + 0.12);
+        up('#lab1', B(33) + 0.3, 0.4, 16);
+        up('#lab2', B(33) + 0.4, 0.4, 16);
+        tl.to('#cap3', { opacity: 1, duration: 0.01 }, B(33));
+        up('#cap3 .upd', B(33) + 0.1, 0.4, 20);
+        up('#cap3 .rail-title', B(33) + 0.2, 0.45, 30);
+        up('#cap3 .capsub', B(33) + 0.35, 0.45, 30);
+        // Both waiters tap "Start cooking" on the same order: Dara's lands first.
+        tap('#p1-c24-btn', B(36), 0.5);
+        tap('#p2-c24-btn', B(36) + 0.18, 0.55, 2);
+        press('#p1-c24-btn', B(36));
+        press('#p2-c24-btn', B(36) + 0.18);
+        hideF(B(37.5));
+        const moveToPrep = (p, t) => {
+          tl.to(`#${p}-c24`, { opacity: 0, y: 30, duration: 0.25 }, t);
+          tl.to(`#${p}-empty`, { opacity: 1, duration: 0.2 }, t + 0.2);
+          show(`#${p}-cn`, 1, t + 0.1); show(`#${p}-cp`, 1, t + 0.1);
+          tl.fromTo(`#${p}-c24p`, { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.35, ease: E }, t + 0.15);
+          tl.fromTo(`#${p}-sync`, { opacity: 0.9 }, { opacity: 0, duration: 0.7 }, t + 0.1);
+        };
+        moveToPrep('p1', B(36) + 0.05);
+        moveToPrep('p2', B(36) + 0.3);
+        toast('p2-warn', B(36) + 0.35, 3.0);
+        // Vanna marks it served; Dara's phone follows.
+        tap('#p2-c24p-btn', B(42), 0.6, 2);
+        press('#p2-c24p-btn', B(42));
+        const served = (p, t) => {
+          tl.to(`#${p}-c24p`, { opacity: 0, x: 60, duration: 0.3, ease: 'power2.in' }, t);
+          show(`#${p}-cp`, 2, t + 0.15);
+          tl.fromTo(`#${p}-sync`, { opacity: 0.9 }, { opacity: 0, duration: 0.7 }, t);
+        };
+        served('p2', B(42) + 0.05);
+        served('p1', B(42) + 0.3);
+        hideF(B(43), 2);
+
+        // Off screen while the phones show: order #26 arrives from Table 8, #24 was served.
+        tl.set('#c24', { opacity: 0 }, B(40));
+        tl.set('#c26', { opacity: 1 }, B(40));
+        stTo(8, 0, 1, B(40), false);
+        show('#cntBills', 1, B(40));
+
+        // ================= What's new: six updates B(46)–B(103) =================
+        tl.to(['#p1', '#p2', '#lab1', '#lab2'], { y: 160, opacity: 0, duration: 0.45, ease: 'power2.in' }, B(46) - 0.25);
+        tl.to('#cap3', { opacity: 0, duration: 0.3 }, B(46) - 0.25);
+        tl.to('#toNew', { opacity: 0, duration: 0.01 }, B(46));
+        tl.fromTo('#tablet', { x: 260, opacity: 0 }, { x: 0, opacity: 1, duration: 0.6, ease: E, immediateRender: false }, B(46));
+        tl.to('#rail', { opacity: 1, duration: 0.01 }, B(46));
+        tl.fromTo('#rail-head', { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.5, ease: E }, B(46) + 0.05);
+        tl.fromTo('#items .item', { x: -50, opacity: 0 }, { x: 0, opacity: 1, duration: 0.45, ease: E, stagger: 0.06 }, B(46) + 0.15);
+        [[1, 47], [2, 55], [3, 63], [4, 72], [5, 84], [6, 92]].forEach(([i, k]) => setActive('it', i, B(k)));
+
+        // 1. Languages: EN → ខ្មែរ → 中文 → EN
+        const langs = ['en', 'km', 'zh'];
+        const flip = (from, to, t) => {
+          tap(`#l-${langs[to]}`, t, from === 0 ? 0.5 : 0.4);
+          tl.to('#knob', { x: segBox[to].x, width: segBox[to].w, duration: 0.22, ease: 'power2.inOut' }, t);
+          tl.set(`#l-${langs[from]}`, { color: '#57534e' }, t + 0.1);
+          tl.set(`#l-${langs[to]}`, { color: '#292524' }, t + 0.1);
+          tl.to(`#screen .L-${langs[from]}`, { opacity: 0, duration: 0.12 }, t + 0.02);
+          tl.to(`#screen .L-${langs[to]}`, { opacity: 1, duration: 0.2 }, t + 0.12);
+        };
+        flip(0, 1, B(48));
+        flip(1, 2, B(51));
+        flip(2, 0, B(54));
+
+        // 2. Seat guests: Table 5 → 4 people
+        tap('#t5', B(56), 0.45);
+        openDlg('dSeat', B(56) + 0.08);
+        tap('#dSeat-n4', B(59), 0.5);
+        press('#dSeat-n4', B(59));
+        tl.to('#dSeat-n4', { backgroundColor: '#f1ede7', duration: 0.08 }, B(59));
+        closeDlg('dSeat', B(59) + 0.12);
+        frameTo(5, 0, 1, B(59) + 0.25); stTo(5, 0, 1, B(59) + 0.25);
+        tl.fromTo('#t5-p1', { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2.5)' }, B(59) + 0.3);
+        toast('toSeat', B(59) + 0.3, 1.9);
+
+        // 3. Move: Table 3 → Table 7
+        tap('#t3', B(64), 0.5);
+        openDlg('dBusy', B(64) + 0.08);
+        tap('#dBusy-move', B(66.5), 0.45);
+        press('#dBusy-move', B(66.5));
+        swapDlg('dBusy', 'dMove', B(66.5) + 0.07);
+        tap('#dMove-7', B(69), 0.45);
+        press('#dMove-7', B(69));
+        closeDlg('dMove', B(69) + 0.1);
+        frameTo(3, 0, 1, B(69) + 0.2); stTo(3, 0, 1, B(69) + 0.2);
+        tl.to('#t3-p0', { opacity: 0, duration: 0.2 }, B(69) + 0.2);
+        frameTo(7, 0, 1, B(69) + 0.36); stTo(7, 0, 1, B(69) + 0.36);
+        tl.fromTo('#t7-p1', { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(2.5)' }, B(69) + 0.42);
+        tl.to('#vB0', { opacity: 0, duration: 0.2 }, B(69) + 0.36);
+        tl.to('#vB1', { opacity: 1, duration: 0.25 }, B(69) + 0.46);
+        toast('toMove', B(69) + 0.3, 2.3);
+
+        // 4. Combine two busy tables: Table 8 (own order) into Table 7 → one bill
+        tap('#t8', B(73), 0.5);
+        openDlg('dBusy8', B(73) + 0.08);
+        tap('#dBusy8-comb', B(75.5), 0.45);
+        press('#dBusy8-comb', B(75.5));
+        swapDlg('dBusy8', 'dComb', B(75.5) + 0.07);
+        tap('#dComb-7', B(78), 0.45);
+        press('#dComb-7', B(78));
+        closeDlg('dComb', B(78) + 0.1);
+        frameTo(8, 0, 1, B(78) + 0.2); stTo(8, 1, 2, B(78) + 0.2);
+        stTo(7, 1, 2, B(78) + 0.4);
+        show('#c26tb', 1, B(78) + 0.45);
+        tl.fromTo('#c26', { scale: 1 }, { scale: 1.04, duration: 0.15, yoyo: true, repeat: 1 }, B(78) + 0.45);
+        tl.to('#vB1', { opacity: 0, duration: 0.2 }, B(78) + 0.5);
+        tl.to('#vB2', { opacity: 1, duration: 0.3 }, B(78) + 0.6);
+        show('#cntBills', 2, B(78) + 0.6);
+        tl.fromTo('#bill7ring', { opacity: 0 }, { opacity: 1, duration: 0.3, yoyo: true, repeat: 3, repeatDelay: 0.4 }, B(79));
+        toast('toComb', B(78) + 0.3, 1.4);
+        hideF(B(80));
+
+        // 5. Mark Table 1 unavailable: "Broken"
+        tap('#t1', B(85), 0.55);
+        openDlg('dFree1', B(85) + 0.08);
+        tap('#dFree1-unav', B(87), 0.45);
+        swapDlg('dFree1', 'dUnav', B(87) + 0.07);
+        tl.set('#dUnav-inp', { className: 'inp focus' }, B(87) + 0.2);
+        tl.set('#caret', { opacity: 1 }, B(87) + 0.45);
+        tl.set('#dUnav-ph', { opacity: 0 }, B(87) + 0.45);
+        [0, 1, 2, 3, 4, 5].forEach((i) => tl.set('#ch' + i, { opacity: 1 }, B(87) + 0.45 + i * 0.1));
+        tap('#dUnav-ok', B(90), 0.5);
+        press('#dUnav-ok', B(90));
+        closeDlg('dUnav', B(90) + 0.1);
+        frameTo(1, 0, 1, B(90) + 0.2); stTo(1, 0, 1, B(90) + 0.2);
+        toast('toUnav', B(90) + 0.2, 1.1);
+
+        // 6. Today tab: Guests + per-guest spend + CSV
+        tap('#tab-today', B(93), 0.5);
+        tl.to('#tab-orders .tabon', { opacity: 0, duration: 0.15 }, B(93));
+        tl.to('#tab-today .tabon', { opacity: 1, duration: 0.15 }, B(93));
+        tl.to('#uline', { x: tabBox[1].x + 10, width: tabBox[1].w - 20, duration: 0.25, ease: 'power2.inOut' }, B(93));
+        tl.to('#board', { opacity: 0, y: 10, duration: 0.18 }, B(93) + 0.05);
+        tl.fromTo('#report', { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.3, ease: E }, B(93) + 0.15);
+        hideF(B(93) + 0.4);
+        const count = (sel, to, t, d, money) => {
+          const o = { v: 0 };
+          const el = document.querySelector(sel);
+          tl.to(o, { v: to, duration: d, ease: 'power2.out', onUpdate: () => (el.textContent = money ? '$' + o.v.toFixed(2) : String(Math.round(o.v))) }, t);
+        };
+        const c0 = B(93) + 0.2, cd = B(95) - c0; // beat-locked: counts land on B(95)
+        count('#v-guests', 23, c0, cd);
+        count('#v-sales', 147.2, c0, cd, true);
+        count('#v-profit', 61.8, c0, cd, true);
+        count('#v-orders', 19, c0, cd);
+        count('#v-items', 42, c0, cd);
+        tl.fromTo('#g-ring', { opacity: 0 }, { opacity: 1, duration: 0.3 }, B(95) - 0.05);
+        tl.fromTo('#st-guests', { scale: 1 }, { scale: 1.06, duration: 0.16, yoyo: true, repeat: 1, ease: 'power1.inOut' }, B(95));
+        tl.to('#g-sub', { color: '#c2410c', fontWeight: 700, duration: 0.2 }, B(96.5));
+        up('#gcall', B(96.5), 0.4, 20);
+        tap('#csvbtn', B(99), 0.55);
+        press('#csvbtn', B(99));
+        tl.fromTo('#csv', { y: 120, opacity: 0, rotation: 2 }, { y: 0, opacity: 1, rotation: -1.5, duration: 0.45, ease: 'back.out(1.3)' }, B(99) + 0.12);
+        hideF(B(99) + 0.5);
+
+        // ================= Outro B(103)–59.9 =================
+        tl.fromTo('#s3', { clipPath: 'circle(0% at 50% 50%)' }, { clipPath: 'circle(75% at 50% 50%)', duration: 0.5, ease: 'power2.out' }, B(103)); // beat-locked
+        tl.fromTo('#o-logo', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.8)' }, B(103) + 0.1);
+        up('#o-pill', B(104), 0.4, 40);
+        up('#o-sub', B(105), 0.4, 30);
+
+        window.__timelines['main'] = tl;
+      }
+      document.fonts.ready.then(build);
+    </script>
+  </body>
+</html>

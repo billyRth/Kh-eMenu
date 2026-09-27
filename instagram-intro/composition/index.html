@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="km">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>KhMenu intro</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-500-normal.woff2') format('woff2'); font-weight: 500; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Plus Jakarta Sans'; src: url('assets/fonts/plus-jakarta-sans-latin-800-normal.woff2') format('woff2'); font-weight: 800; }
+      @font-face { font-family: 'Kantumruy Pro'; src: url('assets/fonts/kantumruy-pro-khmer-700-normal.woff2') format('woff2'); font-weight: 700; }
+      @font-face { font-family: 'Microsoft YaHei'; src: local('Microsoft YaHei'), local('Microsoft YaHei UI'); font-weight: 400 900; }
+
+      :root { --orange: #c2410c; --flame: #ea580c; --deep: #7c2d12; --cream: #faf8f5; --sand: #f3eee6; --ink: #292524; --muted: #78716c; --line: #e7e2da; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--cream); }
+      body { color: var(--ink); font-family: 'Plus Jakarta Sans', 'Kantumruy Pro', 'Microsoft YaHei', sans-serif; }
+      #root { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: var(--cream); }
+      .scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .wrap { position: absolute; inset: 0; overflow: hidden; }
+      /* safe text column: top 250, bottom 350 kept clear */
+      .safe { position: absolute; left: 70px; right: 70px; top: 250px; bottom: 350px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      .km { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; line-height: 1.5; }
+      .en { font-weight: 800; letter-spacing: -0.03em; line-height: 1.12; }
+      .watermark { position: absolute; left: 50%; top: 50%; font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 620px; line-height: 1.6; white-space: nowrap; transform: translate(-50%, -50%); pointer-events: none; }
+      .bell { display: block; }
+      .ring { position: absolute; left: 50%; top: 50%; width: 300px; height: 300px; margin: -150px 0 0 -150px; border-radius: 50%; border: 8px solid var(--orange); opacity: 0; }
+
+      /* ---------- S1 hook ---------- */
+      #s1 .wrap { background: radial-gradient(ellipse at 50% 38%, #fff 0%, var(--cream) 55%, #f6e7d8 100%); }
+      #s1 .bellbox { position: relative; width: 300px; height: 300px; margin-bottom: 70px; }
+      #s1-bell { width: 300px; height: 300px; filter: drop-shadow(0 30px 50px rgb(124 45 18 / 0.28)); transform-origin: 50% 90%; }
+      #s1-hi { font-size: 220px; color: var(--orange); line-height: 1.45; }
+      #s1-en { font-size: 72px; margin-top: 10px; }
+      #s1-en span { color: var(--orange); }
+
+      /* ---------- S2 startup ---------- */
+      #s2 .wrap { background: linear-gradient(165deg, var(--flame) 0%, var(--orange) 45%, var(--deep) 100%); color: #fff; }
+      #s2 .watermark { color: rgb(255 255 255 / 0.045); }
+      #s2-tag { display: inline-flex; align-items: center; gap: 14px; padding: 12px 30px; border-radius: 999px; background: rgb(255 255 255 / 0.16); border: 3px solid rgb(255 255 255 / 0.4); font-size: 36px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; }
+      #s2-tag i { width: 16px; height: 16px; border-radius: 50%; background: #fed7aa; display: block; }
+      #s2-km { font-size: 104px; margin-top: 50px; }
+      #s2-en { font-size: 70px; margin-top: 6px; max-width: 920px; }
+      #s2-en span { white-space: nowrap; }
+      #s2-pill { margin-top: 80px; display: inline-flex; align-items: center; gap: 26px; padding: 22px 46px 22px 24px; border-radius: 999px; background: var(--cream); color: var(--ink); box-shadow: 0 30px 60px rgb(0 0 0 / 0.25); }
+      #s2-pill svg { width: 104px; height: 104px; }
+      #s2-pill .km { font-size: 66px; line-height: 1.4; }
+      #s2-pill .km b { color: var(--orange); font-weight: 700; }
+
+      /* ---------- S3 made by khmer ---------- */
+      #s3 .wrap { background: radial-gradient(ellipse at 50% 45%, #fff 0%, var(--cream) 50%, var(--sand) 100%); }
+      #s3 .watermark { color: rgb(194 65 12 / 0.05); }
+      .line { overflow: hidden; padding: 10px 20px; }
+      .line > div { display: block; }
+      #s3-a { font-size: 150px; color: var(--ink); line-height: 1.55; }
+      #s3-b { font-size: 150px; color: var(--orange); line-height: 1.55; }
+      #s3-rule { width: 220px; height: 10px; border-radius: 10px; background: var(--orange); margin: 44px 0 44px; }
+      #s3-en { font-size: 80px; }
+      #s3-en span { color: var(--orange); }
+
+      /* ---------- S4 product glimpse ---------- */
+      #s4 .wrap { background: linear-gradient(180deg, var(--cream) 0%, var(--sand) 100%); }
+      .head { position: absolute; left: 60px; right: 60px; top: 260px; height: 330px; }
+      .head > div { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+      .head .km { font-size: 64px; line-height: 1.45; color: var(--ink); }
+      .head .km b { color: var(--orange); font-weight: 700; }
+      .head .en { max-width: 860px; font-size: 42px; font-weight: 700; color: var(--muted); letter-spacing: -0.01em; margin-top: 8px; }
+      #hb { opacity: 0; }
+
+      .phone { position: absolute; left: 470px; top: 640px; width: 520px; height: 940px; border-radius: 76px; background: #1c1917; padding: 16px; box-shadow: 0 50px 100px rgb(41 37 36 / 0.3); }
+      .screen { position: relative; width: 100%; height: 100%; border-radius: 62px; overflow: hidden; background: var(--cream); }
+      .island { position: absolute; top: 16px; left: 50%; margin-left: -66px; width: 132px; height: 38px; border-radius: 20px; background: #1c1917; z-index: 5; }
+      .cover { height: 170px; background: radial-gradient(circle at 20% 20%, rgb(255 255 255 / 0.25), transparent 50%), var(--orange); }
+      .rcard { margin: -70px 22px 0; background: #fff; border-radius: 28px; padding: 20px 22px; box-shadow: 0 10px 30px rgb(0 0 0 / 0.08); position: relative; display: flex; gap: 16px; align-items: center; }
+      .rlogo { width: 64px; height: 64px; border-radius: 18px; background: var(--orange); color: #fff; font-weight: 800; font-size: 32px; display: grid; place-items: center; flex: none; }
+      .rname { font-size: 29px; font-weight: 800; }
+      .rtag { font-size: 20px; color: var(--muted); font-weight: 500; }
+      .langs { display: flex; gap: 10px; margin: 20px 22px 0; }
+      .chip { position: relative; flex: 1; height: 58px; border-radius: 16px; background: #fff; border: 2px solid var(--line); display: grid; place-items: center; font-size: 24px; font-weight: 700; color: var(--muted); }
+      .chip .km { font-size: 24px; line-height: 1; }
+      .chip.on { background: var(--orange); border-color: var(--orange); color: #fff; }
+      .items { margin: 18px 22px 0; background: #fff; border: 2px solid #eee8df; border-radius: 26px; }
+      .item { display: flex; gap: 16px; padding: 18px; align-items: center; border-bottom: 2px solid #eee8df; }
+      .item:last-child { border-bottom: 0; }
+      .thumb { width: 96px; height: 96px; border-radius: 22px; background: linear-gradient(135deg, var(--sand), #f8d9c6); display: grid; place-items: center; font-size: 52px; flex: none; }
+      .item .t { flex: 1; min-width: 0; }
+      .nm { position: relative; height: 44px; }
+      .nm span { position: absolute; left: 0; top: 0; white-space: nowrap; font-size: 26px; font-weight: 800; line-height: 44px; }
+      .nm .k { font-family: 'Kantumruy Pro', sans-serif; font-weight: 700; font-size: 25px; opacity: 0; }
+      .nm .z { opacity: 0; font-weight: 700; }
+      .pr { font-size: 25px; font-weight: 800; margin-top: 4px; }
+      .pr i { font-style: normal; font-weight: 700; font-size: 20px; color: var(--orange); background: #fff1e8; border-radius: 10px; padding: 4px 14px; margin-left: 12px; }
+
+      .tent { position: absolute; left: 70px; top: 1060px; width: 430px; background: #fff; border-radius: 40px; padding: 30px 30px 34px; box-shadow: 0 40px 80px rgb(41 37 36 / 0.22), 0 0 0 2px var(--line); display: flex; flex-direction: column; align-items: center; gap: 12px; transform: rotate(-6deg); }
+      .tent .t1 { font-size: 26px; font-weight: 700; color: var(--muted); }
+      .tent .qr { position: relative; width: 250px; height: 250px; padding: 16px; }
+      .tent .qr img { width: 100%; height: 100%; display: block; }
+      .br { position: absolute; width: 56px; height: 56px; border: 9px solid var(--orange); }
+      .br.tl { top: 0; left: 0; border-right: 0; border-bottom: 0; border-top-left-radius: 20px; }
+      .br.tr { top: 0; right: 0; border-left: 0; border-bottom: 0; border-top-right-radius: 20px; }
+      .br.bl { bottom: 0; left: 0; border-right: 0; border-top: 0; border-bottom-left-radius: 20px; }
+      .br.bb { bottom: 0; right: 0; border-left: 0; border-top: 0; border-bottom-right-radius: 20px; }
+      .tent .t2 { font-size: 46px; font-weight: 800; letter-spacing: -0.02em; }
+      .tent .t3 { font-size: 30px; color: var(--orange); line-height: 1.4; }
+      .badge { position: absolute; left: 70px; padding: 16px 26px; border-radius: 24px; background: var(--ink); color: #fff; font-size: 34px; font-weight: 800; box-shadow: 0 20px 40px rgb(41 37 36 / 0.25); white-space: nowrap; }
+      .badge .km { font-size: 32px; line-height: 1.3; }
+      .badge em { font-style: normal; color: #fdba74; }
+      #bd1 { top: 700px; }
+      #bd2 { top: 850px; }
+
+      /* ---------- S5 close ---------- */
+      #s5 .wrap { background: radial-gradient(ellipse at 50% 40%, #fff 0%, var(--cream) 55%, #f6e7d8 100%); }
+      #s5 .bellbox { position: relative; width: 250px; height: 250px; }
+      #s5-bell { width: 250px; height: 250px; filter: drop-shadow(0 26px 44px rgb(124 45 18 / 0.28)); transform-origin: 50% 90%; }
+      #s5-word { font-size: 170px; font-weight: 800; letter-spacing: -0.045em; line-height: 1.05; margin-top: 44px; color: #1c1917; }
+      #s5-word b { color: var(--orange); font-weight: 800; }
+      #s5-tag { font-size: 46px; font-weight: 700; color: var(--muted); margin-top: 14px; line-height: 1.5; }
+      #s5-tag .km { color: var(--ink); }
+      #s5-cta { margin-top: 70px; display: flex; flex-direction: column; align-items: center; padding: 26px 56px 30px; border-radius: 40px; background: var(--orange); color: #fff; box-shadow: 0 24px 50px rgb(194 65 12 / 0.35); }
+      #s5-cta .en { font-size: 54px; }
+      #s5-cta .km { font-size: 42px; line-height: 1.45; opacity: 0.95; }
+      #s5-follow { margin-top: 40px; font-size: 40px; font-weight: 700; color: var(--ink); }
+      #s5-follow .km { color: var(--orange); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1080" data-height="1920" data-duration="20.6">
+
+      <!-- S1 · Hook: the service bell rings, សួស្តី! -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="3.7" data-track-index="0">
+        <div class="wrap">
+          <div class="safe">
+            <div class="bellbox">
+              <div class="ring" id="r1a"></div><div class="ring" id="r1b"></div><div class="ring" id="r1c"></div>
+              <svg id="s1-bell" class="bell" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#c2410c"/><g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"><path d="M150 400h212"/><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff"/><path d="M256 190v-24"/><circle cx="256" cy="150" r="16" fill="#fff" stroke="none"/></g></svg>
+            </div>
+            <div id="s1-hi" class="km">សួស្តី!</div>
+            <div id="s1-en" class="en">Hello from <span>Phnom Penh</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S2 · Who we are -->
+      <section id="s2" class="scene clip" data-start="3.18" data-duration="3.7" data-track-index="1">
+        <div class="wrap" id="s2-wrap">
+          <div class="watermark" id="s2-wm">ខ្មែរ</div>
+          <div class="safe">
+            <div id="s2-tag"><i></i>New startup</div>
+            <div id="s2-km" class="km">យើងជាស្តាតអាប់ថ្មី</div>
+            <div id="s2-en" class="en">We're a brand-new startup from <span>Phnom Penh</span></div>
+            <div id="s2-pill">
+              <svg viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#c2410c"/><g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"><path d="M150 400h212"/><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff"/><path d="M256 190v-24"/><circle cx="256" cy="150" r="16" fill="#fff" stroke="none"/></g></svg>
+              <span class="km">App <b>កូនខ្មែរ</b></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S3 · Made by Khmer, for Khmer -->
+      <section id="s3" class="scene clip" data-start="6.34" data-duration="4.1" data-track-index="2">
+        <div class="wrap" id="s3-wrap">
+          <div class="watermark" id="s3-wm">ខ្មែរ</div>
+          <div class="safe">
+            <div class="line"><div id="s3-a" class="km">ធ្វើដោយខ្មែរ</div></div>
+            <div class="line"><div id="s3-b" class="km">សម្រាប់ខ្មែរ</div></div>
+            <div id="s3-rule"></div>
+            <div id="s3-en" class="en">Made by Khmer,<br /><span>for Khmer.</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S4 · Product glimpse: QR on the table, menu on the phone -->
+      <section id="s4" class="scene clip" data-start="10.01" data-duration="6.3" data-track-index="3">
+        <div class="wrap" id="s4-wrap">
+          <div class="head">
+            <div id="ha">
+              <div class="km">កម្មវិធីខ្មែរ សម្រាប់<b>ភោជនីយដ្ឋាន</b> និង<b>ហាងកាហ្វេ</b></div>
+              <div class="en">A Khmer app for Cambodian<br />restaurants &amp; cafés</div>
+            </div>
+            <div id="hb">
+              <div class="km">ម៉ឺនុយរបស់អ្នក នៅលើ<b>គ្រប់ទូរស័ព្ទ</b></div>
+              <div class="en">Your menu on every phone</div>
+            </div>
+          </div>
+
+          <div class="phone" id="phone">
+            <div class="screen">
+              <div class="island"></div>
+              <div class="cover"></div>
+              <div class="rcard">
+                <div class="rlogo">S</div>
+                <div><div class="rname">Sabay Kitchen</div><div class="rtag">Table 4 · Phnom Penh</div></div>
+              </div>
+              <div class="langs">
+                <div class="chip on" id="c-en">EN</div>
+                <div class="chip" id="c-km"><span class="km">ខ្មែរ</span></div>
+                <div class="chip" id="c-zh">中文</div>
+              </div>
+              <div class="items">
+                <div class="item"><div class="thumb">🐟</div><div class="t"><div class="nm"><span class="e">Fish Amok</span><span class="k">អាម៉ុកត្រី</span><span class="z">鱼肉阿莫克</span></div><div class="pr">$6.50<i>៛26,000</i></div></div></div>
+                <div class="item"><div class="thumb">🥩</div><div class="t"><div class="nm"><span class="e">Beef Lok Lak</span><span class="k">ឡុកឡាក់សាច់គោ</span><span class="z">柬式炒牛肉</span></div><div class="pr">$6.00<i>៛24,000</i></div></div></div>
+                <div class="item"><div class="thumb">🍜</div><div class="t"><div class="nm"><span class="e">Kuy Teav</span><span class="k">គុយទាវ</span><span class="z">金边粿条</span></div><div class="pr">$3.50<i>៛14,000</i></div></div></div>
+                <div class="item"><div class="thumb">🧋</div><div class="t"><div class="nm"><span class="e">Iced Coffee</span><span class="k">កាហ្វេទឹកកក</span><span class="z">冰咖啡</span></div><div class="pr">$1.50<i>៛6,000</i></div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="badge" id="bd1"><span class="km">ខ្មែរ</span> · EN · 中文</div>
+          <div class="badge" id="bd2"><em>$</em> + <em>៛</em> prices</div>
+
+          <div class="tent" id="tent">
+            <div class="t1">Sabay Kitchen</div>
+            <div class="qr"><img src="assets/qr.svg" alt="" /><div class="br tl"></div><div class="br tr"></div><div class="br bl"></div><div class="br bb"></div></div>
+            <div class="t2">Table 4</div>
+            <div class="t3 km">ស្កេន ដើម្បីកុម្ម៉ង់</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- S5 · Close: logo + CTA -->
+      <section id="s5" class="scene clip" data-start="15.81" data-duration="4.79" data-track-index="4">
+        <div class="wrap" id="s5-wrap">
+          <div class="safe">
+            <div class="bellbox">
+              <div class="ring" id="r5a"></div><div class="ring" id="r5b"></div>
+              <svg id="s5-bell" class="bell" viewBox="0 0 512 512"><rect width="512" height="512" rx="112" fill="#c2410c"/><g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"><path d="M150 400h212"/><path d="M170 360a86 86 0 0 1 172 0z" fill="#fff"/><path d="M256 190v-24"/><circle cx="256" cy="150" r="16" fill="#fff" stroke="none"/></g></svg>
+            </div>
+            <div id="s5-word"><b>Kh</b>Menu</div>
+            <div id="s5-tag"><span class="km">App កូនខ្មែរ</span> · Made in Phnom Penh</div>
+            <div id="s5-cta"><span class="en">Message us to try it</span><span class="km">ផ្ញើសារមកយើង ដើម្បីសាកល្បង</span></div>
+            <div id="s5-follow">Follow us · <span class="km">តាមដានយើង</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Audio -->
+      <audio id="music" src="assets/music/happy-beats-business-moves-vol-9-by-ende-dot-app.mp3" data-start="0" data-duration="20.6" data-track-index="10" data-volume="0.75"
+        data-automation='{"version":1,"lanes":[{"target":"volume","points":[{"t":0,"v":0.75},{"t":19.3,"v":0.75},{"t":20.6,"v":0}]}]}'></audio>
+      <audio id="sfx-bell1" src="assets/sfx/impactBell_heavy_000.ogg" data-start="0.32" data-duration="1.48" data-track-index="11" data-volume="0.6"></audio>
+      <audio id="sfx-s2" src="assets/sfx/impactSoft_medium_002.ogg" data-start="3.18" data-duration="0.13" data-track-index="12" data-volume="0.8"></audio>
+      <audio id="sfx-pill" src="assets/sfx/drop_002.ogg" data-start="4.75" data-duration="0.19" data-track-index="13" data-volume="0.6"></audio>
+      <audio id="sfx-s3" src="assets/sfx/impactSoft_medium_002.ogg" data-start="6.34" data-duration="0.13" data-track-index="14" data-volume="0.8"></audio>
+      <audio id="sfx-s4" src="assets/sfx/card-slide-1.ogg" data-start="10.1" data-duration="0.6" data-track-index="15" data-volume="0.45"></audio>
+      <audio id="sfx-l1" src="assets/sfx/switch_002.ogg" data-start="12.65" data-duration="0.6" data-track-index="16" data-volume="0.45"></audio>
+      <audio id="sfx-l2" src="assets/sfx/switch_002.ogg" data-start="13.70" data-duration="0.6" data-track-index="17" data-volume="0.45"></audio>
+      <audio id="sfx-bell2" src="assets/sfx/impactBell_heavy_003.ogg" data-start="15.95" data-duration="0.65" data-track-index="18" data-volume="0.55"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const E = 'power3.out';
+      const up = (sel, t, d = 0.5, y = 50) => tl.fromTo(sel, { y, opacity: 0 }, { y: 0, opacity: 1, duration: d, ease: E }, t);
+      const iris = (sel, t) => tl.fromTo(sel, { clipPath: 'circle(0% at 50% 45%)' }, { clipPath: 'circle(75% at 50% 45%)', duration: 0.6, ease: 'power2.inOut' }, t);
+      const rings = (ids, t) => ids.forEach((id, i) => tl.fromTo(id, { scale: 1, opacity: 0.7 }, { scale: 2.6 + i * 0.5, opacity: 0, duration: 1.3, ease: 'power2.out', immediateRender: false }, t + i * 0.16));
+
+      // ---- S1 hook (0–3.7): bell drops and rings at 0.32, សួស្តី! lands
+      tl.fromTo('#s1-bell', { y: -520, rotation: -8 }, { y: 0, rotation: 0, duration: 0.32, ease: 'power2.in' }, 0);
+      tl.to('#s1-bell', { keyframes: [{ scaleY: 0.86, scaleX: 1.08, duration: 0.08 }, { scaleY: 1, scaleX: 1, duration: 0.25, ease: 'back.out(3)' }] }, 0.32);
+      tl.to('#s1-bell', { keyframes: [{ rotation: 7, duration: 0.1 }, { rotation: -5, duration: 0.12 }, { rotation: 3, duration: 0.12 }, { rotation: 0, duration: 0.15 }] }, 0.34);
+      rings(['#r1a', '#r1b', '#r1c'], 0.32);
+      tl.fromTo('#s1-hi', { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, 0.5);
+      up('#s1-en', 1.07);
+
+      // ---- S2 who we are (3.18–6.88)
+      iris('#s2-wrap', 3.18);
+      tl.fromTo('#s2-wm', { xPercent: -42 }, { xPercent: -58, duration: 3.7, ease: 'none' }, 3.18);
+      up('#s2-tag', 3.5, 0.4, 30);
+      up('#s2-km', 3.7);
+      up('#s2-en', 4.23);
+      tl.fromTo('#s2-pill', { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, 4.75);
+
+      // ---- S3 made by Khmer, for Khmer (6.34–10.44)
+      iris('#s3-wrap', 6.34);
+      tl.fromTo('#s3-wm', { xPercent: -55, scale: 1.1 }, { xPercent: -45, scale: 1, duration: 4.1, ease: 'none' }, 6.34);
+      tl.fromTo('#s3-a', { yPercent: 110 }, { yPercent: 0, duration: 0.55, ease: E }, 6.6);
+      tl.fromTo('#s3-b', { yPercent: 110 }, { yPercent: 0, duration: 0.55, ease: E }, 7.4);
+      tl.fromTo('#s3-rule', { scaleX: 0 }, { scaleX: 1, duration: 0.45, ease: E }, 7.92);
+      up('#s3-en', 8.2);
+
+      // ---- S4 product glimpse (10.01–16.31)
+      iris('#s4-wrap', 10.01);
+      up('#ha', 10.2, 0.5, 40);
+      tl.fromTo('#phone', { y: 500, rotation: 4 }, { y: 0, rotation: 0, duration: 0.7, ease: E }, 10.1);
+      tl.fromTo('#tent', { y: 500, opacity: 0 }, { y: 0, opacity: 1, duration: 0.65, ease: E }, 10.35);
+      tl.fromTo('#bd1', { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.6)' }, 11.06);
+      tl.fromTo('#bd2', { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: 'back.out(1.6)' }, 11.6);
+      // headline swap on 12.65
+      tl.to('#ha', { y: -30, opacity: 0, duration: 0.3, ease: 'power2.in' }, 12.5);
+      up('#hb', 12.75, 0.45, 40);
+      // language cycle: ខ្មែរ at 12.65, 中文 at 13.70, EN at 14.76
+      const lang = (t, from, to, fromC, toC) => {
+        tl.to('.nm .' + from, { opacity: 0, duration: 0.18 }, t);
+        tl.fromTo('.nm .' + to, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.25, ease: E, immediateRender: false }, t + 0.08);
+        tl.set(fromC, { backgroundColor: '#ffffff', borderColor: '#e7e2da', color: '#78716c' }, t);
+        tl.set(toC, { backgroundColor: '#c2410c', borderColor: '#c2410c', color: '#ffffff' }, t);
+      };
+      lang(12.65, 'e', 'k', '#c-en', '#c-km');
+      lang(13.70, 'k', 'z', '#c-km', '#c-zh');
+      lang(14.76, 'z', 'e', '#c-zh', '#c-en');
+      tl.to('#phone', { y: -14, duration: 1.5, ease: 'sine.inOut', yoyo: true, repeat: 1 }, 12.9);
+
+      // ---- S5 close (15.81–20.6)
+      iris('#s5-wrap', 15.81);
+      tl.fromTo('#s5-bell', { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(2)' }, 15.85);
+      tl.to('#s5-bell', { keyframes: [{ rotation: 7, duration: 0.1 }, { rotation: -5, duration: 0.12 }, { rotation: 3, duration: 0.12 }, { rotation: 0, duration: 0.15 }] }, 15.97);
+      rings(['#r5a', '#r5b'], 15.95);
+      up('#s5-word', 16.34);
+      up('#s5-tag', 16.86, 0.45, 30);
+      tl.fromTo('#s5-cta', { scale: 0.8, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: 'back.out(2)' }, 17.38);
+      up('#s5-follow', 17.91, 0.45, 30);
+      tl.to('#s5-cta', { scale: 1.04, duration: 0.26, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 18.96);
+
+      window.__timelines['main'] = tl;
+    </script>
+  </body>
+</html>

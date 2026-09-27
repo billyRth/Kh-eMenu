@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- Source for the KhMenu logo PNGs. Render: see assets/logo/README.md -->
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@600&family=Plus+Jakarta+Sans:wght@800&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; background: transparent; }
+  body.white { background: #fff; }
+  body.dark { background: #1c1917; }
+  .lockup { display: inline-flex; align-items: center; gap: 44px; padding: 60px 80px; }
+  .lockup svg { width: 220px; height: 220px; flex: none; }
+  .name { font: 800 150px/1 'Plus Jakarta Sans', sans-serif; letter-spacing: -4px; color: #1c1917; }
+  .name b { color: #c2410c; font-weight: 800; }
+  .tag { margin-top: 18px; font: 600 50px/1.3 'Kantumruy Pro', sans-serif; color: #78716c; }
+  body.dark .name { color: #fafaf9; }
+  body.dark .tag { color: #d6d3d1; }
+</style>
+</head>
+<body>
+  <div class="lockup">
+    <svg viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="112" fill="#c2410c"/>
+      <g fill="none" stroke="#fff" stroke-width="34" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M150 400h212"/>
+        <path d="M170 360a86 86 0 0 1 172 0z" fill="#fff"/>
+        <path d="M256 190v-24"/>
+        <circle cx="256" cy="150" r="16" fill="#fff" stroke="none"/>
+      </g>
+    </svg>
+    <div>
+      <div class="name"><b>Kh</b>Menu</div>
+      <div class="tag">App កូនខ្មែរ</div>
+    </div>
+  </div>
+  <script>
+    const bg = new URLSearchParams(location.search).get('bg');
+    if (bg) document.body.className = bg;
+  </script>
+</body>
+</html>
