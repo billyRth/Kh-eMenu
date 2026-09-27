@@ -10,7 +10,7 @@ import type { Restaurant } from '@/lib/types';
 import { Field } from './MenuEditor';
 import { THEMES } from '@/lib/themes';
 import { cn } from '@/lib/utils';
-import { useT } from '@/lib/i18n';
+import { LANGS, useT } from '@/lib/i18n';
 
 export function SettingsForm({ restaurant, onSaved }: { restaurant: Restaurant; onSaved: (r: Restaurant) => void }) {
   const [r, setR] = useState<Restaurant>(restaurant);
@@ -139,11 +139,7 @@ export function SettingsForm({ restaurant, onSaved }: { restaurant: Restaurant; 
       <Section title={t('s_menuLanguages')}>
         <p className="-mt-2 text-sm text-muted-foreground">{t('s_menuLanguagesIntro')}</p>
         <div className="flex flex-wrap gap-2">
-          {([
-            ['en', 'English'],
-            ['km', 'ខ្មែរ Khmer'],
-            ['zh', '中文 Chinese'],
-          ] as const).map(([code, label]) => {
+          {LANGS.map(({ id: code, label, name }) => {
             const on = (r.languages ?? ['en']).includes(code);
             return (
               <button
@@ -153,7 +149,7 @@ export function SettingsForm({ restaurant, onSaved }: { restaurant: Restaurant; 
                 onClick={() => set('languages', on ? r.languages.filter((l) => l !== code) : [...(r.languages ?? ['en']), code])}
                 className={cn('flex items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-semibold transition', on ? 'border-primary bg-primary/10' : 'border-border text-muted-foreground')}
               >
-                {on && <Check className="size-4 text-primary" />} {label}
+                {on && <Check className="size-4 text-primary" />} {code === 'en' ? label : `${label} ${name}`}
               </button>
             );
           })}

@@ -2,12 +2,10 @@ import { Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { useT, type StringKey } from '@/lib/i18n';
+import { langNative, useT, type ExtraLang, type StringKey } from '@/lib/i18n';
 import type { OptionChoice, OptionGroup } from '@/lib/types';
 
 const uid = () => crypto.randomUUID().slice(0, 8);
-
-type Extra = 'km' | 'zh';
 
 const choice = (name: string, price = 0, km = '', zh = ''): OptionChoice => ({ id: uid(), name, price, i18n: { km, zh } });
 
@@ -47,7 +45,7 @@ const PRESETS: { label: StringKey; make: () => OptionGroup }[] = [
   },
 ];
 
-export function OptionsEditor({ value, onChange, languages }: { value: OptionGroup[]; onChange: (v: OptionGroup[]) => void; languages: Extra[] }) {
+export function OptionsEditor({ value, onChange, languages }: { value: OptionGroup[]; onChange: (v: OptionGroup[]) => void; languages: ExtraLang[] }) {
   const { t } = useT();
   const updateGroup = (i: number, patch: Partial<OptionGroup>) => onChange(value.map((g, gi) => (gi === i ? { ...g, ...patch } : g)));
   const updateChoice = (gi: number, ci: number, patch: Partial<OptionChoice>) =>
@@ -82,7 +80,7 @@ export function OptionsEditor({ value, onChange, languages }: { value: OptionGro
                 <Input
                   key={l}
                   value={g.i18n?.[l] ?? ''}
-                  placeholder={l === 'km' ? 'ខ្មែរ' : '中文'}
+                  placeholder={langNative(l)}
                   onChange={(e) => updateGroup(gi, { i18n: { ...g.i18n, [l]: e.target.value } })}
                   className="h-8 text-sm"
                 />
@@ -105,7 +103,7 @@ export function OptionsEditor({ value, onChange, languages }: { value: OptionGro
                   <Input
                     key={l}
                     value={c.i18n?.[l] ?? ''}
-                    placeholder={l === 'km' ? 'ខ្មែរ' : '中文'}
+                    placeholder={langNative(l)}
                     onChange={(e) => updateChoice(gi, ci, { i18n: { ...c.i18n, [l]: e.target.value } })}
                     className="h-8 w-24 text-sm"
                   />

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FoodImage, LoadingScreen, MessageScreen, Panel, Price, QtyStepper } from '@/components/common';
 import { themeById, useMenuTheme } from '@/lib/themes';
@@ -655,10 +656,22 @@ const STATUS_STYLE: Record<OrderStatus, string> = {
   cancelled: 'bg-muted text-muted-foreground',
 };
 
+/** True the first time it is called for this table; remembered per table token, like the cart. */
+function firstTime(key: string) {
+  try {
+    if (localStorage.getItem(key)) return false;
+    localStorage.setItem(key, '1');
+  } catch {
+    // Storage blocked: show it this once and don't remember.
+  }
+  return true;
+}
+
 function BillPanel({ open, table, restaurant, t, onClose }: { open: boolean; table: TableInfo; restaurant: Restaurant; t: T; onClose: () => void }) {
   const [orders, setOrders] = useState<TabOrder[] | null>(null);
   const [people, setPeople] = useState(2);
   const [error, setError] = useState<string | null>(null);
+  const [tipNote, setTipNote] = useState(false);
 
   const refresh = useCallback(async () => {
     const { data, error: rpcError } = await supabase.rpc('get_table_tab', { p_token: table.token });
@@ -678,8 +691,9 @@ function BillPanel({ open, table, restaurant, t, onClose }: { open: boolean; tab
 
   async function callStaff(kind: 'waiter' | 'bill') {
     const { error: rpcError } = await supabase.rpc('call_staff', { p_token: table.token, p_kind: kind });
-    if (rpcError) toast.error(friendlyError(rpcError.message));
-    else toast.success(kind === 'bill' ? t('billRequested') : t('waiterComing'));
+    if (rpcError) return toast.error(friendlyError(rpcError.message));
+    toast.success(kind === 'bill' ? t('billRequested') : t('waiterComing'));
+    if (kind === 'bill' && firstTime(`emenu:tipnote:${table.token}`)) setTipNote(true);
   }
 
   const live = (orders ?? []).filter((o) => o.status !== 'cancelled');
@@ -689,106 +703,123 @@ function BillPanel({ open, table, restaurant, t, onClose }: { open: boolean; tab
   const money = (n: number) => <Price amount={n} rate={restaurant.khr_rate} showKhr={restaurant.show_khr} />;
 
   return (
-    <Panel
-      open={open}
-      onClose={onClose}
-      title={t('tableBill', { table: table.label })}
-      description={t('everyoneOrders')}
-      footer={
-        <div className="space-y-3">
-          <div className="flex items-baseline justify-between">
-            <span className="text-muted-foreground">{t('tableTotal')}</span>
-            <Price amount={total} rate={restaurant.khr_rate} showKhr={restaurant.show_khr} className="text-xl" />
-          </div>
-          <div className="grid grid-cols-2 gap-2.5">
-            <Button variant="outline" className="h-12 rounded-xl" onClick={() => callStaff('waiter')}>
-              <BellRing /> {t('callWaiter')}
-            </Button>
-            <Button className="h-12 rounded-xl font-bold" onClick={() => callStaff('bill')} disabled={live.length === 0}>
-              <Receipt /> {t('askBill')}
-            </Button>
-          </div>
-        </div>
-      }
-    >
-      {error && <p className="mb-3 rounded-lg bg-destructive/10 p-2.5 text-sm text-destructive">{error}</p>}
-      {orders === null ? (
-        <p className="py-8 text-center text-muted-foreground">{t('loading')}</p>
-      ) : orders.length === 0 ? (
-        <p className="py-8 text-center text-muted-foreground">{t('noOrders')}</p>
-      ) : (
-        <Tabs defaultValue="orders">
-          <TabsList className="w-full">
-            <TabsTrigger value="orders">{t('orders')}</TabsTrigger>
-            <TabsTrigger value="person">{t('byPerson')}</TabsTrigger>
-            <TabsTrigger value="equal">{t('equally')}</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="orders" className="mt-2 space-y-3">
-            {orders.map((o) => (
-              <div key={o.id} className={cn('rounded-2xl border p-3.5', o.status === 'cancelled' && 'opacity-50')}>
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-bold">
-                    {t('order')} #{o.order_number}
-                    <span className="ml-2 text-xs font-medium text-muted-foreground">
-                      {o.guest_name ? `${o.guest_name} · ` : ''}
-                      {clockTime(o.created_at)}
-                    </span>
-                  </p>
-                  <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-bold', STATUS_STYLE[o.status])}>{t(`status_${o.status}` as StringKey)}</span>
-                </div>
-                <ul className="mt-2 space-y-1 text-sm">
-                  {o.items.map((it, i) => (
-                    <li key={i} className="flex justify-between gap-3">
-                      <span>
-                        {it.qty} × {it.name}
-                        {it.options?.length > 0 && <span className="text-muted-foreground"> · {pickedSummary(it.options)}</span>}
-                        {it.note && <span className="text-muted-foreground italic"> · {it.note}</span>}
-                      </span>
-                      <span className="tabular-nums">{usd(it.unit_price_usd * it.qty)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </TabsContent>
-
-          <TabsContent value="person" className="mt-2 space-y-3">
-            {shares.length === 1 && shares[0].name === 'Guest' && <p className="rounded-xl bg-secondary p-3 text-sm text-muted-foreground">{t('nameTip')}</p>}
-            {shares.map((s) => (
-              <div key={s.name} className="rounded-2xl border p-3.5">
-                <div className="flex items-center justify-between">
-                  <p className="font-bold">{s.name === 'Guest' ? t('guest') : s.name}</p>
-                  {money(s.total)}
-                </div>
-                <ul className="mt-1.5 space-y-0.5 text-sm text-muted-foreground">
-                  {s.items.map((it) => (
-                    <li key={it.name} className="flex justify-between">
-                      <span>
-                        {it.qty} × {it.name}
-                      </span>
-                      <span className="tabular-nums">{usd(it.amount)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </TabsContent>
-
-          <TabsContent value="equal" className="mt-2">
-            <div className="flex flex-col items-center gap-4 rounded-2xl border p-5 text-center">
-              <p className="text-sm font-semibold text-muted-foreground">{t('howMany')}</p>
-              <QtyStepper value={people} onChange={setPeople} min={1} max={30} />
-              <div>
-                <p className="text-sm text-muted-foreground">{t('eachPays')}</p>
-                <p className="text-3xl font-extrabold tabular-nums">{usd(even.base)}</p>
-                {restaurant.show_khr && <p className="font-semibold text-muted-foreground">{khr(even.base, restaurant.khr_rate)}</p>}
-                {even.extraCount > 0 && <p className="mt-1 text-xs text-muted-foreground">{t('someMore', { n: even.extraCount, amt: usd(even.base + 0.01) })}</p>}
-              </div>
+    <>
+      <Panel
+        open={open}
+        onClose={onClose}
+        title={t('tableBill', { table: table.label })}
+        description={t('everyoneOrders')}
+        footer={
+          <div className="space-y-3">
+            <div className="flex items-baseline justify-between">
+              <span className="text-muted-foreground">{t('tableTotal')}</span>
+              <Price amount={total} rate={restaurant.khr_rate} showKhr={restaurant.show_khr} className="text-xl" />
             </div>
-          </TabsContent>
-        </Tabs>
-      )}
-    </Panel>
+            <div className="grid grid-cols-2 gap-2.5">
+              <Button variant="outline" className="h-12 rounded-xl" onClick={() => callStaff('waiter')}>
+                <BellRing /> {t('callWaiter')}
+              </Button>
+              <Button className="h-12 rounded-xl font-bold" onClick={() => callStaff('bill')} disabled={live.length === 0}>
+                <Receipt /> {t('askBill')}
+              </Button>
+            </div>
+          </div>
+        }
+      >
+        {error && <p className="mb-3 rounded-lg bg-destructive/10 p-2.5 text-sm text-destructive">{error}</p>}
+        {orders === null ? (
+          <p className="py-8 text-center text-muted-foreground">{t('loading')}</p>
+        ) : orders.length === 0 ? (
+          <p className="py-8 text-center text-muted-foreground">{t('noOrders')}</p>
+        ) : (
+          <Tabs defaultValue="orders">
+            <TabsList className="w-full">
+              <TabsTrigger value="orders">{t('orders')}</TabsTrigger>
+              <TabsTrigger value="person">{t('byPerson')}</TabsTrigger>
+              <TabsTrigger value="equal">{t('equally')}</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="orders" className="mt-2 space-y-3">
+              {orders.map((o) => (
+                <div key={o.id} className={cn('rounded-2xl border p-3.5', o.status === 'cancelled' && 'opacity-50')}>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-bold">
+                      {t('order')} #{o.order_number}
+                      <span className="ml-2 text-xs font-medium text-muted-foreground">
+                        {o.guest_name ? `${o.guest_name} · ` : ''}
+                        {clockTime(o.created_at)}
+                      </span>
+                    </p>
+                    <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-bold', STATUS_STYLE[o.status])}>{t(`status_${o.status}` as StringKey)}</span>
+                  </div>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {o.items.map((it, i) => (
+                      <li key={i} className="flex justify-between gap-3">
+                        <span>
+                          {it.qty} × {it.name}
+                          {it.options?.length > 0 && <span className="text-muted-foreground"> · {pickedSummary(it.options)}</span>}
+                          {it.note && <span className="text-muted-foreground italic"> · {it.note}</span>}
+                        </span>
+                        <span className="tabular-nums">{usd(it.unit_price_usd * it.qty)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </TabsContent>
+
+            <TabsContent value="person" className="mt-2 space-y-3">
+              {shares.length === 1 && shares[0].name === 'Guest' && <p className="rounded-xl bg-secondary p-3 text-sm text-muted-foreground">{t('nameTip')}</p>}
+              {shares.map((s) => (
+                <div key={s.name} className="rounded-2xl border p-3.5">
+                  <div className="flex items-center justify-between">
+                    <p className="font-bold">{s.name === 'Guest' ? t('guest') : s.name}</p>
+                    {money(s.total)}
+                  </div>
+                  <ul className="mt-1.5 space-y-0.5 text-sm text-muted-foreground">
+                    {s.items.map((it) => (
+                      <li key={it.name} className="flex justify-between">
+                        <span>
+                          {it.qty} × {it.name}
+                        </span>
+                        <span className="tabular-nums">{usd(it.amount)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </TabsContent>
+
+            <TabsContent value="equal" className="mt-2">
+              <div className="flex flex-col items-center gap-4 rounded-2xl border p-5 text-center">
+                <p className="text-sm font-semibold text-muted-foreground">{t('howMany')}</p>
+                <QtyStepper value={people} onChange={setPeople} min={1} max={30} />
+                <div>
+                  <p className="text-sm text-muted-foreground">{t('eachPays')}</p>
+                  <p className="text-3xl font-extrabold tabular-nums">{usd(even.base)}</p>
+                  {restaurant.show_khr && <p className="font-semibold text-muted-foreground">{khr(even.base, restaurant.khr_rate)}</p>}
+                  {even.extraCount > 0 && <p className="mt-1 text-xs text-muted-foreground">{t('someMore', { n: even.extraCount, amt: usd(even.base + 0.01) })}</p>}
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        )}
+      </Panel>
+
+      {/* Pay-at-the-counter, so this is only a kind reminder: no amounts, shown once per table. */}
+      <Dialog open={tipNote} onOpenChange={(o) => !o && setTipNote(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="pr-8 text-base font-bold">{t('tipTitle', { name: restaurant.name })}</DialogTitle>
+          </DialogHeader>
+          <p className="leading-relaxed text-muted-foreground">{t('tipBody')}</p>
+          <DialogFooter>
+            <Button className="w-full font-bold sm:w-auto" onClick={() => setTipNote(false)}>
+              {t('tipThanks')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

@@ -1,3 +1,5 @@
+import type { ExtraLang, Lang } from './i18n';
+
 export type Restaurant = {
   id: string;
   slug: string;
@@ -12,7 +14,7 @@ export type Restaurant = {
   accent_color: string;
   theme: string;
   reports_enabled: boolean;
-  languages: ('en' | 'km' | 'zh')[];
+  languages: Lang[];
   logo_url: string | null;
   cover_url: string | null;
 };
@@ -45,10 +47,10 @@ export type MenuItem = {
   i18n: I18nText;
 };
 
-export type I18nText = Partial<Record<'km' | 'zh', { name?: string; description?: string }>>;
+export type I18nText = Partial<Record<ExtraLang, { name?: string; description?: string }>>;
 
-export type OptionChoice = { id: string; name: string; price: number; i18n?: Partial<Record<'km' | 'zh', string>> };
-export type OptionGroup = { id: string; name: string; required: boolean; multi: boolean; choices: OptionChoice[]; i18n?: Partial<Record<'km' | 'zh', string>> };
+export type OptionChoice = { id: string; name: string; price: number; i18n?: Partial<Record<ExtraLang, string>> };
+export type OptionGroup = { id: string; name: string; required: boolean; multi: boolean; choices: OptionChoice[]; i18n?: Partial<Record<ExtraLang, string>> };
 /** What an order line remembers about the options picked. */
 export type PickedOption = { group: string; choice: string; price: number };
 

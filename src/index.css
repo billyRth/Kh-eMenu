@@ -6,7 +6,10 @@
 
 @theme inline {
     --font-heading: var(--font-sans);
-    --font-sans: 'Plus Jakarta Sans', 'Kantumruy Pro', ui-sans-serif, system-ui, sans-serif;
+    /* Plus Jakarta Sans covers Latin and Vietnamese; Kantumruy Pro covers Khmer. Chinese, Japanese and
+       Korean have no webfont: the generics pick the system face for <html lang>, and the named faces
+       at the end are a safety net for devices where they don't. */
+    --font-sans: 'Plus Jakarta Sans', 'Kantumruy Pro', ui-sans-serif, system-ui, sans-serif, 'Hiragino Sans', 'Yu Gothic UI', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans CJK JP';
     --color-sidebar-ring: var(--sidebar-ring);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

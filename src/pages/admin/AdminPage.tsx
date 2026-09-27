@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LoadingScreen, MessageScreen, useBrandColor } from '@/components/common';
 import { cn } from '@/lib/utils';
-import { ALL_LANGS, LANGS, LangContext, useLang, useT, type StringKey } from '@/lib/i18n';
+import { LANGS, LangContext, STAFF_LANGS, useLang, useT, type StringKey } from '@/lib/i18n';
 import { supabase } from '@/lib/supabase';
 import type { Restaurant } from '@/lib/types';
 import { OrdersBoard } from './OrdersBoard';
@@ -29,7 +29,7 @@ function LangSwitch({ className }: { className?: string }) {
   const { lang, setLang, t } = useT();
   return (
     <div className={cn('flex shrink-0 items-center rounded-full bg-secondary p-0.5', className)} role="group" aria-label={t('s_language')}>
-      {LANGS.map((l) => (
+      {LANGS.filter((l) => STAFF_LANGS.includes(l.id)).map((l) => (
         <button
           key={l.id}
           type="button"
@@ -45,7 +45,7 @@ function LangSwitch({ className }: { className?: string }) {
 }
 
 export function AdminPage() {
-  const i18n = useLang(ALL_LANGS, false);
+  const i18n = useLang(STAFF_LANGS, false);
   const [session, setSession] = useState<Session | null | undefined>(undefined);
 
   useEffect(() => {

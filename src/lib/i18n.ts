@@ -3,85 +3,125 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 /**
  * Diner-facing languages. Menu text (dish/category/option names) comes from each row's
  * `i18n` column; the fixed interface strings below are ours.
- * Khmer and Chinese strings should get a native-speaker review before a big launch.
+ * All non-English strings should get a native-speaker review before a big launch.
  */
-export type Lang = 'en' | 'km' | 'zh';
+export type Lang = 'en' | 'km' | 'zh' | 'ja' | 'ko' | 'vi';
 
-export const LANGS: { id: Lang; label: string; short: string }[] = [
-  { id: 'en', label: 'English', short: 'EN' },
-  { id: 'km', label: 'ខ្មែរ', short: 'ខ្មែរ' },
-  { id: 'zh', label: '中文', short: '中文' },
+/** Languages a dish can be translated into (English is the base text). */
+export type ExtraLang = Exclude<Lang, 'en'>;
+
+/** `label` is the native name, `name` the English one (staff screens show both). */
+export const LANGS: { id: Lang; label: string; short: string; name: string }[] = [
+  { id: 'en', label: 'English', short: 'EN', name: 'English' },
+  { id: 'km', label: 'ខ្មែរ', short: 'ខ្មែរ', name: 'Khmer' },
+  { id: 'zh', label: '中文', short: '中文', name: 'Chinese' },
+  { id: 'ja', label: '日本語', short: '日本', name: 'Japanese' },
+  { id: 'ko', label: '한국어', short: '한국', name: 'Korean' },
+  { id: 'vi', label: 'Tiếng Việt', short: 'VI', name: 'Vietnamese' },
 ];
 
+/** "ខ្មែរ" */
+export const langNative = (id: Lang) => LANGS.find((l) => l.id === id)?.label ?? id;
+/** "ខ្មែរ · Khmer" — the label the staff translation fields use. */
+export const langLabel = (id: Lang) => {
+  const l = LANGS.find((x) => x.id === id);
+  return l ? `${l.label} · ${l.name}` : id;
+};
+
 const STRINGS = {
-  searchDishes: { en: 'Search dishes', km: 'ស្វែងរកម្ហូប', zh: '搜索菜品' },
-  chefsPicks: { en: 'Chef’s picks', km: 'ម្ហូបណែនាំ', zh: '主厨推荐' },
-  popular: { en: 'Popular', km: 'ពេញនិយម', zh: '热门' },
-  chefsPick: { en: 'Chef’s pick', km: 'ណែនាំ', zh: '推荐' },
-  soldOut: { en: 'Sold out today', km: 'អស់ហើយថ្ងៃនេះ', zh: '今日售罄' },
-  noMatch: { en: 'No dishes match', km: 'រកមិនឃើញម្ហូប', zh: '没有找到菜品' },
-  orderFromPhone: { en: 'Order from your phone · pay at the counter', km: 'កុម្ម៉ង់ពីទូរស័ព្ទ · បង់ប្រាក់នៅបញ្ជរ', zh: '用手机点餐 · 前台结账' },
-  orderWithStaff: { en: 'Please order with our staff', km: 'សូមកុម្ម៉ង់ជាមួយបុគ្គលិក', zh: '请向服务员点餐' },
-  bill: { en: 'Bill', km: 'វិក្កយបត្រ', zh: '账单' },
-  addDishes: { en: 'Add dishes to order', km: 'ជ្រើសម្ហូបដើម្បីកុម្ម៉ង់', zh: '请选择菜品' },
-  viewOrder: { en: 'View order', km: 'មើលការកុម្ម៉ង់', zh: '查看订单' },
-  added: { en: 'added', km: 'បានបន្ថែម', zh: '已添加' },
-  specialRequests: { en: 'Special requests', km: 'សំណើពិសេស', zh: '特殊要求' },
-  specialPlaceholder: { en: 'e.g. no chilli, no peanuts', km: 'ឧ. កុំដាក់ម្ទេស កុំដាក់សណ្តែកដី', zh: '例如：不要辣、不要花生' },
-  scanToOrder: { en: 'To order, scan the QR code on your table or ask our staff.', km: 'ដើម្បីកុម្ម៉ង់ សូមស្កេន QR នៅលើតុ ឬសួរបុគ្គលិក។', zh: '如需点餐，请扫描桌上的二维码或询问服务员。' },
-  add: { en: 'Add', km: 'បន្ថែម', zh: '加入' },
-  remove: { en: 'Remove', km: 'ដកចេញ', zh: '减少' },
-  required: { en: 'Required', km: 'ត្រូវជ្រើស', zh: '必选' },
-  optional: { en: 'Optional', km: 'មិនចាំបាច់', zh: '可选' },
-  chooseAny: { en: 'Choose any', km: 'ជ្រើសបានច្រើន', zh: '可多选' },
-  pickRequired: { en: 'Please choose', km: 'សូមជ្រើស', zh: '请选择' },
-  yourOrder: { en: 'Your order', km: 'ការកុម្ម៉ង់របស់អ្នក', zh: '您的订单' },
-  kitchenStarts: { en: 'the kitchen starts as soon as you send it', km: 'ផ្ទះបាយចាប់ផ្តើមភ្លាមៗពេលអ្នកផ្ញើ', zh: '发送后厨房立即开始准备' },
-  total: { en: 'Total', km: 'សរុប', zh: '合计' },
-  send: { en: 'Send order to kitchen', km: 'ផ្ញើទៅផ្ទះបាយ', zh: '发送到厨房' },
-  sending: { en: 'Sending…', km: 'កំពុងផ្ញើ…', zh: '发送中…' },
-  payAtCounter: { en: 'You pay at the counter when you’re done.', km: 'បង់ប្រាក់នៅបញ្ជរពេលញ៉ាំរួច។', zh: '用餐后请到前台结账。' },
-  emptyOrder: { en: 'Your order is empty.', km: 'មិនទាន់មានម្ហូបទេ។', zh: '订单为空。' },
-  yourName: { en: 'Your name', km: 'ឈ្មោះរបស់អ្នក', zh: '您的名字' },
-  nameHint: { en: '(optional, for splitting the bill)', km: '(មិនចាំបាច់ សម្រាប់ចែកវិក្កយបត្រ)', zh: '（可选，用于分账）' },
-  kitchenNote: { en: 'Note for the kitchen', km: 'កំណត់សម្គាល់សម្រាប់ផ្ទះបាយ', zh: '给厨房的备注' },
-  optionalParen: { en: '(optional)', km: '(មិនចាំបាច់)', zh: '（可选）' },
-  notePlaceholder: { en: 'e.g. bring drinks first', km: 'ឧ. យកភេសជ្ជៈមកមុន', zh: '例如：先上饮料' },
-  orderSent: { en: 'Order #{n} sent to the kitchen!', km: 'ការកុម្ម៉ង់ #{n} បានផ្ញើទៅផ្ទះបាយ!', zh: '订单 #{n} 已发送到厨房！' },
-  removeSoldOut: { en: 'Sold out, please remove', km: 'អស់ហើយ សូមដកចេញ', zh: '已售罄，请删除' },
-  removeGone: { en: 'No longer on the menu, please remove', km: 'លែងមានក្នុងម៉ឺនុយ សូមដកចេញ', zh: '菜单已下架，请删除' },
-  tableBill: { en: '{table} · bill', km: '{table} · វិក្កយបត្រ', zh: '{table} · 账单' },
+  searchDishes: { en: 'Search dishes', km: 'ស្វែងរកម្ហូប', zh: '搜索菜品', ja: '料理を検索', ko: '메뉴 검색', vi: 'Tìm món' },
+  chefsPicks: { en: 'Chef’s picks', km: 'ម្ហូបណែនាំ', zh: '主厨推荐', ja: 'おすすめ', ko: '셰프 추천', vi: 'Đầu bếp gợi ý' },
+  popular: { en: 'Popular', km: 'ពេញនិយម', zh: '热门', ja: '人気', ko: '인기', vi: 'Bán chạy' },
+  chefsPick: { en: 'Chef’s pick', km: 'ណែនាំ', zh: '推荐', ja: 'おすすめ', ko: '추천', vi: 'Đầu bếp gợi ý' },
+  soldOut: { en: 'Sold out today', km: 'អស់ហើយថ្ងៃនេះ', zh: '今日售罄', ja: '本日売り切れ', ko: '오늘 품절', vi: 'Hôm nay đã hết' },
+  noMatch: { en: 'No dishes match', km: 'រកមិនឃើញម្ហូប', zh: '没有找到菜品', ja: '該当する料理はありません', ko: '일치하는 메뉴가 없습니다', vi: 'Không tìm thấy món nào' },
+  orderFromPhone: { en: 'Order from your phone · pay at the counter', km: 'កុម្ម៉ង់ពីទូរស័ព្ទ · បង់ប្រាក់នៅបញ្ជរ', zh: '用手机点餐 · 前台结账', ja: 'スマホで注文 · お支払いはレジで', ko: '휴대폰으로 주문 · 결제는 카운터에서', vi: 'Gọi món bằng điện thoại · thanh toán tại quầy' },
+  orderWithStaff: { en: 'Please order with our staff', km: 'សូមកុម្ម៉ង់ជាមួយបុគ្គលិក', zh: '请向服务员点餐', ja: 'スタッフにご注文ください', ko: '직원에게 주문해 주세요', vi: 'Vui lòng gọi món với nhân viên' },
+  bill: { en: 'Bill', km: 'វិក្កយបត្រ', zh: '账单', ja: 'お会計', ko: '계산서', vi: 'Hóa đơn' },
+  addDishes: { en: 'Add dishes to order', km: 'ជ្រើសម្ហូបដើម្បីកុម្ម៉ង់', zh: '请选择菜品', ja: '料理を選んでください', ko: '메뉴를 선택하세요', vi: 'Chọn món để gọi' },
+  viewOrder: { en: 'View order', km: 'មើលការកុម្ម៉ង់', zh: '查看订单', ja: '注文を見る', ko: '주문 보기', vi: 'Xem đơn' },
+  added: { en: 'added', km: 'បានបន្ថែម', zh: '已添加', ja: '追加しました', ko: '추가됨', vi: 'đã thêm' },
+  specialRequests: { en: 'Special requests', km: 'សំណើពិសេស', zh: '特殊要求', ja: 'ご要望', ko: '요청 사항', vi: 'Yêu cầu riêng' },
+  specialPlaceholder: { en: 'e.g. no chilli, no peanuts', km: 'ឧ. កុំដាក់ម្ទេស កុំដាក់សណ្តែកដី', zh: '例如：不要辣、不要花生', ja: '例：辛さ抜き、ピーナッツ抜き', ko: '예: 고추 빼고, 땅콩 빼고', vi: 'VD: không ớt, không đậu phộng' },
+  scanToOrder: { en: 'To order, scan the QR code on your table or ask our staff.', km: 'ដើម្បីកុម្ម៉ង់ សូមស្កេន QR នៅលើតុ ឬសួរបុគ្គលិក។', zh: '如需点餐，请扫描桌上的二维码或询问服务员。', ja: 'ご注文はテーブルのQRコードをスキャンするか、スタッフにお声がけください。', ko: '주문하려면 테이블의 QR 코드를 스캔하거나 직원에게 말씀해 주세요.', vi: 'Để gọi món, hãy quét mã QR trên bàn hoặc hỏi nhân viên.' },
+  add: { en: 'Add', km: 'បន្ថែម', zh: '加入', ja: '追加', ko: '추가', vi: 'Thêm' },
+  remove: { en: 'Remove', km: 'ដកចេញ', zh: '减少', ja: '減らす', ko: '줄이기', vi: 'Bớt' },
+  required: { en: 'Required', km: 'ត្រូវជ្រើស', zh: '必选', ja: '必須', ko: '필수', vi: 'Bắt buộc' },
+  optional: { en: 'Optional', km: 'មិនចាំបាច់', zh: '可选', ja: '任意', ko: '선택', vi: 'Tùy chọn' },
+  chooseAny: { en: 'Choose any', km: 'ជ្រើសបានច្រើន', zh: '可多选', ja: '複数選択可', ko: '여러 개 선택 가능', vi: 'Chọn nhiều' },
+  pickRequired: { en: 'Please choose', km: 'សូមជ្រើស', zh: '请选择', ja: '選択してください', ko: '선택해 주세요', vi: 'Vui lòng chọn' },
+  yourOrder: { en: 'Your order', km: 'ការកុម្ម៉ង់របស់អ្នក', zh: '您的订单', ja: 'ご注文', ko: '주문 내역', vi: 'Đơn của bạn' },
+  kitchenStarts: { en: 'the kitchen starts as soon as you send it', km: 'ផ្ទះបាយចាប់ផ្តើមភ្លាមៗពេលអ្នកផ្ញើ', zh: '发送后厨房立即开始准备', ja: '送信するとすぐに調理を始めます', ko: '보내면 바로 조리를 시작합니다', vi: 'bếp bắt đầu làm ngay khi bạn gửi' },
+  total: { en: 'Total', km: 'សរុប', zh: '合计', ja: '合計', ko: '합계', vi: 'Tổng' },
+  send: { en: 'Send order to kitchen', km: 'ផ្ញើទៅផ្ទះបាយ', zh: '发送到厨房', ja: '厨房に送る', ko: '주방으로 보내기', vi: 'Gửi tới nhà bếp' },
+  sending: { en: 'Sending…', km: 'កំពុងផ្ញើ…', zh: '发送中…', ja: '送信中…', ko: '보내는 중…', vi: 'Đang gửi…' },
+  payAtCounter: { en: 'You pay at the counter when you’re done.', km: 'បង់ប្រាក់នៅបញ្ជរពេលញ៉ាំរួច។', zh: '用餐后请到前台结账。', ja: 'お食事のあと、レジでお支払いください。', ko: '식사 후 카운터에서 결제해 주세요.', vi: 'Bạn thanh toán tại quầy sau khi dùng bữa.' },
+  emptyOrder: { en: 'Your order is empty.', km: 'មិនទាន់មានម្ហូបទេ។', zh: '订单为空。', ja: 'ご注文はまだ空です。', ko: '주문이 비어 있습니다.', vi: 'Đơn của bạn đang trống.' },
+  yourName: { en: 'Your name', km: 'ឈ្មោះរបស់អ្នក', zh: '您的名字', ja: 'お名前', ko: '이름', vi: 'Tên của bạn' },
+  nameHint: { en: '(optional, for splitting the bill)', km: '(មិនចាំបាច់ សម្រាប់ចែកវិក្កយបត្រ)', zh: '（可选，用于分账）', ja: '（任意・割り勘用）', ko: '(선택, 계산서 나누기용)', vi: '(không bắt buộc, để chia hóa đơn)' },
+  kitchenNote: { en: 'Note for the kitchen', km: 'កំណត់សម្គាល់សម្រាប់ផ្ទះបាយ', zh: '给厨房的备注', ja: '厨房へのメモ', ko: '주방에 전할 메모', vi: 'Ghi chú cho nhà bếp' },
+  optionalParen: { en: '(optional)', km: '(មិនចាំបាច់)', zh: '（可选）', ja: '（任意）', ko: '(선택)', vi: '(không bắt buộc)' },
+  notePlaceholder: { en: 'e.g. bring drinks first', km: 'ឧ. យកភេសជ្ជៈមកមុន', zh: '例如：先上饮料', ja: '例：飲み物を先にお願いします', ko: '예: 음료를 먼저 주세요', vi: 'VD: mang nước trước' },
+  orderSent: { en: 'Order #{n} sent to the kitchen!', km: 'ការកុម្ម៉ង់ #{n} បានផ្ញើទៅផ្ទះបាយ!', zh: '订单 #{n} 已发送到厨房！', ja: '注文 #{n} を厨房に送りました！', ko: '주문 #{n}을 주방으로 보냈습니다!', vi: 'Đã gửi đơn #{n} tới nhà bếp!' },
+  removeSoldOut: { en: 'Sold out, please remove', km: 'អស់ហើយ សូមដកចេញ', zh: '已售罄，请删除', ja: '売り切れです。削除してください', ko: '품절입니다. 삭제해 주세요', vi: 'Đã hết, vui lòng xóa' },
+  removeGone: { en: 'No longer on the menu, please remove', km: 'លែងមានក្នុងម៉ឺនុយ សូមដកចេញ', zh: '菜单已下架，请删除', ja: 'メニューにありません。削除してください', ko: '메뉴에 없습니다. 삭제해 주세요', vi: 'Không còn trong menu, vui lòng xóa' },
+  tableBill: { en: '{table} · bill', km: '{table} · វិក្កយបត្រ', zh: '{table} · 账单', ja: '{table} · お会計', ko: '{table} · 계산서', vi: '{table} · hóa đơn' },
   everyoneOrders: {
     en: 'Everyone at this table can order from their own phone. It all adds up here.',
     km: 'អ្នកទាំងអស់នៅតុនេះអាចកុម្ម៉ង់ពីទូរស័ព្ទរៀងៗខ្លួន ហើយបូកសរុបនៅទីនេះ។',
     zh: '同桌每个人都可以用自己的手机点餐，费用都汇总在这里。',
+    ja: 'このテーブルの皆さまがそれぞれのスマホで注文でき、ここで合計されます。',
+    ko: '이 테이블의 모두가 각자 휴대폰으로 주문할 수 있고, 여기에 모두 합산됩니다.',
+    vi: 'Mọi người ở bàn này đều có thể gọi món từ điện thoại của mình, tất cả được cộng vào đây.',
   },
-  tableTotal: { en: 'Table total', km: 'សរុបតុ', zh: '本桌合计' },
-  callWaiter: { en: 'Call waiter', km: 'ហៅអ្នករត់តុ', zh: '呼叫服务员' },
-  askBill: { en: 'Ask for bill', km: 'សុំគិតលុយ', zh: '请求结账' },
-  billRequested: { en: 'Bill requested. Staff will bring it shortly.', km: 'បានសុំគិតលុយ។ បុគ្គលិកនឹងយកមកឆាប់ៗ។', zh: '已请求结账，服务员马上就来。' },
-  waiterComing: { en: 'A staff member is on the way.', km: 'បុគ្គលិកកំពុងមក។', zh: '服务员马上就到。' },
-  loading: { en: 'Loading…', km: 'កំពុងផ្ទុក…', zh: '加载中…' },
-  noOrders: { en: 'No orders yet.', km: 'មិនទាន់មានការកុម្ម៉ង់ទេ។', zh: '还没有订单。' },
-  orders: { en: 'Orders', km: 'ការកុម្ម៉ង់', zh: '订单' },
-  byPerson: { en: 'By person', km: 'តាមមនុស្ស', zh: '按人分' },
-  equally: { en: 'Split equally', km: 'ចែកស្មើ', zh: '平均分' },
+  tableTotal: { en: 'Table total', km: 'សរុបតុ', zh: '本桌合计', ja: 'テーブル合計', ko: '테이블 합계', vi: 'Tổng của bàn' },
+  callWaiter: { en: 'Call waiter', km: 'ហៅអ្នករត់តុ', zh: '呼叫服务员', ja: 'スタッフを呼ぶ', ko: '직원 호출', vi: 'Gọi nhân viên' },
+  askBill: { en: 'Ask for bill', km: 'សុំគិតលុយ', zh: '请求结账', ja: 'お会計をお願い', ko: '계산서 요청', vi: 'Xin tính tiền' },
+  billRequested: { en: 'Bill requested. Staff will bring it shortly.', km: 'បានសុំគិតលុយ។ បុគ្គលិកនឹងយកមកឆាប់ៗ។', zh: '已请求结账，服务员马上就来。', ja: 'お会計をお伝えしました。すぐにお持ちします。', ko: '계산서를 요청했습니다. 곧 가져다드립니다.', vi: 'Đã yêu cầu tính tiền. Nhân viên sẽ mang tới ngay.' },
+  waiterComing: { en: 'A staff member is on the way.', km: 'បុគ្គលិកកំពុងមក។', zh: '服务员马上就到。', ja: 'スタッフが向かっています。', ko: '직원이 곧 갑니다.', vi: 'Nhân viên đang tới.' },
+  loading: { en: 'Loading…', km: 'កំពុងផ្ទុក…', zh: '加载中…', ja: '読み込み中…', ko: '불러오는 중…', vi: 'Đang tải…' },
+  noOrders: { en: 'No orders yet.', km: 'មិនទាន់មានការកុម្ម៉ង់ទេ។', zh: '还没有订单。', ja: 'まだ注文はありません。', ko: '아직 주문이 없습니다.', vi: 'Chưa có đơn nào.' },
+  orders: { en: 'Orders', km: 'ការកុម្ម៉ង់', zh: '订单', ja: '注文', ko: '주문', vi: 'Đơn hàng' },
+  byPerson: { en: 'By person', km: 'តាមមនុស្ស', zh: '按人分', ja: '人ごと', ko: '사람별', vi: 'Theo người' },
+  equally: { en: 'Split equally', km: 'ចែកស្មើ', zh: '平均分', ja: '均等に割る', ko: '균등 분할', vi: 'Chia đều' },
   nameTip: {
     en: 'Tip: type your name when you send an order and the bill splits itself by person.',
     km: 'គន្លឹះ៖ វាយឈ្មោះរបស់អ្នកពេលផ្ញើការកុម្ម៉ង់ ដើម្បីចែកវិក្កយបត្រតាមមនុស្ស។',
     zh: '提示：下单时填写名字，账单会自动按人拆分。',
+    ja: 'ヒント：注文のときにお名前を入れると、お会計が自動で人ごとに分かれます。',
+    ko: '팁: 주문할 때 이름을 입력하면 계산서가 사람별로 자동 나뉩니다.',
+    vi: 'Mẹo: nhập tên khi gửi đơn, hóa đơn sẽ tự chia theo từng người.',
   },
-  howMany: { en: 'How many people?', km: 'ចំនួនប៉ុន្មាននាក់?', zh: '几个人？' },
-  eachPays: { en: 'Each person pays', km: 'ម្នាក់ៗបង់', zh: '每人支付' },
-  someMore: { en: '{n} pay {amt} so it adds up exactly', km: '{n} នាក់បង់ {amt} ដើម្បីឲ្យត្រូវចំនួន', zh: '其中 {n} 人支付 {amt}，以便金额正好' },
-  order: { en: 'Order', km: 'ការកុម្ម៉ង់', zh: '订单' },
-  guest: { en: 'Guest', km: 'ភ្ញៀវ', zh: '客人' },
-  rielRate: { en: 'Riel prices at {rate}៛ = $1', km: 'តម្លៃរៀល {rate}៛ = $1', zh: '瑞尔价格按 {rate}៛ = $1 计算' },
-  poweredBy: { en: 'Powered by', km: 'ដំណើរការដោយ', zh: '技术支持' },
-  status_new: { en: 'Sent to kitchen', km: 'បានផ្ញើទៅផ្ទះបាយ', zh: '已发送到厨房' },
-  status_preparing: { en: 'Preparing', km: 'កំពុងរៀបចំ', zh: '准备中' },
-  status_served: { en: 'Served', km: 'បានបម្រើ', zh: '已上菜' },
-  status_cancelled: { en: 'Cancelled', km: 'បានលុបចោល', zh: '已取消' },
+  howMany: { en: 'How many people?', km: 'ចំនួនប៉ុន្មាននាក់?', zh: '几个人？', ja: '何名さまですか？', ko: '몇 명인가요?', vi: 'Bao nhiêu người?' },
+  eachPays: { en: 'Each person pays', km: 'ម្នាក់ៗបង់', zh: '每人支付', ja: 'お一人あたり', ko: '1인당', vi: 'Mỗi người trả' },
+  someMore: { en: '{n} pay {amt} so it adds up exactly', km: '{n} នាក់បង់ {amt} ដើម្បីឲ្យត្រូវចំនួន', zh: '其中 {n} 人支付 {amt}，以便金额正好', ja: '{n}名が {amt} を払うとちょうどになります', ko: '{n}명이 {amt}을 내면 금액이 딱 맞습니다', vi: '{n} người trả {amt} để vừa đúng số tiền' },
+  order: { en: 'Order', km: 'ការកុម្ម៉ង់', zh: '订单', ja: '注文', ko: '주문', vi: 'Đơn' },
+  guest: { en: 'Guest', km: 'ភ្ញៀវ', zh: '客人', ja: 'お客さま', ko: '손님', vi: 'Khách' },
+  rielRate: { en: 'Riel prices at {rate}៛ = $1', km: 'តម្លៃរៀល {rate}៛ = $1', zh: '瑞尔价格按 {rate}៛ = $1 计算', ja: 'リエル価格：{rate}៛ = $1', ko: '리엘 환율 {rate}៛ = $1', vi: 'Giá riel theo {rate}៛ = $1' },
+  poweredBy: { en: 'Powered by', km: 'ដំណើរការដោយ', zh: '技术支持', ja: '提供', ko: '제공', vi: 'Được cung cấp bởi' },
+  status_new: { en: 'Sent to kitchen', km: 'បានផ្ញើទៅផ្ទះបាយ', zh: '已发送到厨房', ja: '厨房に送信済み', ko: '주방에 전달됨', vi: 'Đã gửi tới bếp' },
+  status_preparing: { en: 'Preparing', km: 'កំពុងរៀបចំ', zh: '准备中', ja: '調理中', ko: '준비 중', vi: 'Đang chuẩn bị' },
+  status_served: { en: 'Served', km: 'បានបម្រើ', zh: '已上菜', ja: '提供済み', ko: '서빙 완료', vi: 'Đã lên món' },
+  status_cancelled: { en: 'Cancelled', km: 'បានលុបចោល', zh: '已取消', ja: 'キャンセル', ko: '취소됨', vi: 'Đã hủy' },
+
+  // Shown once per table after the diner asks for the bill. Pay-at-the-counter, so no amounts.
+  tipTitle: {
+    en: 'Thanks for dining at {name}',
+    km: 'អរគុណដែលបានមក {name}',
+    zh: '感谢光临{name}',
+    ja: '{name} にご来店ありがとうございます',
+    ko: '{name}을 찾아 주셔서 감사합니다',
+    vi: 'Cảm ơn bạn đã ghé {name}',
+  },
+  tipBody: {
+    en: 'If our service made you smile, a small tip for the team is always appreciated 💛',
+    km: 'បើសេវារបស់យើងធ្វើឲ្យអ្នកញញឹម ប្រាក់តីបតិចតួចសម្រាប់ក្រុមការងារ គឺយើងសូមអរគុណយ៉ាងជ្រាលជ្រៅ 💛',
+    zh: '如果我们的服务让您满意，给团队一点小费，我们都会很开心 💛',
+    ja: 'サービスを気に入っていただけたら、スタッフへの心づけをいただけると嬉しいです 💛',
+    ko: '저희 서비스가 마음에 드셨다면, 직원들에게 주시는 작은 팁은 큰 힘이 됩니다 💛',
+    vi: 'Nếu bạn thấy vui với dịch vụ của chúng tôi, một chút tiền tip cho nhân viên luôn được trân trọng 💛',
+  },
+  tipThanks: { en: 'Thank you!', km: 'អរគុណ!', zh: '谢谢！', ja: 'ありがとう！', ko: '감사합니다!', vi: 'Cảm ơn!' },
 
   // ---- Staff app (src/pages/admin). Keys start with s_. ----
   s_tabToday: { en: 'Today', km: 'ថ្ងៃនេះ', zh: '今日' },
@@ -363,9 +403,9 @@ const STRINGS = {
   s_cover: { en: 'Cover photo (top of the menu)', km: 'រូបគម្រប (ខាងលើម៉ឺនុយ)', zh: '封面照片（菜单顶部）' },
   s_menuLanguages: { en: 'Menu languages', km: 'ភាសាម៉ឺនុយ', zh: '菜单语言' },
   s_menuLanguagesIntro: {
-    en: 'Diners switch language at the top of the menu. Add the Khmer / Chinese names when you edit each dish. The kitchen always sees English.',
-    km: 'ភ្ញៀវប្ដូរភាសានៅខាងលើម៉ឺនុយ។ បន្ថែមឈ្មោះខ្មែរ / ចិន ពេលកែម្ហូបនីមួយៗ។ ផ្ទះបាយឃើញជាភាសាអង់គ្លេសជានិច្ច។',
-    zh: '顾客可在菜单顶部切换语言。编辑菜品时添加高棉语 / 中文名称。厨房始终显示英文。',
+    en: 'Diners switch language at the top of the menu. Add the translated names when you edit each dish. The kitchen always sees English.',
+    km: 'ភ្ញៀវប្ដូរភាសានៅខាងលើម៉ឺនុយ។ បន្ថែមឈ្មោះតាមភាសា ពេលកែម្ហូបនីមួយៗ។ ផ្ទះបាយឃើញជាភាសាអង់គ្លេសជានិច្ច។',
+    zh: '顾客可在菜单顶部切换语言。编辑菜品时添加各语言名称。厨房始终显示英文。',
   },
   s_pricesOrdering: { en: 'Prices & ordering', km: 'តម្លៃ & ការកុម្ម៉ង់', zh: '价格与点餐' },
   s_rielPerUsd: { en: 'Riel per $1', km: 'រៀល ក្នុង $1', zh: '每 $1 兑瑞尔' },
@@ -410,12 +450,14 @@ const STRINGS = {
   s_ordersPerHour: { en: 'Orders per hour', km: 'ការកុម្ម៉ង់ក្នុងមួយម៉ោង', zh: '每小时订单' },
   s_peak: { en: ' · peak {hour} with {n} orders', km: ' · ច្រើនបំផុតម៉ោង {hour} មាន {n} កុម្ម៉ង់', zh: ' · 高峰 {hour}，{n} 单' },
   s_nOrders: { en: '{n} orders', km: '{n} កុម្ម៉ង់', zh: '{n} 单' },
-} satisfies Record<string, Record<Lang, string>>;
+  // Staff strings (s_*) are English / Khmer / Chinese only; translate() falls back to English.
+} satisfies Record<string, { en: string } & Partial<Record<Lang, string>>>;
 
 export type StringKey = keyof typeof STRINGS;
 
 export function translate(lang: Lang, key: StringKey, vars?: Record<string, string | number>) {
-  let s: string = STRINGS[key][lang] ?? STRINGS[key].en;
+  const entry: { en: string } & Partial<Record<Lang, string>> = STRINGS[key];
+  let s: string = entry[lang] ?? entry.en;
   if (vars) for (const [k, v] of Object.entries(vars)) s = s.replace(`{${k}}`, String(v));
   return s;
 }
@@ -445,9 +487,7 @@ function initialLang(available: Lang[], detect: boolean): Lang {
   }
   if (!detect) return 'en';
   const nav = navigator.language.toLowerCase();
-  if (nav.startsWith('km') && available.includes('km')) return 'km';
-  if (nav.startsWith('zh') && available.includes('zh')) return 'zh';
-  return 'en';
+  return available.find((l) => l !== 'en' && nav.startsWith(l)) ?? 'en';
 }
 
 /** `detect`: with nothing saved, use the browser language (diners). Staff pass false and start in English. */
@@ -477,7 +517,8 @@ export function useLang(available: Lang[], detect = true) {
   return { lang, setLang, t };
 }
 
-export const ALL_LANGS: Lang[] = LANGS.map((l) => l.id);
+/** The staff app itself is only translated into these; diner languages can be any of LANGS. */
+export const STAFF_LANGS: Lang[] = ['en', 'km', 'zh'];
 
 /** The staff app provides this once in AdminPage; its components read it with useT(). */
 export const LangContext = createContext<ReturnType<typeof useLang>>({ lang: 'en', setLang: () => {}, t: (k, vars) => translate('en', k, vars) });

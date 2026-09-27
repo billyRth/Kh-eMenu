@@ -12,9 +12,12 @@ import { cn } from '@/lib/utils';
 import { uploadImage } from '@/lib/images';
 import { supabase } from '@/lib/supabase';
 import { usd } from '@/lib/format';
-import { useT } from '@/lib/i18n';
+import { langLabel, useT, type ExtraLang } from '@/lib/i18n';
 import type { Category, I18nText, MenuItem, Restaurant } from '@/lib/types';
 import { OptionsEditor, cleanOptions } from './OptionsEditor';
+
+/** The restaurant's diner languages minus English (the base text staff type in). */
+const extraLangsOf = (restaurant: Restaurant) => (restaurant.languages ?? []).filter((l): l is ExtraLang => l !== 'en');
 
 type Draft = Omit<MenuItem, 'id' | 'restaurant_id' | 'sort_order'> & { id?: string };
 
@@ -73,7 +76,7 @@ export function MenuEditor({ restaurant }: { restaurant: Restaurant }) {
   }
 
   const [editingCat, setEditingCat] = useState<Category | null>(null);
-  const extraLangs = (restaurant.languages ?? []).filter((l): l is 'km' | 'zh' => l !== 'en');
+  const extraLangs = extraLangsOf(restaurant);
 
   function renameCategory(cat: Category) {
     setEditingCat(cat);
@@ -352,19 +355,18 @@ function ItemDialog({
                 </select>
               </Field>
             </div>
-            {(restaurant.languages ?? []).filter((l) => l !== 'en').map((l) => {
-              const code = l as 'km' | 'zh';
+            {extraLangsOf(restaurant).map((code) => {
               const tr = d.i18n?.[code] ?? {};
               const setTr = (patch: { name?: string; description?: string }) => set('i18n', { ...d.i18n, [code]: { ...tr, ...patch } } as I18nText);
               return (
                 <div key={code} className="space-y-2 rounded-xl bg-secondary/60 p-3">
-                  <p className="text-xs font-semibold text-muted-foreground">{code === 'km' ? 'ខ្មែរ · Khmer' : '中文 · Chinese'}</p>
-                  <Input value={tr.name ?? ''} onChange={(e) => setTr({ name: e.target.value })} placeholder={code === 'km' ? 'ឈ្មោះម្ហូប' : '菜名'} />
-                  <Input value={tr.description ?? ''} onChange={(e) => setTr({ description: e.target.value })} placeholder={code === 'km' ? 'ការពិពណ៌នា (មិនចាំបាច់)' : '描述（可选）'} />
+                  <p className="text-xs font-semibold text-muted-foreground">{langLabel(code)}</p>
+                  <Input value={tr.name ?? ''} onChange={(e) => setTr({ name: e.target.value })} placeholder={t('s_name')} />
+                  <Input value={tr.description ?? ''} onChange={(e) => setTr({ description: e.target.value })} placeholder={t('s_description')} />
                 </div>
               );
             })}
-            <OptionsEditor value={d.options} onChange={(v) => set('options', v)} languages={(restaurant.languages ?? []).filter((l): l is 'km' | 'zh' => l !== 'en')} />
+            <OptionsEditor value={d.options} onChange={(v) => set('options', v)} languages={extraLangsOf(restaurant)} />
             <Field label={t('s_tags')}>
               <Input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="Vegetarian, New, Signature" />
             </Field>
@@ -417,7 +419,7 @@ function CategoryDialog({
   onSave,
 }: {
   category: Category | null;
-  languages: ('km' | 'zh')[];
+  languages: ExtraLang[];
   onClose: () => void;
   onSave: (name: string, i18n: I18nText) => void;
 }) {
@@ -447,7 +449,7 @@ function CategoryDialog({
             <Input required value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
           {languages.map((l) => (
-            <Field key={l} label={l === 'km' ? 'ខ្មែរ · Khmer' : '中文 · Chinese'}>
+            <Field key={l} label={langLabel(l)}>
               <Input value={i18n[l]?.name ?? ''} onChange={(e) => setI18n({ ...i18n, [l]: { ...i18n[l], name: e.target.value } })} />
             </Field>
           ))}
