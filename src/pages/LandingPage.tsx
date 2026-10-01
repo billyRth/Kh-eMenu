@@ -5,7 +5,8 @@ import { cn } from '@/lib/utils';
 import { THEMES } from '@/lib/themes';
 
 // Sales settings: edit these when pricing or contact details change.
-const PRICING = { setupUsd: 200, monthlyUsd: 10.99 };
+// setupOfferUsd: launch-campaign price shown with the normal fee struck through; set to null to end the campaign.
+const PRICING = { setupUsd: 200, setupOfferUsd: 40 as number | null, monthlyUsd: 10.99 };
 const CONTACT_URL = ''; // e.g. 'https://t.me/yourname'; the contact button stays hidden while this is empty
 const DEMO_TABLE_TOKEN = 'f6751323731a43';
 
@@ -188,7 +189,16 @@ export function LandingPage() {
             ${PRICING.monthlyUsd}
             <span className="text-lg font-semibold text-muted-foreground">/month</span>
           </p>
-          <p className="mt-1 text-muted-foreground">+ ${PRICING.setupUsd} one-time setup</p>
+          {PRICING.setupOfferUsd !== null ? (
+            <div className="mt-2 space-y-1.5">
+              <p className="text-muted-foreground">
+                + <s>${PRICING.setupUsd}</s> <b className="text-foreground">${PRICING.setupOfferUsd}</b> one-time setup
+              </p>
+              <p className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">Launch offer · setup ${PRICING.setupOfferUsd} instead of ${PRICING.setupUsd}</p>
+            </div>
+          ) : (
+            <p className="mt-1 text-muted-foreground">+ ${PRICING.setupUsd} one-time setup</p>
+          )}
           <ul className="mt-6 space-y-2.5">
             {['Menu setup and QR codes for every table', 'Unlimited dishes, orders and menu changes', 'Live order screen for your staff', 'Support by phone & Telegram'].map((t) => (
               <li key={t} className="flex gap-2.5">
